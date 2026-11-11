@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Yathra Bus Booking",
+    "slug": "yathra-bus-booking",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/yathra_logo.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./src/assets/yathra_logo_transparent.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0284c7"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/yathra_logo.png",
+        "backgroundColor": "#0284c7"
+      }
+    },
+    "web": {
+      "favicon": "./src/assets/yathra_logo.png"
+    }
+  }
+}

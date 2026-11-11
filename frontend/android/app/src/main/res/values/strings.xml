@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Yathra Bus Booking</string>
+    <string name="title_activity_main">Yathra Bus Booking</string>
+    <string name="package_name">lk.yathra.busbooking</string>
+    <string name="custom_url_scheme">lk.yathra.busbooking</string>
+</resources>

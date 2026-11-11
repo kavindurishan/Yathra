@@ -1,4 +1,19 @@
-const BASE_URL = 'http://127.0.0.1:5000/api';
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const customUrl = localStorage.getItem('api_base_url');
+    if (customUrl) return customUrl;
+    
+    // Check if running in Capacitor Native Android environment
+    const isCapacitor = window.Capacitor !== undefined || /capacitor/i.test(navigator.userAgent);
+    if (isCapacitor) {
+      // 10.0.2.2 maps Android emulator to the computer's localhost:5000
+      return 'http://10.0.2.2:5000/api';
+    }
+  }
+  return 'http://127.0.0.1:5000/api';
+};
+
+const BASE_URL = getBaseUrl();
 
 const request = async (endpoint, options = {}) => {
   const token = localStorage.getItem('yathra_token') || localStorage.getItem('tripzo_token');

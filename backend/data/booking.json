@@ -20,5 +20,32 @@
     "bookingStatus": "Confirmed",
     "createdAt": "2026-11-09T08:38:09.847Z",
     "updatedAt": "2026-11-09T08:40:23.369Z"
+  },
+  {
+    "_id": "jjjc1win1zdrq32bom7rr",
+    "customer": "sqix2qt372ito6vk115krp",
+    "schedule": "vqieihe2qb9rpr2m4qt08",
+    "passengers": [
+      {
+        "fullName": "Kasun",
+        "age": 22,
+        "gender": "Male",
+        "seatNumber": "1B"
+      }
+    ],
+    "seatsBooked": [
+      "1B"
+    ],
+    "boardingPoint": "Kadawatha",
+    "droppingPoint": "Kandy Goods Shed Bus Stand",
+    "boardingTime": "07:00",
+    "droppingTime": "10:00",
+    "totalAmount": 17,
+    "convenienceFee": 2,
+    "paymentStatus": "Pending",
+    "bookingStatus": "Pending",
+    "heldUntil": "2026-11-11T15:47:59.872Z",
+    "createdAt": "2026-11-11T15:37:59.873Z",
+    "updatedAt": "2026-11-11T15:37:59.873Z"
   }
 ]

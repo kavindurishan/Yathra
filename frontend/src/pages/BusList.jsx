@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Filter, Wifi, BatteryCharging, Tv, ShieldAlert, 
-  MapPin, Clock, ArrowRight, Star, Sliders, ChevronDown
+  MapPin, Clock, ArrowRight, Star, Sliders, ChevronDown, ChevronUp, AlertTriangle
 } from 'lucide-react';
 
 export default function BusList() {
@@ -18,6 +18,7 @@ export default function BusList() {
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [expandedStopsId, setExpandedStopsId] = useState(null);
 
   // Filters state
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -53,7 +54,7 @@ export default function BusList() {
     // Filter by type (Luxury vs Normal categories)
     if (selectedTypes.length > 0) {
       list = list.filter(item => {
-        const isItemLuxury = item.bus.type === 'Luxury' || item.bus.type === 'AC';
+        const isItemLuxury = item.bus.type === 'Luxury' || item.bus.type === 'Super Luxury' || item.bus.type === 'AC';
         const isItemNormal = item.bus.type === 'Normal' || item.bus.type === 'Semi Luxury';
         
         if (selectedTypes.includes('Luxury') && isItemLuxury) return true;
@@ -92,6 +93,23 @@ export default function BusList() {
     if (facility === 'Charging') return <BatteryCharging className="w-3.5 h-3.5" title="Charging Docks" />;
     if (facility === 'TV') return <Tv className="w-3.5 h-3.5" title="TV Screens" />;
     return null;
+  };
+
+  const calculateStopTime = (baseTime, timeOffset) => {
+    if (!baseTime) return '--:--';
+    if (!timeOffset) return baseTime;
+    try {
+      const matchH = timeOffset.match(/(\d+)\s*h/);
+      const matchM = timeOffset.match(/(\d+)\s*m/);
+      const addMinutes = (matchH ? parseInt(matchH[1]) * 60 : 0) + (matchM ? parseInt(matchM[1]) : 0);
+      const [h, m] = baseTime.split(':').map(Number);
+      const totalMinutes = h * 60 + m + addMinutes;
+      const finalH = Math.floor(totalMinutes / 60) % 24;
+      const finalM = totalMinutes % 60;
+      return `${String(finalH).padStart(2, '0')}:${String(finalM).padStart(2, '0')}`;
+    } catch (e) {
+      return baseTime;
+    }
   };
 
   return (
@@ -245,13 +263,72 @@ export default function BusList() {
                   </div>
 
                   {/* Stops Preview & Facilities */}
-                  <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] font-bold text-slate-400 border-t border-slate-100 dark:border-slate-800/40">
-                    <span className="text-slate-500 dark:text-slate-300">Route via:</span>
-                    {item.route.stops.slice(0, 2).map((stop, idx) => (
-                      <span key={idx} className="bg-slate-100 dark:bg-slate-850 px-2 py-0.5 rounded text-[10px]">{stop.name}</span>
-                    ))}
-                    {item.route.stops.length > 2 && <span className="text-[10px] text-primary-500 font-extrabold">+{item.route.stops.length - 2} stops</span>}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-[11px] font-bold border-t border-slate-200/70 dark:border-slate-800/60">
+                    <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                      <span className="text-slate-800 dark:text-slate-200 font-extrabold">Route via:</span>
+                      {item.route.stops.slice(0, 3).map((stop, idx) => (
+                        <span key={idx} className="bg-slate-200/90 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 px-2.5 py-0.5 rounded-md text-[11px] font-bold shadow-xs">
+                          {stop.name}
+                        </span>
+                      ))}
+                      {item.route.stops.length > 3 && (
+                        <span className="text-[11px] text-primary-600 dark:text-primary-400 font-black bg-primary-50 dark:bg-primary-950/40 border border-primary-200/50 dark:border-primary-800/40 px-2 py-0.5 rounded-md">
+                          +{item.route.stops.length - 3} stops
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setExpandedStopsId(expandedStopsId === item._id ? null : item._id)}
+                      className="text-primary-600 dark:text-primary-400 hover:underline flex items-center space-x-1 text-[11px] font-bold py-1"
+                    >
+                      <span>{expandedStopsId === item._id ? 'Hide Intermediate Stops' : 'View Stops & Timings'}</span>
+                      {expandedStopsId === item._id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
+
+                  {/* Expanded Stops Timeline Drawer with Red Traffic Warning */}
+                  {expandedStopsId === item._id && (
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-3 mt-2">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-850">
+                        <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                          Intermediate Expressway & City Stops (ඇස්තමේන්තුගත වේලාවන්)
+                        </span>
+                        <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400">
+                          {item.route.stops.length + 2} Total Points
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                        <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/50 dark:border-slate-800">
+                          <p className="font-extrabold text-slate-900 dark:text-white truncate">{item.route.startingLocation}</p>
+                          <p className="text-[10px] font-bold text-primary-600 dark:text-primary-400">{item.departureTime} (Departure)</p>
+                        </div>
+                        {item.route.stops.map((stop, sIdx) => {
+                          const estTime = calculateStopTime(item.departureTime, stop.timeOffset);
+                          return (
+                            <div key={sIdx} className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/50 dark:border-slate-800">
+                              <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{stop.name}</p>
+                              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Est: {estTime}</p>
+                            </div>
+                          );
+                        })}
+                        <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/50 dark:border-slate-800">
+                          <p className="font-extrabold text-slate-900 dark:text-white truncate">{item.route.destination}</p>
+                          <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">{item.arrivalTime} (Destination)</p>
+                        </div>
+                      </div>
+
+                      {/* RED COLOR DISCLAIMER: EXACT REQUIREMENT FROM USER */}
+                      <div className="p-2.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-900/50 rounded-lg flex items-start space-x-2 text-rose-600 dark:text-rose-400">
+                        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+                        <p className="text-[11px] font-extrabold leading-tight">
+                          * මාර්ගයේ රථවාහන තදබදය (Traffic) හෝ අනපේක්ෂිත හේතූන් මත මෙම වේලාවන් වෙනස් විය හැක. (Times may vary depending on road traffic conditions.)
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Facilities List (Wi-Fi, AC etc.) */}

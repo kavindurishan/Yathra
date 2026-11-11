@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "_id": "rz0v98g2bzyhtd5ie1a4",
+    "user": "sqix2qt372ito6vk115krp",
+    "title": "Booking Confirmed!",
+    "message": "Your booking (ID: vh0tyx4nuhnl1kn93954ep) for seats 1A is confirmed. Total Paid: $15.",
+    "type": "Booking",
+    "read": true,
+    "createdAt": "2026-11-09T08:40:23.372Z",
+    "updatedAt": "2026-11-09T08:44:36.233Z"
+  }
+]

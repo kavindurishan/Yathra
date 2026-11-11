@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Calendar, MapPin, Compass } from 'lucide-react';
-import TripzoBrandLogo from './TripzoBrandLogo.jsx';
+import YathraBrandLogo from './YathraBrandLogo';
 
 export default function IntroSplash({ onComplete }) {
   const [progress, setProgress] = useState(0);
@@ -14,7 +14,7 @@ export default function IntroSplash({ onComplete }) {
       { p: 40, t: 'Verifying available seat maps...' },
       { p: 65, t: 'Syncing executive boarding terminals...' },
       { p: 85, t: 'Securing transaction and seat vault gateways...' },
-      { p: 98, t: 'Welcome aboard Tripzo. Preparing departure deck...' }
+      { p: 98, t: 'Welcome aboard Yathra. Preparing departure deck...' }
     ];
 
     const interval = setInterval(() => {
@@ -48,7 +48,7 @@ export default function IntroSplash({ onComplete }) {
       <div className="pt-12 px-8 flex justify-between items-center z-10 select-none w-full">
         <div className="flex items-center space-x-2 text-slate-400 font-mono text-[9px] tracking-widest uppercase">
           <Compass className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
-          <span>Tripzo Premium Mobility</span>
+          <span>Yathra Premium Mobility</span>
         </div>
         <div className="flex items-center space-x-4 text-[9px] text-slate-400/80 font-mono uppercase">
           <span>Boarding Deck Active</span>
@@ -60,9 +60,10 @@ export default function IntroSplash({ onComplete }) {
       <div className="flex-1 flex flex-col justify-center items-center px-6 max-w-xl mx-auto w-full z-10 select-none">
         
         {/* Tripzo Brand Logo with bouncing pin and custom vector curves */}
-        <TripzoBrandLogo 
-          className="h-16 sm:h-20 w-auto filter drop-shadow-[0_8px_24px_rgba(6,182,212,0.18)] mb-2" 
-          isSplash={true} 
+        <YathraBrandLogo 
+          className="h-20 sm:h-28 md:h-32 w-auto filter drop-shadow-[0_8px_30px_rgba(6,182,212,0.25)] mb-3" 
+          isSplash={true}
+          forceTheme="dark" 
         />
         <p className="text-slate-400 text-xs sm:text-sm font-medium tracking-widest uppercase opacity-75 mb-12">
           Your Premium Journey Begins Here

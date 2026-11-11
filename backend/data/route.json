@@ -1,56 +1,822 @@
 [
   {
-    "_id": "uez8fg4ktsnrulip3tvmai",
+    "_id": "9b97no4gi9ezy2fhtcwyda",
     "startingLocation": "Colombo",
     "destination": "Kandy",
     "distance": 115,
-    "duration": "3h 15m",
+    "duration": "3h 30m",
+    "status": "Active",
     "stops": [
       {
-        "name": "Kadawatha Highway Entrance",
+        "name": "Peliyagoda",
+        "distanceOffset": 8,
+        "timeOffset": "15m"
+      },
+      {
+        "name": "Kiribathgoda",
+        "distanceOffset": 12,
+        "timeOffset": "22m"
+      },
+      {
+        "name": "Kadawatha",
+        "distanceOffset": 16,
+        "timeOffset": "30m"
+      },
+      {
+        "name": "Belummahara",
+        "distanceOffset": 23,
+        "timeOffset": "42m"
+      },
+      {
+        "name": "Miriswaththa",
+        "distanceOffset": 28,
+        "timeOffset": "50m"
+      },
+      {
+        "name": "Yakkala",
+        "distanceOffset": 32,
+        "timeOffset": "58m"
+      },
+      {
+        "name": "Nittambuwa",
+        "distanceOffset": 40,
+        "timeOffset": "1h 12m"
+      },
+      {
+        "name": "Warakapola",
+        "distanceOffset": 56,
+        "timeOffset": "1h 45m"
+      },
+      {
+        "name": "Nelundeniya",
+        "distanceOffset": 64,
+        "timeOffset": "2h 00m"
+      },
+      {
+        "name": "Kegalle",
+        "distanceOffset": 78,
+        "timeOffset": "2h 25m"
+      },
+      {
+        "name": "Mawanella",
+        "distanceOffset": 90,
+        "timeOffset": "2h 50m"
+      },
+      {
+        "name": "Peradeniya",
+        "distanceOffset": 109,
+        "timeOffset": "3h 20m"
+      },
+      {
+        "name": "Kandy Goods Shed Bus Stand",
+        "distanceOffset": 115,
+        "timeOffset": "3h 30m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "lmhj5xtrmr7p8ux66xji9",
+    "startingLocation": "Colombo",
+    "destination": "Galle",
+    "distance": 120,
+    "duration": "2h 30m",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Wellawatte",
+        "distanceOffset": 6,
+        "timeOffset": "12m"
+      },
+      {
+        "name": "Dehiwala",
+        "distanceOffset": 10,
+        "timeOffset": "18m"
+      },
+      {
+        "name": "Mount Lavinia",
+        "distanceOffset": 13,
+        "timeOffset": "24m"
+      },
+      {
+        "name": "Ratmalana",
+        "distanceOffset": 16,
+        "timeOffset": "30m"
+      },
+      {
+        "name": "Moratuwa",
+        "distanceOffset": 20,
+        "timeOffset": "38m"
+      },
+      {
+        "name": "Panadura",
+        "distanceOffset": 28,
+        "timeOffset": "50m"
+      },
+      {
+        "name": "Wadduwa",
+        "distanceOffset": 35,
+        "timeOffset": "1h 00m"
+      },
+      {
+        "name": "Kalutara",
+        "distanceOffset": 43,
+        "timeOffset": "1h 12m"
+      },
+      {
+        "name": "Beruwala",
+        "distanceOffset": 55,
+        "timeOffset": "1h 28m"
+      },
+      {
+        "name": "Aluthgama",
+        "distanceOffset": 60,
+        "timeOffset": "1h 35m"
+      },
+      {
+        "name": "Bentota",
+        "distanceOffset": 64,
+        "timeOffset": "1h 40m"
+      },
+      {
+        "name": "Kosgoda",
+        "distanceOffset": 74,
+        "timeOffset": "1h 52m"
+      },
+      {
+        "name": "Balapitiya",
+        "distanceOffset": 82,
+        "timeOffset": "2h 02m"
+      },
+      {
+        "name": "Ambalangoda",
+        "distanceOffset": 86,
+        "timeOffset": "2h 08m"
+      },
+      {
+        "name": "Hikkaduwa",
+        "distanceOffset": 100,
+        "timeOffset": "2h 20m"
+      },
+      {
+        "name": "Galle",
+        "distanceOffset": 120,
+        "timeOffset": "2h 30m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "eh5oy6giph7fe77c5xsue6",
+    "startingLocation": "Colombo",
+    "destination": "Matara",
+    "distance": 160,
+    "duration": "3h 30m",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Dehiwala",
+        "distanceOffset": 10,
+        "timeOffset": "18m"
+      },
+      {
+        "name": "Moratuwa",
+        "distanceOffset": 20,
+        "timeOffset": "35m"
+      },
+      {
+        "name": "Panadura",
+        "distanceOffset": 28,
+        "timeOffset": "48m"
+      },
+      {
+        "name": "Kalutara",
+        "distanceOffset": 43,
+        "timeOffset": "1h 10m"
+      },
+      {
+        "name": "Beruwala",
+        "distanceOffset": 55,
+        "timeOffset": "1h 25m"
+      },
+      {
+        "name": "Aluthgama",
+        "distanceOffset": 60,
+        "timeOffset": "1h 32m"
+      },
+      {
+        "name": "Bentota",
+        "distanceOffset": 64,
+        "timeOffset": "1h 38m"
+      },
+      {
+        "name": "Ambalangoda",
+        "distanceOffset": 86,
+        "timeOffset": "2h 05m"
+      },
+      {
+        "name": "Hikkaduwa",
+        "distanceOffset": 100,
+        "timeOffset": "2h 20m"
+      },
+      {
+        "name": "Galle",
+        "distanceOffset": 120,
+        "timeOffset": "2h 45m"
+      },
+      {
+        "name": "Unawatuna",
+        "distanceOffset": 126,
+        "timeOffset": "2h 55m"
+      },
+      {
+        "name": "Habaraduwa",
+        "distanceOffset": 133,
+        "timeOffset": "3h 05m"
+      },
+      {
+        "name": "Koggala",
+        "distanceOffset": 137,
+        "timeOffset": "3h 10m"
+      },
+      {
+        "name": "Ahangama",
+        "distanceOffset": 143,
+        "timeOffset": "3h 18m"
+      },
+      {
+        "name": "Weligama",
+        "distanceOffset": 148,
+        "timeOffset": "3h 24m"
+      },
+      {
+        "name": "Mirissa",
+        "distanceOffset": 153,
+        "timeOffset": "3h 28m"
+      },
+      {
+        "name": "Matara",
+        "distanceOffset": 160,
+        "timeOffset": "3h 30m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "uwefzohi4uhktluy6cwyee",
+    "startingLocation": "Colombo",
+    "destination": "Badulla",
+    "distance": 230,
+    "duration": "6h",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Maharagama",
         "distanceOffset": 15,
         "timeOffset": "25m"
       },
       {
-        "name": "Kegalle Transit Hub",
-        "distanceOffset": 70,
-        "timeOffset": "2h 0m"
+        "name": "Kottawa",
+        "distanceOffset": 20,
+        "timeOffset": "35m"
       },
       {
-        "name": "Peradeniya Junction",
-        "distanceOffset": 105,
-        "timeOffset": "3h 0m"
+        "name": "Homagama",
+        "distanceOffset": 25,
+        "timeOffset": "45m"
+      },
+      {
+        "name": "Padukka",
+        "distanceOffset": 35,
+        "timeOffset": "1h 00m"
+      },
+      {
+        "name": "Hanwella",
+        "distanceOffset": 42,
+        "timeOffset": "1h 12m"
+      },
+      {
+        "name": "Avissawella",
+        "distanceOffset": 58,
+        "timeOffset": "1h 35m"
+      },
+      {
+        "name": "Eheliyagoda",
+        "distanceOffset": 72,
+        "timeOffset": "1h 55m"
+      },
+      {
+        "name": "Kuruwita",
+        "distanceOffset": 88,
+        "timeOffset": "2h 20m"
+      },
+      {
+        "name": "Ratnapura",
+        "distanceOffset": 100,
+        "timeOffset": "2h 40m"
+      },
+      {
+        "name": "Pelmadulla",
+        "distanceOffset": 118,
+        "timeOffset": "3h 10m"
+      },
+      {
+        "name": "Balangoda",
+        "distanceOffset": 142,
+        "timeOffset": "3h 50m"
+      },
+      {
+        "name": "Belihuloya",
+        "distanceOffset": 158,
+        "timeOffset": "4h 20m"
+      },
+      {
+        "name": "Pambahinna",
+        "distanceOffset": 164,
+        "timeOffset": "4h 30m"
+      },
+      {
+        "name": "Haputale",
+        "distanceOffset": 188,
+        "timeOffset": "5h 05m"
+      },
+      {
+        "name": "Diyatalawa",
+        "distanceOffset": 198,
+        "timeOffset": "5h 20m"
+      },
+      {
+        "name": "Bandarawela",
+        "distanceOffset": 208,
+        "timeOffset": "5h 35m"
+      },
+      {
+        "name": "Hali-Ela",
+        "distanceOffset": 222,
+        "timeOffset": "5h 50m"
+      },
+      {
+        "name": "Badulla",
+        "distanceOffset": 230,
+        "timeOffset": "6h 00m"
       }
     ],
-    "status": "Active",
-    "createdAt": "2026-06-07T07:14:16.679Z",
-    "updatedAt": "2026-06-07T07:14:16.679Z"
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
   },
   {
-    "_id": "gdotnd12jyl19bhl8lpo2r",
+    "_id": "esnp8cp1maicubeif04rzs",
     "startingLocation": "Colombo",
-    "destination": "Galle",
-    "distance": 125,
-    "duration": "2h 0m",
+    "destination": "Jaffna",
+    "distance": 400,
+    "duration": "8h",
+    "status": "Active",
     "stops": [
       {
-        "name": "Kottawa Highway Interchange",
-        "distanceOffset": 20,
+        "name": "Kadawatha",
+        "distanceOffset": 16,
+        "timeOffset": "25m"
+      },
+      {
+        "name": "Nittambuwa",
+        "distanceOffset": 40,
+        "timeOffset": "55m"
+      },
+      {
+        "name": "Warakapola",
+        "distanceOffset": 56,
+        "timeOffset": "1h 20m"
+      },
+      {
+        "name": "Kurunegala",
+        "distanceOffset": 95,
+        "timeOffset": "2h 10m"
+      },
+      {
+        "name": "Dambulla",
+        "distanceOffset": 160,
+        "timeOffset": "3h 30m"
+      },
+      {
+        "name": "Kekirawa",
+        "distanceOffset": 185,
+        "timeOffset": "4h 00m"
+      },
+      {
+        "name": "Maradankadawala",
+        "distanceOffset": 198,
+        "timeOffset": "4h 15m"
+      },
+      {
+        "name": "Mihintale",
+        "distanceOffset": 218,
+        "timeOffset": "4h 40m"
+      },
+      {
+        "name": "Medawachchiya",
+        "distanceOffset": 245,
+        "timeOffset": "5h 10m"
+      },
+      {
+        "name": "Vavuniya",
+        "distanceOffset": 270,
+        "timeOffset": "5h 40m"
+      },
+      {
+        "name": "Omanthai",
+        "distanceOffset": 285,
+        "timeOffset": "6h 00m"
+      },
+      {
+        "name": "Puliyankulam",
+        "distanceOffset": 300,
+        "timeOffset": "6h 20m"
+      },
+      {
+        "name": "Mankulam",
+        "distanceOffset": 325,
+        "timeOffset": "6h 50m"
+      },
+      {
+        "name": "Kilinochchi",
+        "distanceOffset": 355,
+        "timeOffset": "7h 25m"
+      },
+      {
+        "name": "Paranthan",
+        "distanceOffset": 362,
+        "timeOffset": "7h 35m"
+      },
+      {
+        "name": "Elephant Pass",
+        "distanceOffset": 372,
+        "timeOffset": "7h 45m"
+      },
+      {
+        "name": "Chavakachcheri",
+        "distanceOffset": 388,
+        "timeOffset": "7h 55m"
+      },
+      {
+        "name": "Jaffna",
+        "distanceOffset": 400,
+        "timeOffset": "8h 00m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "fnsrsl8vcpsb6j5ae9a18t",
+    "startingLocation": "Colombo",
+    "destination": "Anuradhapura",
+    "distance": 205,
+    "duration": "4h 30m",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Kadawatha",
+        "distanceOffset": 16,
+        "timeOffset": "25m"
+      },
+      {
+        "name": "Nittambuwa",
+        "distanceOffset": 40,
+        "timeOffset": "55m"
+      },
+      {
+        "name": "Warakapola",
+        "distanceOffset": 56,
+        "timeOffset": "1h 20m"
+      },
+      {
+        "name": "Polgahawela",
+        "distanceOffset": 78,
+        "timeOffset": "1h 50m"
+      },
+      {
+        "name": "Kurunegala",
+        "distanceOffset": 95,
+        "timeOffset": "2h 15m"
+      },
+      {
+        "name": "Wariyapola",
+        "distanceOffset": 115,
+        "timeOffset": "2h 45m"
+      },
+      {
+        "name": "Padeniya",
+        "distanceOffset": 125,
+        "timeOffset": "3h 00m"
+      },
+      {
+        "name": "Galgamuwa",
+        "distanceOffset": 155,
+        "timeOffset": "3h 35m"
+      },
+      {
+        "name": "Thambuttegama",
+        "distanceOffset": 175,
+        "timeOffset": "4h 00m"
+      },
+      {
+        "name": "Talawa",
+        "distanceOffset": 190,
+        "timeOffset": "4h 15m"
+      },
+      {
+        "name": "Anuradhapura",
+        "distanceOffset": 205,
+        "timeOffset": "4h 30m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "yr6yh1lsbuwvj1270pw4j",
+    "startingLocation": "Colombo",
+    "destination": "Kurunegala",
+    "distance": 95,
+    "duration": "2h 30m",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Peliyagoda",
+        "distanceOffset": 8,
         "timeOffset": "15m"
       },
       {
-        "name": "Welipenna Service Area",
-        "distanceOffset": 65,
-        "timeOffset": "1h 0m"
+        "name": "Kadawatha",
+        "distanceOffset": 16,
+        "timeOffset": "28m"
       },
       {
-        "name": "Nayapamula Exit",
-        "distanceOffset": 110,
-        "timeOffset": "1h 45m"
+        "name": "Yakkala",
+        "distanceOffset": 32,
+        "timeOffset": "50m"
+      },
+      {
+        "name": "Nittambuwa",
+        "distanceOffset": 40,
+        "timeOffset": "1h 05m"
+      },
+      {
+        "name": "Warakapola",
+        "distanceOffset": 56,
+        "timeOffset": "1h 30m"
+      },
+      {
+        "name": "Ambepussa",
+        "distanceOffset": 60,
+        "timeOffset": "1h 38m"
+      },
+      {
+        "name": "Alawwa",
+        "distanceOffset": 68,
+        "timeOffset": "1h 52m"
+      },
+      {
+        "name": "Polgahawela",
+        "distanceOffset": 78,
+        "timeOffset": "2h 08m"
+      },
+      {
+        "name": "Kurunegala",
+        "distanceOffset": 95,
+        "timeOffset": "2h 30m"
       }
     ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "tebjxuh9ednrcm88lzytx",
+    "startingLocation": "Kandy",
+    "destination": "Nuwara Eliya",
+    "distance": 80,
+    "duration": "2h 30m",
     "status": "Active",
-    "createdAt": "2026-06-07T07:14:16.679Z",
-    "updatedAt": "2026-06-07T07:14:16.679Z"
+    "stops": [
+      {
+        "name": "Peradeniya",
+        "distanceOffset": 7,
+        "timeOffset": "15m"
+      },
+      {
+        "name": "Gampola",
+        "distanceOffset": 20,
+        "timeOffset": "40m"
+      },
+      {
+        "name": "Ulapane",
+        "distanceOffset": 28,
+        "timeOffset": "55m"
+      },
+      {
+        "name": "Nawalapitiya Junction",
+        "distanceOffset": 36,
+        "timeOffset": "1h 10m"
+      },
+      {
+        "name": "Pussellawa",
+        "distanceOffset": 48,
+        "timeOffset": "1h 35m"
+      },
+      {
+        "name": "Ramboda",
+        "distanceOffset": 60,
+        "timeOffset": "1h 55m"
+      },
+      {
+        "name": "Labukele",
+        "distanceOffset": 70,
+        "timeOffset": "2h 15m"
+      },
+      {
+        "name": "Nuwara Eliya",
+        "distanceOffset": 80,
+        "timeOffset": "2h 30m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "nu8q9hgkdygcb78vxqymja",
+    "startingLocation": "Panadura",
+    "destination": "Kandy",
+    "distance": 135,
+    "duration": "4h 15m",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Moratuwa",
+        "distanceOffset": 8,
+        "timeOffset": "15m"
+      },
+      {
+        "name": "Ratmalana",
+        "distanceOffset": 12,
+        "timeOffset": "22m"
+      },
+      {
+        "name": "Dehiwala",
+        "distanceOffset": 15,
+        "timeOffset": "28m"
+      },
+      {
+        "name": "Kalubowila",
+        "distanceOffset": 17,
+        "timeOffset": "32m"
+      },
+      {
+        "name": "Kohuwala",
+        "distanceOffset": 19,
+        "timeOffset": "36m"
+      },
+      {
+        "name": "Nugegoda",
+        "distanceOffset": 21,
+        "timeOffset": "40m"
+      },
+      {
+        "name": "Pitakotte / Kotte",
+        "distanceOffset": 24,
+        "timeOffset": "46m"
+      },
+      {
+        "name": "Battaramulla",
+        "distanceOffset": 27,
+        "timeOffset": "52m"
+      },
+      {
+        "name": "Malabe",
+        "distanceOffset": 31,
+        "timeOffset": "1h 00m"
+      },
+      {
+        "name": "Kaduwela",
+        "distanceOffset": 36,
+        "timeOffset": "1h 10m"
+      },
+      {
+        "name": "Biyagama",
+        "distanceOffset": 41,
+        "timeOffset": "1h 20m"
+      },
+      {
+        "name": "Delgoda",
+        "distanceOffset": 47,
+        "timeOffset": "1h 32m"
+      },
+      {
+        "name": "Weliweriya",
+        "distanceOffset": 53,
+        "timeOffset": "1h 45m"
+      },
+      {
+        "name": "Belummahara",
+        "distanceOffset": 58,
+        "timeOffset": "1h 55m"
+      },
+      {
+        "name": "Yakkala",
+        "distanceOffset": 62,
+        "timeOffset": "2h 02m"
+      },
+      {
+        "name": "Nittambuwa (Pasyala)",
+        "distanceOffset": 70,
+        "timeOffset": "2h 15m"
+      },
+      {
+        "name": "Warakapola",
+        "distanceOffset": 86,
+        "timeOffset": "2h 45m"
+      },
+      {
+        "name": "Ambepussa",
+        "distanceOffset": 90,
+        "timeOffset": "2h 55m"
+      },
+      {
+        "name": "Galigamuwa",
+        "distanceOffset": 98,
+        "timeOffset": "3h 10m"
+      },
+      {
+        "name": "Kegalle",
+        "distanceOffset": 108,
+        "timeOffset": "3h 25m"
+      },
+      {
+        "name": "Mawanella",
+        "distanceOffset": 120,
+        "timeOffset": "3h 45m"
+      },
+      {
+        "name": "Kadugannawa",
+        "distanceOffset": 126,
+        "timeOffset": "3h 58m"
+      },
+      {
+        "name": "Peradeniya",
+        "distanceOffset": 130,
+        "timeOffset": "4h 05m"
+      },
+      {
+        "name": "Kandy Goods Shed Bus Stand",
+        "distanceOffset": 135,
+        "timeOffset": "4h 15m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-11T14:22:00.000Z"
+  },
+  {
+    "_id": "txl0rnyreeiew7r6ncyxm",
+    "startingLocation": "Kaduwela",
+    "destination": "Gampaha",
+    "distance": 35,
+    "duration": "1h 15m",
+    "status": "Active",
+    "stops": [
+      {
+        "name": "Biyagama",
+        "distanceOffset": 6,
+        "timeOffset": "15m"
+      },
+      {
+        "name": "Malwana",
+        "distanceOffset": 12,
+        "timeOffset": "25m"
+      },
+      {
+        "name": "Dekatana",
+        "distanceOffset": 18,
+        "timeOffset": "38m"
+      },
+      {
+        "name": "Dompe",
+        "distanceOffset": 24,
+        "timeOffset": "50m"
+      },
+      {
+        "name": "Weliweriya",
+        "distanceOffset": 29,
+        "timeOffset": "1h 02m"
+      },
+      {
+        "name": "Gampaha",
+        "distanceOffset": 35,
+        "timeOffset": "1h 15m"
+      }
+    ],
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
   }
 ]

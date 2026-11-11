@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "_id": "vh0tyx4nuhnl1kn93954ep",
+    "customer": "sqix2qt372ito6vk115krp",
+    "schedule": "vqieihe2qb9rpr2m4qt08",
+    "passengers": [
+      {
+        "fullName": "Kavindu Rishan",
+        "age": 22,
+        "gender": "Male",
+        "seatNumber": "1A"
+      }
+    ],
+    "seatsBooked": [
+      "1A"
+    ],
+    "totalAmount": 15,
+    "convenienceFee": 0,
+    "paymentStatus": "Paid",
+    "bookingStatus": "Confirmed",
+    "createdAt": "2026-11-09T08:38:09.847Z",
+    "updatedAt": "2026-11-09T08:40:23.369Z"
+  }
+]

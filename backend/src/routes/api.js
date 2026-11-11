@@ -83,8 +83,8 @@ router.post('/auth/register', async (req, res) => {
     // Create welcome notification
     await db.create('Notification', {
       user: newUser._id,
-      title: 'Welcome to Tripzo!',
-      message: `Hello ${fullName}, welcome to Tripzo! Search and book your journey now.`,
+      title: 'Welcome to Yathra!',
+      message: `Hello ${fullName}, welcome to Yathra! Search and book your journey now.`,
       type: 'Info',
       read: false
     });
@@ -109,6 +109,9 @@ router.post('/auth/login', async (req, res) => {
     }
 
     let user = await db.findOne('User', { email: usernameOrEmail });
+    if (!user && (usernameOrEmail === 'admin@yathra.lk' || usernameOrEmail === 'admin@tripzo.com')) {
+      user = await db.findOne('User', { role: 'Admin' });
+    }
     if (!user) {
       user = await db.findOne('User', { username: usernameOrEmail });
     }
@@ -195,7 +198,7 @@ router.post('/users', authenticate, authorize(['Admin']), async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email already registered.' });
     }
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(body.password || 'tripzo123', salt);
+    const hashedPassword = await bcrypt.hash(body.password || 'yathra123', salt);
 
     const newUser = await db.create('User', {
       ...body,
@@ -347,11 +350,17 @@ router.get('/schedules', async (req, res) => {
     if (from || to || date) {
       result = result.filter(item => {
         let match = true;
-        if (from && item.route.startingLocation.toLowerCase() !== from.toLowerCase()) {
-          match = false;
+        if (from) {
+          const f = from.toLowerCase().trim();
+          const startMatches = item.route.startingLocation.toLowerCase().includes(f) || f.includes(item.route.startingLocation.toLowerCase());
+          const stopMatches = Array.isArray(item.route.stops) && item.route.stops.some(s => s.name.toLowerCase().includes(f) || f.includes(s.name.toLowerCase()));
+          if (!startMatches && !stopMatches) match = false;
         }
-        if (to && item.route.destination.toLowerCase() !== to.toLowerCase()) {
-          match = false;
+        if (to) {
+          const t = to.toLowerCase().trim();
+          const destMatches = item.route.destination.toLowerCase().includes(t) || t.includes(item.route.destination.toLowerCase());
+          const stopMatches = Array.isArray(item.route.stops) && item.route.stops.some(s => s.name.toLowerCase().includes(t) || t.includes(s.name.toLowerCase()));
+          if (!destMatches && !stopMatches) match = false;
         }
         if (date) {
           const searchDate = new Date(date);
@@ -380,6 +389,57 @@ router.get('/schedules', async (req, res) => {
     }
 
     res.json({ success: true, schedules: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Seat Availability & Concurrency Status (10-min Temporary Hold & Gender Awareness)
+router.get('/schedules/:id/seat-status', async (req, res) => {
+  try {
+    const scheduleId = req.params.id;
+    const schedule = await db.findById('Schedule', scheduleId);
+    if (!schedule) return res.status(404).json({ success: false, message: 'Schedule not found' });
+    
+    const populatedSchedule = await populateScheduleObj(schedule);
+
+    // Get all bookings for this schedule
+    const allBookings = await db.find('Booking', { schedule: scheduleId });
+    const now = Date.now();
+    const TEN_MINUTES = 10 * 60 * 1000;
+
+    const bookedSeats = [];
+    const femaleSeats = [];
+    const heldSeats = [];
+
+    allBookings.forEach(b => {
+      if (b.bookingStatus === 'Confirmed') {
+        bookedSeats.push(...(b.seatsBooked || []));
+        // Check female passengers
+        if (b.passengers && Array.isArray(b.passengers)) {
+          b.passengers.forEach(p => {
+            if (p.gender === 'Female' && p.seatNumber) {
+              femaleSeats.push(p.seatNumber);
+            }
+          });
+        }
+      } else if (b.bookingStatus === 'Pending') {
+        const createdAtTime = new Date(b.createdAt || b.bookingDate || now).getTime();
+        const heldUntilTime = b.heldUntil ? new Date(b.heldUntil).getTime() : createdAtTime + TEN_MINUTES;
+        // If still within 10-minute hold window
+        if (now < heldUntilTime) {
+          heldSeats.push(...(b.seatsBooked || []));
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      schedule: populatedSchedule,
+      bookedSeats: [...new Set(bookedSeats)],
+      femaleSeats: [...new Set(femaleSeats)],
+      heldSeats: [...new Set(heldSeats)]
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -428,10 +488,13 @@ router.delete('/schedules/:id', authenticate, authorize(['Admin']), async (req, 
 // 6. BOOKINGS & PAYMENTS MODULE (Customer Checkout)
 // ----------------------------------------------------
 
-// Create Booking
+// Create Booking with 10-Minute Seat Locking & Boarding/Dropping Stop Data
 router.post('/bookings', authenticate, async (req, res) => {
   try {
-    const { scheduleId, passengers, seatsBooked, promoCode, includeConvenienceFee } = req.reqBody || req.body;
+    const { 
+      scheduleId, passengers, seatsBooked, promoCode, includeConvenienceFee,
+      boardingPoint, droppingPoint, boardingTime, droppingTime 
+    } = req.reqBody || req.body;
     
     if (!scheduleId || !passengers || !passengers.length || !seatsBooked || !seatsBooked.length) {
       return res.status(400).json({ success: false, message: 'Missing required booking details.' });
@@ -450,12 +513,31 @@ router.post('/bookings', authenticate, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Not enough seats available.' });
     }
 
-    // Verify seats mapping is not already booked in existing schedules
-    const existingBookings = await db.find('Booking', { schedule: scheduleId, bookingStatus: 'Confirmed' });
-    const blockedSeats = existingBookings.reduce((acc, curr) => acc.concat(curr.seatsBooked), []);
+    // Verify seats concurrency: check confirmed bookings AND pending holds within the 10-minute window
+    const allBookings = await db.find('Booking', { schedule: scheduleId });
+    const now = Date.now();
+    const TEN_MINUTES = 10 * 60 * 1000;
+
+    const blockedSeats = [];
+    allBookings.forEach(b => {
+      if (b.bookingStatus === 'Confirmed') {
+        blockedSeats.push(...(b.seatsBooked || []));
+      } else if (b.bookingStatus === 'Pending') {
+        const createdAtTime = new Date(b.createdAt || b.bookingDate || now).getTime();
+        const heldUntilTime = b.heldUntil ? new Date(b.heldUntil).getTime() : createdAtTime + TEN_MINUTES;
+        // Block if another user is holding within the 10 min window
+        if (now < heldUntilTime && String(b.customer) !== String(req.user._id)) {
+          blockedSeats.push(...(b.seatsBooked || []));
+        }
+      }
+    });
+
     const overlaps = seatsBooked.filter(s => blockedSeats.includes(s));
     if (overlaps.length > 0) {
-      return res.status(400).json({ success: false, message: `Seats already booked: ${overlaps.join(', ')}` });
+      return res.status(400).json({ 
+        success: false, 
+        message: `Seats are currently unavailable or held by another passenger: ${overlaps.join(', ')}` 
+      });
     }
 
     let baseAmount = schedule.ticketPrice * seatsBooked.length;
@@ -484,10 +566,15 @@ router.post('/bookings', authenticate, async (req, res) => {
       schedule: scheduleId,
       passengers,
       seatsBooked,
+      boardingPoint: boardingPoint || null,
+      droppingPoint: droppingPoint || null,
+      boardingTime: boardingTime || schedule.departureTime,
+      droppingTime: droppingTime || schedule.arrivalTime,
       totalAmount,
       convenienceFee,
       paymentStatus: 'Pending',
-      bookingStatus: 'Pending'
+      bookingStatus: 'Pending',
+      heldUntil: new Date(Date.now() + TEN_MINUTES)
     });
 
     res.status(201).json({ success: true, booking });
@@ -573,7 +660,7 @@ router.get('/bookings/my', authenticate, async (req, res) => {
   }
 });
 
-// Cancel Booking (With Refund)
+// Cancel Booking (With Transparent Cancellation Policy & Refund Calculation)
 router.post('/bookings/:id/cancel', authenticate, async (req, res) => {
   try {
     const booking = await db.findById('Booking', req.params.id);
@@ -592,17 +679,38 @@ router.post('/bookings/:id/cancel', authenticate, async (req, res) => {
       await db.findByIdAndUpdate('Schedule', booking.schedule, { availableSeats: restoreSeats });
     }
 
+    // Determine Hours until departure for transparent Sri Lanka refund policy
+    let refundPercentage = 0.90; // Default: > 24 hours (90% refund, 10% fee)
+    if (schedule && schedule.departureDate && schedule.departureTime) {
+      try {
+        const depDateTime = new Date(`${schedule.departureDate}T${schedule.departureTime}:00`);
+        const now = new Date();
+        const diffHours = (depDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        
+        if (diffHours >= 24) {
+          refundPercentage = 0.90; // 90% refund (>24 hours)
+        } else if (diffHours >= 12) {
+          refundPercentage = 0.75; // 75% refund (12-24 hours)
+        } else if (diffHours >= 3) {
+          refundPercentage = 0.50; // 50% refund (3-12 hours)
+        } else {
+          refundPercentage = 0.00; // No refund (<3 hours)
+        }
+      } catch (e) {
+        refundPercentage = 0.90;
+      }
+    }
+
     // Cancel booking
     await db.findByIdAndUpdate('Booking', req.params.id, {
       bookingStatus: 'Cancelled',
-      paymentStatus: booking.paymentStatus === 'Paid' ? 'Refunded' : 'Pending'
+      paymentStatus: (booking.paymentStatus === 'Paid' && refundPercentage > 0) ? 'Refunded' : booking.paymentStatus
     });
 
     // Process refund structure
     let refundAmount = 0;
-    if (booking.paymentStatus === 'Paid') {
-      refundAmount = booking.totalAmount * 0.9; // 10% cancellation charge
-      // Log cancellation
+    if (booking.paymentStatus === 'Paid' && refundPercentage > 0) {
+      refundAmount = +(booking.totalAmount * refundPercentage).toFixed(2);
       await db.create('Payment', {
         booking: booking._id,
         customer: booking.customer,
@@ -617,12 +725,191 @@ router.post('/bookings/:id/cancel', authenticate, async (req, res) => {
     await db.create('Notification', {
       user: booking.customer,
       title: 'Booking Cancelled',
-      message: `Your booking ${booking._id} has been cancelled successfully. Refund of $${refundAmount} has been processed.`,
+      message: `Your booking ${booking._id} was cancelled. Refund rate: ${(refundPercentage * 100)}%. Refund amount of $${refundAmount} has been processed.`,
       type: 'Cancellation',
       read: false
     });
 
-    res.json({ success: true, message: 'Booking cancelled successfully, refund processed.' });
+    res.json({ 
+      success: true, 
+      message: `Booking cancelled successfully. Refund of $${refundAmount} (${(refundPercentage * 100)}%) processed.`,
+      refundAmount,
+      refundPercentage
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Reschedule Booking (Change Travel Date / Time to Another Schedule)
+router.post('/bookings/:id/reschedule', authenticate, async (req, res) => {
+  try {
+    const booking = await db.findById('Booking', req.params.id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+
+    if (booking.bookingStatus === 'Cancelled') {
+      return res.status(400).json({ success: false, message: 'Cannot reschedule a cancelled journey.' });
+    }
+
+    const { newScheduleId, newSeats, boardingPoint, droppingPoint, boardingTime, droppingTime } = req.reqBody || req.body;
+    if (!newScheduleId) return res.status(400).json({ success: false, message: 'Target schedule ID is required.' });
+
+    const newSchedule = await db.findById('Schedule', newScheduleId);
+    if (!newSchedule || newSchedule.status !== 'Active') {
+      return res.status(400).json({ success: false, message: 'Target schedule is not currently available.' });
+    }
+
+    const seatsToBook = newSeats || booking.seatsBooked;
+    if (newSchedule.availableSeats < seatsToBook.length) {
+      return res.status(400).json({ success: false, message: 'Not enough seats available on selected trip.' });
+    }
+
+    // Restore old schedule seats
+    const oldSchedule = await db.findById('Schedule', booking.schedule);
+    if (oldSchedule) {
+      await db.findByIdAndUpdate('Schedule', booking.schedule, {
+        availableSeats: oldSchedule.availableSeats + booking.seatsBooked.length
+      });
+    }
+
+    // Deduct new schedule seats
+    await db.findByIdAndUpdate('Schedule', newScheduleId, {
+      availableSeats: Math.max(newSchedule.availableSeats - seatsToBook.length, 0)
+    });
+
+    // Update booking
+    const updated = await db.findByIdAndUpdate('Booking', req.params.id, {
+      schedule: newScheduleId,
+      seatsBooked: seatsToBook,
+      ...(boardingPoint && { boardingPoint }),
+      ...(droppingPoint && { droppingPoint }),
+      ...(boardingTime && { boardingTime }),
+      ...(droppingTime && { droppingTime }),
+    });
+
+    // Notify customer
+    await db.create('Notification', {
+      user: req.user._id,
+      title: 'Journey Rescheduled!',
+      message: `Your journey ${booking._id} was successfully rescheduled to ${newSchedule.departureDate} at ${newSchedule.departureTime}.`,
+      type: 'Booking',
+      read: false
+    });
+
+    const populated = await populateBookingObj(updated);
+    res.json({ success: true, message: 'Journey rescheduled successfully!', booking: populated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Live Bus Tracking Endpoint (Simulated real-time tracking with traffic alerts & conductor contact)
+router.get('/bookings/:id/track', authenticate, async (req, res) => {
+  try {
+    const bookingRaw = await db.findById('Booking', req.params.id);
+    if (!bookingRaw) return res.status(404).json({ success: false, message: 'Booking not found.' });
+
+    const booking = await populateBookingObj(bookingRaw);
+    if (!booking || !booking.schedule) {
+      return res.status(404).json({ success: false, message: 'Schedule details not found for tracking.' });
+    }
+
+    const schedule = booking.schedule;
+    const route = schedule.route;
+    const bus = schedule.bus;
+
+    // Build timeline of stops
+    const stops = [];
+    stops.push({
+      name: route.startingLocation,
+      time: schedule.departureTime,
+      distanceOffset: 0
+    });
+
+    if (route.stops && Array.isArray(route.stops)) {
+      route.stops.forEach(s => {
+        // Calculate stop time offset
+        let estTime = schedule.departureTime;
+        if (s.timeOffset) {
+          const matchH = s.timeOffset.match(/(\d+)\s*h/);
+          const matchM = s.timeOffset.match(/(\d+)\s*m/);
+          const addMinutes = (matchH ? parseInt(matchH[1]) * 60 : 0) + (matchM ? parseInt(matchM[1]) : 0);
+          const [depH, depM] = schedule.departureTime.split(':').map(Number);
+          const totalM = depH * 60 + depM + addMinutes;
+          const h = Math.floor(totalM / 60) % 24;
+          const m = totalM % 60;
+          estTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+        stops.push({
+          name: s.name,
+          time: estTime,
+          distanceOffset: s.distanceOffset || 0
+        });
+      });
+    }
+
+    // Determine current simulation position based on time of day
+    const now = new Date();
+    const currentH = now.getHours();
+    const currentM = now.getMinutes();
+    const currentTimeMinutes = currentH * 60 + currentM;
+
+    const [depH, depM] = schedule.departureTime.split(':').map(Number);
+    const depTimeMinutes = depH * 60 + depM;
+
+    const [arrH, arrM] = schedule.arrivalTime.split(':').map(Number);
+    let arrTimeMinutes = arrH * 60 + arrM;
+    if (arrTimeMinutes < depTimeMinutes) arrTimeMinutes += 24 * 60; // Overnight bus
+
+    let status = 'Scheduled';
+    let progressPercent = 0;
+    let currentStopIndex = 0;
+
+    if (currentTimeMinutes < depTimeMinutes) {
+      status = 'Scheduled - Preparing at Terminal';
+      progressPercent = 0;
+      currentStopIndex = 0;
+    } else if (currentTimeMinutes >= arrTimeMinutes) {
+      status = 'Journey Completed';
+      progressPercent = 100;
+      currentStopIndex = stops.length - 1;
+    } else {
+      status = 'In Transit';
+      const elapsed = currentTimeMinutes - depTimeMinutes;
+      const totalDuration = arrTimeMinutes - depTimeMinutes;
+      progressPercent = Math.min(Math.round((elapsed / totalDuration) * 100), 98);
+      currentStopIndex = Math.min(
+        Math.floor((elapsed / totalDuration) * stops.length),
+        stops.length - 1
+      );
+    }
+
+    // Mark stops with status
+    const stopsWithStatus = stops.map((s, idx) => ({
+      ...s,
+      passed: idx < currentStopIndex,
+      isCurrent: idx === currentStopIndex,
+      isUpcoming: idx > currentStopIndex
+    }));
+
+    res.json({
+      success: true,
+      busNumber: bus.busNumber,
+      busName: bus.name,
+      busType: bus.type,
+      driverName: bus.driverName || 'Kamal Perera',
+      conductorName: bus.conductorName || 'Sunil Shantha',
+      conductorPhone: bus.conductorPhone || '+94 77 123 4567',
+      status,
+      progressPercent,
+      startingLocation: route.startingLocation,
+      destination: route.destination,
+      currentStop: stops[currentStopIndex]?.name || route.startingLocation,
+      nextStop: stops[Math.min(currentStopIndex + 1, stops.length - 1)]?.name,
+      stops: stopsWithStatus,
+      trafficNotice: '⚠️ මාර්ගයේ රථවාහන තදබදය (Traffic) හෝ අනපේක්ෂිත කාලගුණ තත්ත්වයන් මත මෙම වේලාවන් සුළු වශයෙන් වෙනස් විය හැක. / Times may vary depending on road traffic conditions.',
+      lastUpdated: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

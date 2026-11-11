@@ -1,7 +1,7 @@
 const BASE_URL = 'http://127.0.0.1:5000/api';
 
 const request = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('tripzo_token');
+  const token = localStorage.getItem('yathra_token') || localStorage.getItem('tripzo_token');
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),
@@ -87,6 +87,7 @@ export const api = {
       const query = params.toString() ? `?${params.toString()}` : '';
       return request(`/schedules${query}`);
     },
+    getSeatStatus: (id) => request(`/schedules/${id}/seat-status`),
     create: (data) => request('/schedules', {
       method: 'POST',
       body: JSON.stringify(data)
@@ -114,6 +115,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ reason })
     }),
+    reschedule: (id, data) => request(`/bookings/${id}/reschedule`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+    track: (id) => request(`/bookings/${id}/track`),
   },
 
   // Payments

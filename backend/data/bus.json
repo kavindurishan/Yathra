@@ -1,10 +1,27 @@
 [
   {
-    "_id": "8bm8l6d23ucki7zkpgx8n",
-    "busNumber": "NP-4521",
-    "name": "Tripzo Luxury Liner (AC)",
+    "_id": "ndzn9jl20t9gvwc1onjvca",
+    "busNumber": "NE-2004",
+    "name": "KRM Blue King",
     "type": "Luxury",
-    "seatCapacity": 40,
+    "seatCapacity": 49,
+    "facilities": [
+      "Wi-Fi",
+      "Charging",
+      "AC",
+      "TV"
+    ],
+    "image": "/hero_bus.jpg",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.869Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "abth7sbh9nuq0py4yshv6",
+    "busNumber": "NF-4582",
+    "name": "KRM Royal Express",
+    "type": "Super Luxury",
+    "seatCapacity": 45,
     "facilities": [
       "Wi-Fi",
       "Charging",
@@ -13,39 +30,162 @@
     ],
     "image": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=600",
     "status": "Available",
-    "createdAt": "2026-06-07T07:14:16.674Z",
-    "updatedAt": "2026-06-07T07:14:16.674Z"
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
   },
   {
-    "_id": "yr4e9v77ugbj4o1fjs8gr7",
-    "busNumber": "NP-8894",
-    "name": "Southern Express",
+    "_id": "jq3jo20ghqb5mzky4mjyi",
+    "busNumber": "NJ-6721",
+    "name": "KRM Highway Star",
     "type": "Semi Luxury",
-    "seatCapacity": 44,
+    "seatCapacity": 54,
     "facilities": [
+      "Charging",
+      "AC"
+    ],
+    "image": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&q=80&w=600",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "7v2wz8omcwb3s5qayqomtl",
+    "busNumber": "NC-9856",
+    "name": "KRM Silver Line",
+    "type": "Normal",
+    "seatCapacity": 54,
+    "facilities": [
+      "Charging"
+    ],
+    "image": "https://images.unsplash.com/photo-1562620644-65ab47390225?auto=format&fit=crop&q=80&w=600",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "1oohbtavhevnbnfhdk7cp",
+    "busNumber": "NB-3478",
+    "name": "KRM Night Rider",
+    "type": "Luxury",
+    "seatCapacity": 49,
+    "facilities": [
+      "Wi-Fi",
       "Charging",
       "AC",
       "TV"
     ],
-    "image": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&q=80&w=600",
-    "status": "Available",
-    "createdAt": "2026-06-07T07:14:16.674Z",
-    "updatedAt": "2026-06-07T07:14:16.674Z"
+    "image": "/hero_bus.jpg",
+    "status": "On Trip",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
   },
   {
-    "_id": "aln0w6ydb6rsjvc9azu3",
-    "busNumber": "NP-1042",
-    "name": "Tripzo Super AC Premium",
-    "type": "AC",
-    "seatCapacity": 36,
+    "_id": "5gv6gz83x6795hos103bhr",
+    "busNumber": "NE-5623",
+    "name": "KRM Blue Diamond",
+    "type": "Super Luxury",
+    "seatCapacity": 45,
     "facilities": [
       "Wi-Fi",
+      "Charging",
+      "AC",
+      "TV"
+    ],
+    "image": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=600",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "aa0wb93mfoi89nhbr24wz",
+    "busNumber": "NF-7814",
+    "name": "KRM Viking Express",
+    "type": "Normal",
+    "seatCapacity": 54,
+    "facilities": [
+      "Charging"
+    ],
+    "image": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&q=80&w=600",
+    "status": "Maintenance",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "o94819hynyi2h31995h7f",
+    "busNumber": "NJ-2349",
+    "name": "KRM City Rider",
+    "type": "Semi Luxury",
+    "seatCapacity": 54,
+    "facilities": [
       "Charging",
       "AC"
     ],
     "image": "https://images.unsplash.com/photo-1562620644-65ab47390225?auto=format&fit=crop&q=80&w=600",
     "status": "Available",
-    "createdAt": "2026-06-07T07:14:16.676Z",
-    "updatedAt": "2026-06-07T07:14:16.676Z"
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "c70h7pfpz7aqlbevvhgza",
+    "busNumber": "NC-4567",
+    "name": "KRM Golden Eagle",
+    "type": "Luxury",
+    "seatCapacity": 49,
+    "facilities": [
+      "Wi-Fi",
+      "Charging",
+      "AC",
+      "TV"
+    ],
+    "image": "/hero_bus.jpg",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "29klufh3bn1fnfdf0miao4",
+    "busNumber": "NB-8902",
+    "name": "KRM Road Master",
+    "type": "Normal",
+    "seatCapacity": 54,
+    "facilities": [
+      "Charging"
+    ],
+    "image": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&q=80&w=600",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "6ac943bipsoi0er5h5wt4",
+    "busNumber": "NE-7451",
+    "name": "KRM Royal Blue",
+    "type": "Luxury",
+    "seatCapacity": 49,
+    "facilities": [
+      "Wi-Fi",
+      "Charging",
+      "AC",
+      "TV"
+    ],
+    "image": "/hero_bus.jpg",
+    "status": "Available",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
+  },
+  {
+    "_id": "dxiampttueg54teia2ches",
+    "busNumber": "NF-3208",
+    "name": "KRM Express Star",
+    "type": "Semi Luxury",
+    "seatCapacity": 54,
+    "facilities": [
+      "Charging",
+      "AC"
+    ],
+    "image": "https://images.unsplash.com/photo-1562620644-65ab47390225?auto=format&fit=crop&q=80&w=600",
+    "status": "On Trip",
+    "createdAt": "2026-11-09T07:18:50.874Z",
+    "updatedAt": "2026-11-09T07:18:50.874Z"
   }
 ]

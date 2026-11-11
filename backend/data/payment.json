@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "_id": "hzj8sveq25oyf8wq4cl4qb",
+    "booking": "vh0tyx4nuhnl1kn93954ep",
+    "customer": "sqix2qt372ito6vk115krp",
+    "amount": 15,
+    "paymentMethod": "Card",
+    "status": "Paid",
+    "transactionId": "TXN_VTKI4BQ3",
+    "paymentDate": "2026-11-09T08:40:23.359Z",
+    "createdAt": "2026-11-09T08:40:23.360Z",
+    "updatedAt": "2026-11-09T08:40:23.360Z"
+  }
+]

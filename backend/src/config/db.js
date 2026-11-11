@@ -24,11 +24,14 @@ const userSchema = new mongoose.Schema({
 const busSchema = new mongoose.Schema({
   busNumber: { type: String, required: true, unique: true },
   name: { type: String, required: true },
-  type: { type: String, enum: ['Normal', 'Semi Luxury', 'Luxury', 'AC'], default: 'Normal' },
+  type: { type: String, enum: ['Normal', 'Semi Luxury', 'Luxury', 'Super Luxury', 'AC'], default: 'Normal' },
   seatCapacity: { type: Number, default: 40 },
   facilities: [{ type: String }], // Wi-Fi, Charging, AC, TV
   image: { type: String },
-  status: { type: String, enum: ['Available', 'Maintenance', 'Inactive'], default: 'Available' }
+  conductorName: { type: String, default: 'Sunil Shantha' },
+  conductorPhone: { type: String, default: '+94 77 123 4567' },
+  driverName: { type: String, default: 'Kamal Perera' },
+  status: { type: String, enum: ['Available', 'Maintenance', 'Inactive', 'On Trip'], default: 'Available' }
 }, { timestamps: true });
 
 const routeSchema = new mongoose.Schema({
@@ -63,10 +66,15 @@ const bookingSchema = new mongoose.Schema({
     seatNumber: { type: String, required: true }
   }],
   seatsBooked: [{ type: String }],
+  boardingPoint: { type: String },
+  droppingPoint: { type: String },
+  boardingTime: { type: String },
+  droppingTime: { type: String },
   totalAmount: { type: Number, required: true },
   convenienceFee: { type: Number, default: 0 },
   paymentStatus: { type: String, enum: ['Paid', 'Pending', 'Failed', 'Refunded'], default: 'Pending' },
   bookingStatus: { type: String, enum: ['Confirmed', 'Pending', 'Cancelled'], default: 'Pending' },
+  heldUntil: { type: Date },
   bookingDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { api } from '../services/api';
-import TripzoBrandLogo from './TripzoBrandLogo.jsx';
+import YathraBrandLogo from './YathraBrandLogo';
 import { 
   Sun, Moon, Bell, LogOut, User as UserIcon, 
   Menu, X, Calendar, Compass, ShieldAlert, Award
@@ -19,6 +19,29 @@ export default function Navbar() {
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+
+  // Refs for click-outside detection
+  const notifRef = useRef(null);
+  const profileRef = useRef(null);
+
+  // Close dropdowns when clicking anywhere outside on the screen
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifDropdownOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -60,11 +83,11 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-18 sm:h-20 items-center">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center group max-w-[160px] md:max-w-[200px] h-10 overflow-visible">
-              <TripzoBrandLogo className="h-8 md:h-9 w-auto filter drop-shadow-sm group-hover:scale-[1.02] transition-transform duration-200" />
+            <Link to="/" className="flex items-center group py-1 overflow-visible">
+              <YathraBrandLogo className="h-12 sm:h-14 md:h-16 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" />
             </Link>
 
             {/* Desktop Links */}
@@ -123,7 +146,7 @@ export default function Navbar() {
                 )}
 
                 {/* Notifications Bell */}
-                <div className="relative">
+                <div ref={notifRef} className="relative">
                   <button 
                     onClick={() => {
                       setNotifDropdownOpen(!notifDropdownOpen);
@@ -184,7 +207,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Profile Trigger */}
-                <div className="relative">
+                <div ref={profileRef} className="relative">
                   <button 
                     onClick={() => {
                       setProfileDropdownOpen(!profileDropdownOpen);

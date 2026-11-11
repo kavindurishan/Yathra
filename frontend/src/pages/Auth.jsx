@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Compass, Mail, Lock, Phone, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Phone, User, Eye, EyeOff } from 'lucide-react';
+import YathraBrandLogo from '../components/YathraBrandLogo';
 
 export function Login() {
   const { login } = useAuth();
@@ -22,7 +23,7 @@ export function Login() {
       const res = await login(email, password);
       if (res.success) {
         // Redirect based on role check
-        const cachedUser = JSON.parse(localStorage.getItem('tripzo_user'));
+        const cachedUser = JSON.parse(localStorage.getItem('yathra_user') || localStorage.getItem('tripzo_user'));
         if (cachedUser && (cachedUser.role === 'Admin' || cachedUser.role === 'Operator')) {
           navigate('/admin');
         } else {
@@ -42,14 +43,12 @@ export function Login() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl shadow-xl">
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-600 to-accent-cyan flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
-            <Compass className="w-7 h-7" />
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
+          <YathraBrandLogo className="h-16 sm:h-20 w-auto mb-3" />
+          <h2 className="mt-2 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
             Welcome back
           </h2>
           <p className="mt-1.5 text-center text-sm text-slate-500 dark:text-slate-400">
-            Log in to manage your Tripzo journeys
+            Log in to manage your Yathra journeys
           </p>
         </div>
 
@@ -137,8 +136,8 @@ export function Login() {
         <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800 rounded-xl text-[10px] text-slate-400 space-y-1">
           <p className="font-bold text-slate-500 dark:text-slate-300">💡 Demo Credentials:</p>
           <div className="flex justify-between">
-            <span>Admin: <strong className="text-slate-500 dark:text-slate-300">admin@tripzo.com</strong> / admin123</span>
-            <span>Customer: <strong className="text-slate-500 dark:text-slate-300">customer@tripzo.com</strong> / customer123</span>
+            <span>Admin: <strong className="text-slate-500 dark:text-slate-300">admin@yathra.lk</strong> / admin123</span>
+            <span>Customer: <strong className="text-slate-500 dark:text-slate-300">customer@yathra.lk</strong> / customer123</span>
           </div>
         </div>
       </div>
@@ -182,14 +181,12 @@ export function Register() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl shadow-xl">
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-600 to-accent-cyan flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
-            <Compass className="w-7 h-7" />
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
+          <YathraBrandLogo className="h-16 sm:h-20 w-auto mb-3" />
+          <h2 className="mt-2 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
             Create an account
           </h2>
           <p className="mt-1.5 text-center text-sm text-slate-500 dark:text-slate-400">
-            Join Tripzo for premium road transit booking
+            Join Yathra for premium road transit booking
           </p>
         </div>
 

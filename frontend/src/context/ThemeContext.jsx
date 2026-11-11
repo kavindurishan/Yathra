@@ -4,7 +4,7 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('tripzo_dark_mode');
+    const saved = localStorage.getItem('yathra_dark_mode') || localStorage.getItem('tripzo_dark_mode');
     return saved ? JSON.parse(saved) : false;
   });
 
@@ -15,7 +15,7 @@ export const ThemeProvider = ({ children }) => {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('tripzo_dark_mode', JSON.stringify(darkMode));
+    localStorage.setItem('yathra_dark_mode', JSON.stringify(darkMode));
   }, [darkMode]);
 
   const toggleDarkMode = () => setDarkMode(!darkMode);

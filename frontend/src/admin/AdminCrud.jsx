@@ -47,7 +47,7 @@ export function ManageUsers() {
     setPhone('');
     setRole('Customer');
     setStatus('Active');
-    setPassword('tripzo123');
+    setPassword('yathra123');
     setModalOpen(true);
   };
 
@@ -188,7 +188,7 @@ export function ManageUsers() {
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Password</label>
-                <input type="password" placeholder={editingUser ? "Leave blank to keep same" : "tripzo123"} value={password} onChange={e => setPassword(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 rounded-xl font-semibold dark:text-white" />
+                <input type="password" placeholder={editingUser ? "Leave blank to keep same" : "yathra123"} value={password} onChange={e => setPassword(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 rounded-xl font-semibold dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -331,7 +331,7 @@ export function ManageBuses() {
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
                   <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">{bus.busNumber}</span>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${bus.status === 'Available' ? 'bg-emerald-50 text-accent-emerald' : bus.status === 'Maintenance' ? 'bg-amber-50 text-accent-amber' : 'bg-rose-50 text-accent-rose'}`}>
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${bus.status === 'Available' ? 'bg-emerald-50 text-accent-emerald' : bus.status === 'Maintenance' ? 'bg-amber-50 text-accent-amber' : bus.status === 'On Trip' ? 'bg-blue-50 text-blue-500 dark:bg-blue-950/40 dark:text-blue-400' : 'bg-rose-50 text-accent-rose'}`}>
                     {bus.status}
                   </span>
                 </div>
@@ -384,6 +384,7 @@ export function ManageBuses() {
                     <option value="Normal">Normal</option>
                     <option value="Semi Luxury">Semi Luxury</option>
                     <option value="Luxury">Luxury</option>
+                    <option value="Super Luxury">Super Luxury</option>
                     <option value="AC">AC</option>
                   </select>
                 </div>
@@ -409,6 +410,7 @@ export function ManageBuses() {
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fleet Status</label>
                 <select value={status} onChange={e => setStatus(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 rounded-xl font-semibold dark:text-white">
                   <option value="Available">Available</option>
+                  <option value="On Trip">On Trip</option>
                   <option value="Maintenance">Maintenance</option>
                   <option value="Inactive">Inactive</option>
                 </select>
@@ -1238,7 +1240,7 @@ export function ManageOffers() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Voucher Code</label>
-                  <input type="text" required placeholder="TRIPZO10" value={code} onChange={e => setCode(e.target.value.toUpperCase())} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 rounded-xl font-semibold dark:text-white uppercase" />
+                  <input type="text" required placeholder="YATHRA10" value={code} onChange={e => setCode(e.target.value.toUpperCase())} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 rounded-xl font-semibold dark:text-white uppercase" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Discount Type</label>

@@ -7,7 +7,7 @@ export function AboutUs() {
       <div className="text-center space-y-4">
         <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Our Story &amp; Vision</h2>
         <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-          Tripzo is Sri Lanka's leading digital mobility platform, transforming long-distance road public and private transit.
+          Yathra (යාත්‍රා) is Sri Lanka's leading digital mobility platform, transforming long-distance road public and private transit.
         </p>
       </div>
 
@@ -15,10 +15,10 @@ export function AboutUs() {
         <div className="space-y-4">
           <h3 className="font-extrabold text-xl text-slate-800 dark:text-white">Redefining Bus Travel</h3>
           <p className="text-xs text-slate-550 leading-relaxed">
-            Founded with the sole ambition of resolving ticket queues and underspecified schedules, Tripzo acts as the perfect bridge connecting operators and passengers.
+            Founded with the sole ambition of resolving ticket queues and underspecified schedules, Yathra acts as the perfect bridge connecting operators and passengers.
           </p>
           <p className="text-xs text-slate-555 leading-relaxed">
-            By deploying visual seat selectors, real-time schedule aggregators, secure digital card checkout gateways, and SMS confirmations, Tripzo offers travel comfort at every kilometer.
+            By deploying visual seat selectors, real-time schedule aggregators, secure digital card checkout gateways, and SMS confirmations, Yathra offers travel comfort at every kilometer.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -53,7 +53,7 @@ export function ContactUs() {
       setEmail('');
       setMessage('');
       setSent(false);
-      alert('Your inquiry was dispatched successfully. The Tripzo support desk will email you shortly.');
+      alert('Your inquiry was dispatched successfully. The Yathra support desk will email you shortly.');
     }, 1000);
   };
 
@@ -89,7 +89,7 @@ export function ContactUs() {
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-400">Email Inquiry</p>
-                  <p className="text-slate-800 dark:text-slate-200">support@tripzo.com</p>
+                  <p className="text-slate-800 dark:text-slate-200">support@yathra.lk</p>
                 </div>
               </div>
 

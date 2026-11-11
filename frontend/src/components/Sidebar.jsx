@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import YathraBrandLogo from './YathraBrandLogo';
 import { 
   LayoutDashboard, Users, Bus, Route as RouteIcon, 
   Calendar, ClipboardList, CreditCard, Ticket, 
   Settings, LogOut, ArrowLeft, Star, Tag, X
 } from 'lucide-react';
 
-export default function Sidebar({ onClose }) {
+export default function Sidebar({ onClose, className = '' }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -32,14 +33,14 @@ export default function Sidebar({ onClose }) {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-slate-900 text-slate-300 border-r border-slate-800">
+    <div className={`w-64 shrink-0 h-full flex flex-col bg-slate-900 text-slate-300 border-r border-slate-800 select-none ${className}`}>
       {/* Header and Branding */}
-      <div className="flex items-center justify-between px-6 h-16 bg-slate-950 border-b border-slate-800">
-        <Link to="/" className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white">
-            <LayoutDashboard className="w-5 h-5" />
-          </div>
-          <span className="font-extrabold text-lg text-white tracking-tight">Tripzo Admin</span>
+      <div className="flex items-center justify-between px-5 h-20 bg-slate-950 border-b border-slate-800">
+        <Link to="/" className="flex items-center space-x-2">
+          <YathraBrandLogo className="h-10 sm:h-11 w-auto" forceTheme="dark" />
+          <span className="text-[10px] font-black uppercase tracking-wider text-primary-400 bg-primary-950 px-1.5 py-0.5 rounded border border-primary-900">
+            Admin
+          </span>
         </Link>
         {onClose && (
           <button 
@@ -82,7 +83,7 @@ export default function Sidebar({ onClose }) {
       </nav>
 
       {/* Footer Profile Control */}
-      <div className="p-4 bg-slate-950/80 border-t border-slate-850 flex items-center justify-between">
+      <div className="shrink-0 p-4 bg-slate-950/80 border-t border-slate-850 flex items-center justify-between">
         <div className="flex items-center space-x-3 overflow-hidden">
           <div className="w-8.5 h-8.5 rounded bg-primary-700 text-white flex items-center justify-center font-bold text-sm shrink-0">
             {user?.fullName ? user.fullName[0].toUpperCase() : 'A'}

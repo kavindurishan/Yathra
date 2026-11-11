@@ -4,15 +4,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('tripzo_token') || null);
+  const [token, setToken] = useState(localStorage.getItem('yathra_token') || localStorage.getItem('tripzo_token') || null);
   const [loading, setLoading] = useState(true);
 
   // Sync token with localStorage
   useEffect(() => {
     if (token) {
-      localStorage.setItem('tripzo_token', token);
+      localStorage.setItem('yathra_token', token);
       fetchUserProfile(token);
     } else {
+      localStorage.removeItem('yathra_token');
+      localStorage.removeItem('yathra_user');
       localStorage.removeItem('tripzo_token');
       localStorage.removeItem('tripzo_user');
       setUser(null);
@@ -30,14 +32,14 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
-        localStorage.setItem('tripzo_user', JSON.stringify(data.user));
+        localStorage.setItem('yathra_user', JSON.stringify(data.user));
       } else {
         // Token invalid, clear session
         setToken(null);
       }
     } catch (err) {
       // Offline fallback: Use cached details if server is down
-      const cachedUser = localStorage.getItem('tripzo_user');
+      const cachedUser = localStorage.getItem('yathra_user') || localStorage.getItem('tripzo_user');
       if (cachedUser) {
         setUser(JSON.parse(cachedUser));
       }

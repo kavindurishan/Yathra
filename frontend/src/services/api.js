@@ -81,6 +81,7 @@ export const api = {
   // Routes
   routes: {
     getAll: () => request('/routes'),
+    getPopular: () => request('/routes/popular'),
     create: (data) => request('/routes', {
       method: 'POST',
       body: JSON.stringify(data)

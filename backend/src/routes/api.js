@@ -290,6 +290,65 @@ router.delete('/buses/:id', authenticate, authorize(['Admin']), async (req, res)
 // 4. ROUTES CRUD MODULE (Admin / Operator)
 // ----------------------------------------------------
 
+// Get popular routes dynamically ranked by booking count & frequency
+router.get('/routes/popular', async (req, res) => {
+  try {
+    const routes = await db.find('Route');
+    const schedules = await db.find('Schedule');
+    const bookings = await db.find('Booking');
+
+    // Map schedule ID to route ID
+    const schedRouteMap = {};
+    for (let s of (schedules || [])) {
+      const rId = typeof s.route === 'object' && s.route ? s.route._id : s.route;
+      schedRouteMap[s._id] = rId ? rId.toString() : null;
+    }
+
+    // Count bookings per route ID
+    const bookingCounts = {};
+    for (let b of (bookings || [])) {
+      const sId = typeof b.schedule === 'object' && b.schedule ? b.schedule._id : b.schedule;
+      const rId = schedRouteMap[sId];
+      if (rId) {
+        bookingCounts[rId] = (bookingCounts[rId] || 0) + 1;
+      }
+    }
+
+    // Secondary count: schedules per route
+    const scheduleCounts = {};
+    for (let s of (schedules || [])) {
+      const rId = typeof s.route === 'object' && s.route ? s.route._id : s.route;
+      if (rId) {
+        const idStr = rId.toString();
+        scheduleCounts[idStr] = (scheduleCounts[idStr] || 0) + 1;
+      }
+    }
+
+    const activeRoutes = (routes || []).filter(r => r.status !== 'Inactive');
+    const ranked = activeRoutes.map(r => {
+      const idStr = r._id.toString();
+      return {
+        _id: r._id,
+        startingLocation: r.startingLocation,
+        destination: r.destination,
+        distance: r.distance,
+        duration: r.duration,
+        bookingCount: bookingCounts[idStr] || 0,
+        scheduleCount: scheduleCounts[idStr] || 0
+      };
+    }).sort((a, b) => {
+      if (b.bookingCount !== a.bookingCount) {
+        return b.bookingCount - a.bookingCount;
+      }
+      return b.scheduleCount - a.scheduleCount;
+    });
+
+    res.json({ success: true, routes: ranked.slice(0, 6) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 router.get('/routes', async (req, res) => {
   try {
     const list = await db.find('Route');

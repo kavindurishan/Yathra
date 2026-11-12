@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import YathraBrandLogo from './YathraBrandLogo';
 import WeAcceptPaymentStrip from './PaymentLogos';
+import { FacebookIcon, WhatsAppIcon, LinkedInIcon, InstagramIcon, YouTubeIcon } from './SocialIcons';
+import { api } from '../services/api';
 import { 
   Phone, Mail, MapPin, Clock, ShieldCheck, 
   Bus, Compass, Heart, ArrowRight, Shield, X, 
@@ -10,6 +12,29 @@ import {
 
 export default function Footer() {
   const [activePolicy, setActivePolicy] = useState(null);
+  const [popularRoutes, setPopularRoutes] = useState([
+    { startingLocation: 'Colombo', destination: 'Kandy' },
+    { startingLocation: 'Colombo', destination: 'Galle' },
+    { startingLocation: 'Colombo', destination: 'Matara' },
+    { startingLocation: 'Colombo', destination: 'Anuradhapura' },
+    { startingLocation: 'Colombo', destination: 'Badulla' },
+    { startingLocation: 'Colombo', destination: 'Jaffna' }
+  ]);
+
+  // Load dynamically ranked routes based on real passenger booking counts
+  useEffect(() => {
+    let isMounted = true;
+    api.routes.getPopular()
+      .then(res => {
+        if (isMounted && res && res.success && res.routes && res.routes.length > 0) {
+          setPopularRoutes(res.routes);
+        }
+      })
+      .catch(() => {
+        // Fallback default list remains active
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   const policyContents = {
     'Terms of Service': {
@@ -34,7 +59,7 @@ export default function Footer() {
           <p>Yathra is dedicated to safeguarding passenger privacy and personal data protection.</p>
           <ul className="list-disc pl-5 space-y-1.5 text-slate-400">
             <li>Contact information (phone number, email) is strictly used for ticket dispatch, SMS booking confirmation, and conductor live trip updates.</li>
-            <li>All electronic payment transactions are encrypted using bank-grade 256-bit SSL protocols. Yathra never stores raw credit or debit card data.</li>
+            <li>All electronic payment transactions are encrypted using bank-grade protocols. Yathra never stores raw credit or debit card data.</li>
             <li>Real-time GPS coordinates are broadcast solely for live transit tracking and route telemetry during designated trips.</li>
           </ul>
         </div>
@@ -97,7 +122,7 @@ export default function Footer() {
   return (
     <footer className="relative w-full no-print bg-[#060b17] text-slate-300 border-t border-slate-800/80 overflow-hidden font-sans">
       
-      {/* Subtle Expressway Road Grid & Ambient Glow Pattern (Sri Lankan Transit aesthetic) */}
+      {/* Subtle Expressway Road Grid & Ambient Glow Pattern */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.035] bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px]" 
         aria-hidden="true"
@@ -111,157 +136,134 @@ export default function Footer() {
         aria-hidden="true"
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
-        
-        {/* ========================================================== */}
-        {/* TOP BRAND HEADER ROW                                       */}
-        {/* ========================================================== */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-10 border-b border-slate-800/80">
-          <div className="flex items-center space-x-4">
-            {/* Header Brand Logo */}
-            <div className="p-1 rounded-xl bg-slate-900/60 border border-slate-800/80 shadow-md">
-              <YathraBrandLogo 
-                className="h-10 sm:h-12 w-auto object-contain" 
-                forceTheme="dark" 
-                animated={false} 
-              />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2.5">
-                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wider uppercase font-mono">
-                  YATHRA
-                </h2>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">
-                  National Transit
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">
-                Your Journey, Our Priority.
-              </p>
-            </div>
-          </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
 
-          <div className="flex items-center space-x-3">
-            <div className="px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-semibold text-slate-300 shadow-sm flex items-center space-x-2">
+        {/* ========================================================== */}
+        {/* 4-COLUMN CONTENT GRID                                      */}
+        {/* ========================================================== */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-10 border-b border-slate-800/80">
+          
+          {/* Column 1: Brand & Connect With Us (Span 4) */}
+          <div className="lg:col-span-4 space-y-4">
+            {/* Brand Logo & Title directly in line before content underneath (No separate row) */}
+            <div className="flex items-center space-x-3.5">
+              <Link to="/" className="flex items-center group overflow-visible">
+                <YathraBrandLogo 
+                  className="h-11 sm:h-13 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" 
+                  forceTheme="dark" 
+                  animated={true} 
+                />
+              </Link>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-wider uppercase font-mono">
+                    YATHRA
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">
+                    National Transit
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">
+                  Your Journey, Our Priority.
+                </p>
+              </div>
+            </div>
+
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-semibold text-slate-300 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>A KRM Group Brand</span>
             </div>
-          </div>
-        </div>
 
-        {/* ========================================================== */}
-        {/* 4-COLUMN CONTENT GRID (Magiya & Sri Lankan Transit System) */}
-        {/* ========================================================== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 py-10 border-b border-slate-800/80">
-          
-          {/* Column 1: About & Network Trust (Span 4) */}
-          <div className="lg:col-span-4 space-y-4">
-            <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
-              About Yathra Transit
-            </span>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Sri Lanka's premier digital intercity bus booking platform. Connecting Colombo with Western, Southern, Central, Northern, and Highland transit corridors through scheduled expressway coaches with real-time GPS telemetry.
-            </p>
-            
-            <div className="space-y-2 pt-1 text-xs">
-              <div className="flex items-center space-x-2 text-slate-300">
-                <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
-                <span>NTC &amp; Provincial Transport Authority Compliant</span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Instant Digital Boarding QR Ticket Pass</span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-300">
-                <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span>Live Satellite GPS Telemetry &amp; Speed Tracking</span>
-              </div>
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
+                Connect With Us
+              </span>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Follow Yathra on official networks for live expressway alerts, route additions &amp; passenger support notices.
+              </p>
             </div>
 
-            {/* Social Media Links */}
-            <div className="flex items-center space-x-2 pt-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mr-1">Follow:</span>
+            {/* Proper Official Social Media Icons */}
+            <div className="flex items-center space-x-2 pt-1">
               <a 
                 href="https://facebook.com" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-cyan-600/20 border border-slate-800 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 flex items-center justify-center transition-all text-xs font-bold"
+                className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-[#1877F2]/20 border border-slate-800 hover:border-[#1877F2]/60 text-slate-400 hover:text-[#1877F2] flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-xs"
                 title="Facebook"
               >
-                f
-              </a>
-              <a 
-                href="https://instagram.com" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-cyan-600/20 border border-slate-800 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 flex items-center justify-center transition-all text-xs font-bold"
-                title="Instagram"
-              >
-                in
+                <FacebookIcon className="w-4 h-4" />
               </a>
               <a 
                 href="https://wa.me/94771234567" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-emerald-600/20 border border-slate-800 hover:border-emerald-500/50 text-slate-400 hover:text-emerald-400 flex items-center justify-center transition-all text-xs font-bold"
-                title="WhatsApp Transit Hotline"
+                className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-[#25D366]/20 border border-slate-800 hover:border-[#25D366]/60 text-slate-400 hover:text-[#25D366] flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-xs"
+                title="WhatsApp"
               >
-                wa
+                <WhatsAppIcon className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://linkedin.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-[#0A66C2]/20 border border-slate-800 hover:border-[#0A66C2]/60 text-slate-400 hover:text-[#0A66C2] flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-xs"
+                title="LinkedIn"
+              >
+                <LinkedInIcon className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-[#E1306C]/20 border border-slate-800 hover:border-[#E1306C]/60 text-slate-400 hover:text-[#E1306C] flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-xs"
+                title="Instagram"
+              >
+                <InstagramIcon className="w-4 h-4" />
               </a>
               <a 
                 href="https://youtube.com" 
                 target="_blank" 
                 rel="noreferrer" 
-                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-rose-600/20 border border-slate-800 hover:border-rose-500/50 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-all text-xs font-bold"
+                className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-[#FF0000]/20 border border-slate-800 hover:border-[#FF0000]/60 text-slate-400 hover:text-[#FF0000] flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-xs"
                 title="YouTube"
               >
-                yt
+                <YouTubeIcon className="w-4 h-4" />
+              </a>
+            </div>
+
+            <div className="pt-2 text-xs text-slate-400 space-y-1">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Passenger Assistance</span>
+              <a href="mailto:support@yathra.lk" className="text-cyan-400 hover:underline font-mono text-xs block">
+                support@yathra.lk
               </a>
             </div>
           </div>
 
-          {/* Column 2: Popular Transit Corridors (Magiya style, Span 3) */}
-          <div className="lg:col-span-3 space-y-3">
+          {/* Column 2: Popular Transit Corridors (Ranked dynamically by customer booking count, Span 4) */}
+          <div className="lg:col-span-4 space-y-3">
             <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
               Popular Express Corridors
             </span>
             <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/schedules?from=Colombo&to=Galle" className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group">
-                  <span>Colombo ⇄ Galle (E01)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-400">1h 20m</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/schedules?from=Colombo&to=Matara" className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group">
-                  <span>Colombo ⇄ Matara (E01)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-400">1h 50m</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/schedules?from=Kadawatha&to=Kandy" className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group">
-                  <span>Kadawatha ⇄ Kandy (E04)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-400">2h 15m</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/schedules?from=Panadura&to=Kandy" className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group">
-                  <span>Panadura ⇄ Kandy (Route 17)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-400">3h 30m</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/schedules?from=Colombo&to=Jaffna" className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group">
-                  <span>Colombo ⇄ Jaffna (A9 Express)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-400">6h 30m</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/schedules?from=Colombo&to=Badulla" className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group">
-                  <span>Colombo ⇄ Badulla (Highland)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-400">5h 10m</span>
-                </Link>
-              </li>
+              {popularRoutes.map((route, idx) => (
+                <li key={route._id || `${route.startingLocation}-${route.destination}`}>
+                  <Link 
+                    to={`/schedules?from=${encodeURIComponent(route.startingLocation)}&to=${encodeURIComponent(route.destination)}`} 
+                    className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group py-0.5"
+                  >
+                    <span className="group-hover:translate-x-1 transition-transform flex items-center space-x-1.5">
+                      <span className="text-slate-600 group-hover:text-cyan-400 text-[11px]">→</span>
+                      <span>{route.startingLocation} ⇄ {route.destination}</span>
+                    </span>
+                    {idx === 0 && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">
+                        #1 Most Booked
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -304,7 +306,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: 24/7 Transit Support Desk (Magiya style, Span 3) */}
+          {/* Column 4: 24/7 Transit Support Desk (Span 3) */}
           <div className="lg:col-span-3 space-y-3">
             <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
               24/7 Transit Support Desk
@@ -352,30 +354,11 @@ export default function Footer() {
         </div>
 
         {/* ========================================================== */}
-        {/* PAYMENT BADGES & SECURITY TRUST ROW                        */}
+        {/* PAYMENT BADGES ROW                                         */}
         {/* ========================================================== */}
-        <div className="py-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-slate-800/80">
-          
+        <div className="py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border-b border-slate-800/80">
           {/* "We accept" strip with Official VISA, Mastercard, and AMEX logos */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-            <WeAcceptPaymentStrip />
-
-            {/* Sri Lankan Domestic Payment Partners */}
-            <div className="flex items-center space-x-2 pt-1 sm:pt-6 sm:pl-5 sm:border-l sm:border-slate-800/80">
-              <span className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-cyan-400 font-mono text-[10px] font-bold tracking-wider">
-                LankaPay
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-emerald-400 font-mono text-[10px] font-bold tracking-wider">
-                LankaQR
-              </span>
-            </div>
-          </div>
-
-          {/* 256-Bit SSL Encrypted Trust Badge */}
-          <div className="flex items-center space-x-2.5 text-xs text-slate-400 bg-slate-900/60 border border-slate-800/80 px-4 py-2.5 rounded-xl shadow-xs">
-            <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>256-Bit SSL Encrypted &amp; Secure Digital Payment Network</span>
-          </div>
+          <WeAcceptPaymentStrip />
         </div>
 
         {/* ========================================================== */}

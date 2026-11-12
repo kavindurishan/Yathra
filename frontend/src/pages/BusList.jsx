@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
 import { 
   Filter, Wifi, BatteryCharging, Tv, ShieldAlert, 
   MapPin, Clock, ArrowRight, Star, Sliders, ChevronDown, ChevronUp, AlertTriangle
@@ -118,10 +119,10 @@ export default function BusList() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Search Results</span>
-          <div className="flex items-center space-x-2.5 mt-1">
-            <h2 className="font-extrabold text-xl sm:text-2xl text-slate-950 dark:text-white">{from}</h2>
+          <div className="flex items-center space-x-2.5 mt-1 flex-wrap gap-y-1">
+            <h2 className="font-extrabold text-xl sm:text-2xl text-slate-950 dark:text-white">{getTrilingualCity(from)}</h2>
             <ArrowRight className="w-5 h-5 text-primary-500 shrink-0" />
-            <h2 className="font-extrabold text-xl sm:text-2xl text-slate-950 dark:text-white">{to}</h2>
+            <h2 className="font-extrabold text-xl sm:text-2xl text-slate-950 dark:text-white">{getTrilingualCity(to)}</h2>
           </div>
           <p className="text-xs text-slate-500 mt-1 font-semibold">{date ? new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'All Dates'}</p>
         </div>
@@ -242,7 +243,9 @@ export default function BusList() {
                   <div className="flex items-center space-x-4">
                     <div className="shrink-0 text-center">
                       <span className="block font-extrabold text-base text-slate-800 dark:text-white leading-none">{item.departureTime}</span>
-                      <span className="text-[10px] font-bold text-slate-400 mt-1 block">{from}</span>
+                      <span className="text-[10px] font-bold text-slate-400 mt-1 block max-w-[140px] truncate" title={getTrilingualCity(item.route?.startingLocation || from)}>
+                        {getTrilingualCity(item.route?.startingLocation || from)}
+                      </span>
                     </div>
 
                     <div className="flex-1 flex items-center space-x-2 group">
@@ -258,7 +261,9 @@ export default function BusList() {
 
                     <div className="shrink-0 text-center">
                       <span className="block font-extrabold text-base text-slate-800 dark:text-white leading-none">{item.arrivalTime}</span>
-                      <span className="text-[10px] font-bold text-slate-400 mt-1 block">{to}</span>
+                      <span className="text-[10px] font-bold text-slate-400 mt-1 block max-w-[140px] truncate" title={getTrilingualCity(item.route?.destination || to)}>
+                        {getTrilingualCity(item.route?.destination || to)}
+                      </span>
                     </div>
                   </div>
 
@@ -268,7 +273,7 @@ export default function BusList() {
                       <span className="text-slate-800 dark:text-slate-200 font-extrabold">Route via:</span>
                       {item.route.stops.slice(0, 3).map((stop, idx) => (
                         <span key={idx} className="bg-slate-200/90 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 px-2.5 py-0.5 rounded-md text-[11px] font-bold shadow-xs">
-                          {stop.name}
+                          {getTrilingualCity(stop.name)}
                         </span>
                       ))}
                       {item.route.stops.length > 3 && (
@@ -302,20 +307,26 @@ export default function BusList() {
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
                         <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/50 dark:border-slate-800">
-                          <p className="font-extrabold text-slate-900 dark:text-white truncate">{item.route.startingLocation}</p>
+                          <p className="font-extrabold text-slate-900 dark:text-white truncate" title={getTrilingualCity(item.route.startingLocation)}>
+                            {getTrilingualCity(item.route.startingLocation)}
+                          </p>
                           <p className="text-[10px] font-bold text-primary-600 dark:text-primary-400">{item.departureTime} (Departure)</p>
                         </div>
                         {item.route.stops.map((stop, sIdx) => {
                           const estTime = calculateStopTime(item.departureTime, stop.timeOffset);
                           return (
                             <div key={sIdx} className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/50 dark:border-slate-800">
-                              <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{stop.name}</p>
+                              <p className="font-bold text-slate-800 dark:text-slate-200 truncate" title={getTrilingualCity(stop.name)}>
+                                {getTrilingualCity(stop.name)}
+                              </p>
                               <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Est: {estTime}</p>
                             </div>
                           );
                         })}
                         <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/50 dark:border-slate-800">
-                          <p className="font-extrabold text-slate-900 dark:text-white truncate">{item.route.destination}</p>
+                          <p className="font-extrabold text-slate-900 dark:text-white truncate" title={getTrilingualCity(item.route.destination)}>
+                            {getTrilingualCity(item.route.destination)}
+                          </p>
                           <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">{item.arrivalTime} (Destination)</p>
                         </div>
                       </div>

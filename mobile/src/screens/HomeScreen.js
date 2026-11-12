@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image 
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import Header from '../components/Header';
-import { SRI_LANKA_CITIES, POPULAR_ROUTES } from '../services/mockData';
+import { SRI_LANKA_CITIES, POPULAR_ROUTES, getTrilingualCity } from '../services/mockData';
 import { Search, Calendar, Users, ArrowUpDown, Sparkles, MapPin, ShieldCheck, Bus, Clock } from 'lucide-react-native';
 
 export default function HomeScreen({ navigation }) {
@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }) {
               </View>
               <View style={styles.inputTextCol}>
                 <Text style={[styles.inputLabel, { color: colors.textSubtle }]}>{t('from')}</Text>
-                <Text style={[styles.inputValue, { color: colors.text }]}>{fromCity}</Text>
+                <Text style={[styles.inputValue, { color: colors.text }]} numberOfLines={1}>{getTrilingualCity(fromCity)}</Text>
               </View>
             </TouchableOpacity>
 
@@ -101,7 +101,7 @@ export default function HomeScreen({ navigation }) {
               </View>
               <View style={styles.inputTextCol}>
                 <Text style={[styles.inputLabel, { color: colors.textSubtle }]}>{t('to')}</Text>
-                <Text style={[styles.inputValue, { color: colors.text }]}>{toCity}</Text>
+                <Text style={[styles.inputValue, { color: colors.text }]} numberOfLines={1}>{getTrilingualCity(toCity)}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -143,7 +143,7 @@ export default function HomeScreen({ navigation }) {
                         }
                       ]}
                     >
-                      {city}
+                      {getTrilingualCity(city)}
                     </Text>
                   </TouchableOpacity>
                 ))}

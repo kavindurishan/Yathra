@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import Footer from './components/Footer';
 
 // Pages
 import Home from './pages/Home';
@@ -115,11 +116,7 @@ export default function App() {
       </main>
 
       {/* Customer Footer banner (Only shown when not on Admin console) */}
-      {!isAdmin && (
-        <footer className="bg-white dark:bg-slate-900 border-t border-slate-200/50 dark:border-slate-800/80 py-6 text-center text-xs font-semibold text-slate-400 no-print">
-          &copy; {new Date().getFullYear()} Yathra (යාත්‍රා) Mobility. Made in Sri Lanka. All Rights Reserved.
-        </footer>
-      )}
+      {!isAdmin && <Footer />}
     </div>
   );
 }

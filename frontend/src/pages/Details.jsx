@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { getTrilingualCity } from '../services/cityTranslations';
 import SeatMap from '../components/SeatMap';
 import { 
   Wifi, BatteryCharging, Tv, Clock, MapPin, 
@@ -108,16 +109,24 @@ export default function Details() {
     }
   };
 
-  // Compile full list of stops with calculated times
+  // Compile full list of stops with calculated times and trilingual city names
   const getBoardingOptions = () => {
     if (!schedule || !schedule.route) return [];
     const list = [
-      { name: schedule.route.startingLocation, time: schedule.departureTime, label: `${schedule.route.startingLocation} (Main Terminal)` }
+      { 
+        name: schedule.route.startingLocation, 
+        time: schedule.departureTime, 
+        label: `${getTrilingualCity(schedule.route.startingLocation)} (${schedule.departureTime} - Main Terminal)` 
+      }
     ];
     if (schedule.route.stops && Array.isArray(schedule.route.stops)) {
       schedule.route.stops.forEach(s => {
         const time = calculateStopTime(schedule.departureTime, s.timeOffset);
-        list.push({ name: s.name, time, label: `${s.name} (${time})` });
+        list.push({ 
+          name: s.name, 
+          time, 
+          label: `${getTrilingualCity(s.name)} (${time})` 
+        });
       });
     }
     return list;
@@ -129,13 +138,17 @@ export default function Details() {
     if (schedule.route.stops && Array.isArray(schedule.route.stops)) {
       schedule.route.stops.forEach(s => {
         const time = calculateStopTime(schedule.departureTime, s.timeOffset);
-        list.push({ name: s.name, time, label: `${s.name} (${time})` });
+        list.push({ 
+          name: s.name, 
+          time, 
+          label: `${getTrilingualCity(s.name)} (${time})` 
+        });
       });
     }
     list.push({
       name: schedule.route.destination,
       time: schedule.arrivalTime,
-      label: `${schedule.route.destination} (End Terminal - ${schedule.arrivalTime})`
+      label: `${getTrilingualCity(schedule.route.destination)} (${schedule.arrivalTime} - End Terminal)`
     });
     return list;
   };
@@ -325,9 +338,9 @@ export default function Details() {
               Expressway Intercity Transit
             </span>
             <div className="flex items-center space-x-3">
-              <h2 className="font-black text-2xl sm:text-3xl tracking-tight">{schedule.route.startingLocation}</h2>
+              <h2 className="font-black text-2xl sm:text-3xl tracking-tight">{getTrilingualCity(schedule.route.startingLocation)}</h2>
               <ArrowRight className="w-6 h-6 text-cyan-400 shrink-0" />
-              <h2 className="font-black text-2xl sm:text-3xl tracking-tight">{schedule.route.destination}</h2>
+              <h2 className="font-black text-2xl sm:text-3xl tracking-tight">{getTrilingualCity(schedule.route.destination)}</h2>
             </div>
             <p className="text-xs text-slate-300 font-semibold flex flex-wrap items-center gap-x-3 gap-y-1">
               <span>📅 {schedule.departureDate}</span>
@@ -387,7 +400,7 @@ export default function Details() {
           {/* Boarding Point */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Boarding Point (බස් රථයට නැගෙන ස්ථානය)
+              Boarding Point (බස් රථයට නැගෙන ස්ථානය / ஏறும் இடம்)
             </label>
             <select
               value={boardingPoint}
@@ -401,7 +414,7 @@ export default function Details() {
               ))}
             </select>
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 pt-1">
-              <span>Pickup Point: <strong>{boardingPoint}</strong></span>
+              <span>Pickup Point: <strong>{getTrilingualCity(boardingPoint)}</strong></span>
               <span>Pickup Time: <strong className="text-primary-600 dark:text-primary-400">{boardingTime}</strong></span>
             </div>
           </div>
@@ -409,7 +422,7 @@ export default function Details() {
           {/* Dropping Point */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Dropping Point (බස් රථයෙන් බසින ස්ථානය)
+              Dropping Point (බස් රථයෙන් බසින ස්ථානය / இறங்கும் இடம்)
             </label>
             <select
               value={droppingPoint}
@@ -423,7 +436,7 @@ export default function Details() {
               ))}
             </select>
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 pt-1">
-              <span>Drop Point: <strong>{droppingPoint}</strong></span>
+              <span>Drop Point: <strong>{getTrilingualCity(droppingPoint)}</strong></span>
               <span>Estimated Drop Time: <strong className="text-cyan-600 dark:text-cyan-400">{droppingTime}</strong></span>
             </div>
           </div>

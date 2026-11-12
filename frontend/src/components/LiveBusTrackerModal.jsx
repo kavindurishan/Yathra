@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
 import { 
   X, Compass, MapPin, Clock, Phone, MessageSquare, 
   RefreshCcw, AlertTriangle, CheckCircle, Navigation, Bus
@@ -265,9 +266,9 @@ export default function LiveBusTrackerModal({ bookingId, onClose }) {
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-300 font-medium">
-                          📍 Current: <strong className="text-white font-bold">{trackingData.currentStop}</strong>
+                          📍 Current: <strong className="text-white font-bold">{getTrilingualCity(trackingData.currentStop)}</strong>
                           {trackingData.nextStop && (
-                            <span className="text-cyan-300 ml-2">➔ Next: <strong>{trackingData.nextStop}</strong></span>
+                            <span className="text-cyan-300 ml-2">➔ Next: <strong>{getTrilingualCity(trackingData.nextStop)}</strong></span>
                           )}
                         </p>
                       </div>
@@ -360,7 +361,7 @@ export default function LiveBusTrackerModal({ bookingId, onClose }) {
                               ? 'text-slate-500 dark:text-slate-400 line-through' 
                               : 'text-slate-850 dark:text-white'
                           }`}>
-                            {stop.name}
+                            {getTrilingualCity(stop.name)}
                             {isCurrent && (
                               <span className="ml-2 text-[10px] bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded font-black inline-block">
                                 Current Location

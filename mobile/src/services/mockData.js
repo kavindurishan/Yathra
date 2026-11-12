@@ -1,20 +1,59 @@
 export const SRI_LANKA_CITIES = [
   'Colombo',
   'Kandy',
+  'Panadura',
+  'Kaduwela',
+  'Makumbura',
+  'Kadawatha',
   'Galle',
-  'Jaffna',
-  'Ella',
-  'Badulla',
-  'Nuwara Eliya',
   'Matara',
+  'Badulla',
+  'Jaffna',
   'Anuradhapura',
+  'Kurunegala',
+  'Nuwara Eliya',
+  'Negombo',
   'Trincomalee',
   'Batticaloa',
-  'Negombo',
-  'Kurunegala',
+  'Hambantota',
   'Kataragama',
-  'Hambantota'
+  'Ella'
 ];
+
+export const CITY_TRANSLATIONS = {
+  'colombo': { en: 'Colombo', si: 'කොළඹ', ta: 'கொழும்பு' },
+  'colombo fort': { en: 'Colombo Fort', si: 'කොළඹ කොටුව', ta: 'கொழும்பு கோட்டை' },
+  'kandy': { en: 'Kandy', si: 'මහනුවර', ta: 'கண்டி' },
+  'panadura': { en: 'Panadura', si: 'පානදුර', ta: 'பாணந்துறை' },
+  'kaduwela': { en: 'Kaduwela', si: 'කඩුවෙල', ta: 'கடுவெல' },
+  'makumbura': { en: 'Makumbura', si: 'මාකුඹුර', ta: 'மாகும்புர' },
+  'kadawatha': { en: 'Kadawatha', si: 'කඩවත', ta: 'கடவத்தை' },
+  'galle': { en: 'Galle', si: 'ගාල්ල', ta: 'காலி' },
+  'matara': { en: 'Matara', si: 'මාතර', ta: 'மாத்தறை' },
+  'badulla': { en: 'Badulla', si: 'බදුල්ල', ta: 'பதுளை' },
+  'jaffna': { en: 'Jaffna', si: 'යාපනය', ta: 'யாழ்ப்பாணம்' },
+  'anuradhapura': { en: 'Anuradhapura', si: 'අනුරාධපුරය', ta: 'அனுராதபுரம்' },
+  'kurunegala': { en: 'Kurunegala', si: 'කුරුණෑගල', ta: 'குருணாகல்' },
+  'nuwara eliya': { en: 'Nuwara Eliya', si: 'නුවරඑළිය', ta: 'நுவரெலியா' },
+  'negombo': { en: 'Negombo', si: 'මීගමුව', ta: 'நீர்கொழும்பு' },
+  'trincomalee': { en: 'Trincomalee', si: 'ත්‍රිකුණාමලය', ta: 'திருகோணமலை' },
+  'batticaloa': { en: 'Batticaloa', si: 'මඩකලපුව', ta: 'மட்டக்களப்பு' },
+  'hambantota': { en: 'Hambantota', si: 'හම්බන්තොට', ta: 'அம்பாந்தோட்டை' },
+  'kataragama': { en: 'Kataragama', si: 'කතරගම', ta: 'கதிர்காமம்' },
+  'ella': { en: 'Ella', si: 'ඇල්ල', ta: 'எல்லா' },
+  'malabe': { en: 'Malabe', si: 'මාලඹේ', ta: 'மாலபே' },
+  'gampaha': { en: 'Gampaha', si: 'ගම්පහ', ta: 'கம்பஹா' }
+};
+
+export function getTrilingualCity(rawName, separator = ' | ') {
+  if (!rawName || typeof rawName !== 'string') return rawName || '';
+  const lower = rawName.trim().toLowerCase();
+  const obj = CITY_TRANSLATIONS[lower];
+  if (obj) {
+    return `${obj.en}${separator}${obj.si}${separator}${obj.ta}`;
+  }
+  return rawName;
+}
 
 export const MOCK_SCHEDULES = [
   {

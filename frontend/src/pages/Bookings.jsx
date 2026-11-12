@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
 import SeatMap from '../components/SeatMap';
 import LiveBusTrackerModal from '../components/LiveBusTrackerModal';
 import { 
@@ -247,18 +248,18 @@ export default function Bookings() {
                 {/* Routing info */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-850 pl-6">
                   <div>
-                    <span className="block text-[8px] font-bold text-slate-400 uppercase">Boarding Point (නැගෙන ස්ථානය)</span>
-                    <p className="font-extrabold text-sm text-slate-800 dark:text-slate-200 truncate">{boardingLoc}</p>
+                    <span className="block text-[8px] font-bold text-slate-400 uppercase">Boarding Point (නැගෙන ස්ථානය / ஏறும் இடம்)</span>
+                    <p className="font-extrabold text-sm text-slate-800 dark:text-slate-200 truncate">{getTrilingualCity(boardingLoc)}</p>
                     <p className="text-[10px] text-primary-600 dark:text-primary-400 font-bold">Time: {boardingTime}</p>
                   </div>
                   <div className="text-center no-print">
                     <span className="text-[9px] font-bold text-slate-400">{booking.schedule.route.duration}</span>
-                    <div className="h-0.5 border-t border-dashed border-slate-200 dark:border-slate-850 my-1 mx-4" />
+                    <div className="h-0.5 border-t border-dashed border-slate-200 dark:border-slate-855 my-1 mx-4" />
                     <span className="text-[9px] text-slate-400 font-mono">{booking.schedule.bus?.busNumber}</span>
                   </div>
                   <div className="sm:text-right">
-                    <span className="block text-[8px] font-bold text-slate-400 uppercase">Dropping Point (බහින ස්ථානය)</span>
-                    <p className="font-extrabold text-sm text-slate-800 dark:text-slate-200 truncate">{droppingLoc}</p>
+                    <span className="block text-[8px] font-bold text-slate-400 uppercase">Dropping Point (බහින ස්ථානය / இறங்கும் இடம்)</span>
+                    <p className="font-extrabold text-sm text-slate-800 dark:text-slate-200 truncate">{getTrilingualCity(droppingLoc)}</p>
                     <p className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold">Estimated: {droppingTime}</p>
                   </div>
                 </div>
@@ -438,7 +439,7 @@ export default function Bookings() {
             <div className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs space-y-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Current Trip Details:</span>
               <p className="font-extrabold text-slate-800 dark:text-white">
-                {rescheduleBooking.schedule.route.startingLocation} ➔ {rescheduleBooking.schedule.route.destination}
+                {getTrilingualCity(rescheduleBooking.schedule.route.startingLocation)} ➔ {getTrilingualCity(rescheduleBooking.schedule.route.destination)}
               </p>
               <p className="text-slate-500 font-semibold">
                 Date: {rescheduleBooking.schedule.departureDate} &bull; Time: {rescheduleBooking.schedule.departureTime}

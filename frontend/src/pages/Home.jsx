@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
 import { 
   Search, Calendar, MapPin, Shield, Compass, Clock, Award, Users, Bus, 
   ArrowRightLeft, Sparkles, Navigation, CheckCircle2, ChevronRight, Zap
@@ -291,7 +292,7 @@ export default function Home() {
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <span className="text-cyan-400 mr-1">📍</span>
                 <span>Leaving From</span>
-                <span className="text-slate-500 text-[10px] ml-1 font-normal">(පිටත්වන ස්ථානය)</span>
+                <span className="text-slate-400 text-[10px] ml-1 font-medium">(පිටත්වන ස්ථානය / புறப்படும் இடம்)</span>
               </label>
               <select
                 value={fromInput}
@@ -299,7 +300,9 @@ export default function Home() {
                 className="w-full bg-transparent text-slate-100 font-bold text-sm focus:outline-none cursor-pointer py-1"
               >
                 {fromList.map(city => (
-                  <option key={city} value={city} className="bg-slate-900 text-white">{city}</option>
+                  <option key={city} value={city} className="bg-slate-900 text-white font-semibold">
+                    {getTrilingualCity(city)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -309,8 +312,8 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleSwapStations}
-                title="Swap Leaving & Going To (ස්ථාන මාරු කරන්න)"
-                className="w-10 h-10 rounded-full bg-slate-800 hover:bg-cyan-600 border border-slate-700 hover:border-cyan-400 text-white flex items-center justify-center transition-all shadow-md group"
+                title="Swap Leaving & Going To (ස්ථාන මාරු කරන්න / இடங்களை மாற்றுக)"
+                className="w-10 h-10 rounded-full bg-slate-800 hover:bg-cyan-600 border border-slate-700 hover:border-cyan-400 text-white flex items-center justify-center transition-all shadow-md group cursor-pointer"
               >
                 <ArrowRightLeft className="w-4 h-4 text-cyan-300 group-hover:rotate-180 transition-transform duration-300" />
               </button>
@@ -321,7 +324,7 @@ export default function Home() {
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <span className="text-indigo-400 mr-1">🏁</span>
                 <span>Going To</span>
-                <span className="text-slate-500 text-[10px] ml-1 font-normal">(ගමනාන්තය)</span>
+                <span className="text-slate-400 text-[10px] ml-1 font-medium">(ගමනාන්තය / சேருமிடம்)</span>
               </label>
               <select
                 value={toInput}
@@ -329,7 +332,9 @@ export default function Home() {
                 className="w-full bg-transparent text-slate-100 font-bold text-sm focus:outline-none cursor-pointer py-1"
               >
                 {toList.map(city => (
-                  <option key={city} value={city} className="bg-slate-900 text-white">{city}</option>
+                  <option key={city} value={city} className="bg-slate-900 text-white font-semibold">
+                    {getTrilingualCity(city)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -339,7 +344,7 @@ export default function Home() {
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <span className="text-emerald-400 mr-1">📅</span>
                 <span>Travel Date</span>
-                <span className="text-slate-500 text-[10px] ml-1 font-normal">(ගමන් දිනය)</span>
+                <span className="text-slate-400 text-[10px] ml-1 font-medium">(ගමන් දිනය / பயண தேதி)</span>
               </label>
               <input
                 type="date"
@@ -362,8 +367,8 @@ export default function Home() {
                   <span>Search Available Buses</span>
                   <span>→</span>
                 </span>
-                <span className="text-[11px] text-cyan-100 font-normal opacity-90 mt-0.5">
-                  ලබාගත හැකි බස් රථ සොයන්න
+                <span className="text-[11px] text-cyan-100 font-medium opacity-90 mt-0.5">
+                  ලබාගත හැකි බස් රථ සොයන්න • பேருந்துகளைத் தேடுக
                 </span>
               </button>
             </div>

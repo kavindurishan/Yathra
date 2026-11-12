@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
 import LiveBusTrackerModal from '../components/LiveBusTrackerModal';
 import YathraBrandLogo from '../components/YathraBrandLogo';
 import { 
@@ -148,15 +149,15 @@ export default function Ticket() {
         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/30">
           <div className="space-y-1">
             <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
-              Boarding Point (නැගෙන ස්ථානය)
+              Boarding Point (නැගෙන ස්ථානය / ஏறும் இடம்)
             </span>
-            <p className="font-black text-xl text-slate-900 dark:text-white leading-tight">{boardingLoc}</p>
+            <p className="font-black text-xl text-slate-900 dark:text-white leading-tight">{getTrilingualCity(boardingLoc)}</p>
             <p className="text-xs text-primary-600 dark:text-primary-400 font-black">Time: {boardingTime}</p>
           </div>
 
           <div className="text-center relative">
             <span className="text-[9px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40 px-3 py-1 rounded-full border border-primary-200/50 dark:border-primary-900/30">
-              {booking.schedule.route.startingLocation} ➔ {booking.schedule.route.destination}
+              {getTrilingualCity(booking.schedule.route.startingLocation)} ➔ {getTrilingualCity(booking.schedule.route.destination)}
             </span>
             <div className="h-0.5 border-t border-dashed border-slate-300 dark:border-slate-800 my-2.5 mx-4" />
             <span className="text-[10px] text-slate-400 font-semibold">{booking.schedule.route.duration} Transit</span>
@@ -164,9 +165,9 @@ export default function Ticket() {
 
           <div className="space-y-1 md:text-right">
             <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
-              Dropping Point (බහින ස්ථානය)
+              Dropping Point (බහින ස්ථානය / இறங்கும் இடம்)
             </span>
-            <p className="font-black text-xl text-slate-900 dark:text-white leading-tight">{droppingLoc}</p>
+            <p className="font-black text-xl text-slate-900 dark:text-white leading-tight">{getTrilingualCity(droppingLoc)}</p>
             <p className="text-xs text-cyan-600 dark:text-cyan-400 font-black">Estimated: {droppingTime}</p>
           </div>
         </div>

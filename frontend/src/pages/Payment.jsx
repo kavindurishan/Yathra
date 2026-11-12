@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
+import WeAcceptPaymentStrip from '../components/PaymentLogos';
 import SeatMap from '../components/SeatMap';
 import { 
   CreditCard, Wallet, Landmark, Banknote, ShieldCheck, 
@@ -138,6 +140,14 @@ export default function Payment() {
             {/* Nested Interactive Card Form */}
             {paymentMethod === 'Card' ? (
               <form onSubmit={handlePaymentSubmit} className="space-y-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 gap-2">
+                  <WeAcceptPaymentStrip showTitle={true} />
+                  <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 font-semibold">
+                    <Lock className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>256-Bit SSL Secured</span>
+                  </div>
+                </div>
+
                 <div className="bg-gradient-to-tr from-slate-900 via-slate-900 to-slate-950 p-6 rounded-2xl border border-slate-800 text-white space-y-6 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-primary-600/10 blur-2xl pointer-events-none" />
                   
@@ -377,14 +387,14 @@ export default function Payment() {
             <div className="space-y-4">
               <div className="flex items-center space-x-3.5">
                 <div>
-                  <span className="block text-[8px] font-bold text-slate-500 uppercase">Boarding Point</span>
-                  <p className="font-extrabold text-sm text-slate-200 truncate">{boardingLoc}</p>
+                  <span className="block text-[8px] font-bold text-slate-500 uppercase">Boarding Point (නැගෙන ස්ථානය / ஏறும் இடம்)</span>
+                  <p className="font-extrabold text-sm text-slate-200 truncate">{getTrilingualCity(boardingLoc)}</p>
                   <p className="text-[10px] text-primary-400 font-bold">{boardingTime}</p>
                 </div>
                 <ArrowRight className="w-4 h-4 text-cyan-400 shrink-0" />
                 <div>
-                  <span className="block text-[8px] font-bold text-slate-500 uppercase">Dropping Point</span>
-                  <p className="font-extrabold text-sm text-slate-200 truncate">{droppingLoc}</p>
+                  <span className="block text-[8px] font-bold text-slate-500 uppercase">Dropping Point (බහින ස්ථානය / இறங்கும் இடம்)</span>
+                  <p className="font-extrabold text-sm text-slate-200 truncate">{getTrilingualCity(droppingLoc)}</p>
                   <p className="text-[10px] text-cyan-400 font-bold">{droppingTime}</p>
                 </div>
               </div>

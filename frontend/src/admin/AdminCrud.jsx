@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { getTrilingualCity } from '../services/cityTranslations';
 import { 
   Plus, Trash2, Edit3, ShieldAlert, Sparkles, 
   User, Check, X, ShieldCheck, MapPin, Bus, Tag, Clock, Calendar, Star, Info, ArrowRight
@@ -550,9 +551,9 @@ export function ManageRoutes() {
               {routes.map(r => (
                 <tr key={r._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
                   <td className="px-6 py-4 font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                    <span>{r.startingLocation}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-primary-500" />
-                    <span>{r.destination}</span>
+                    <span>{getTrilingualCity(r.startingLocation)}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                    <span>{getTrilingualCity(r.destination)}</span>
                   </td>
                   <td className="px-6 py-4">
                     <p className="font-bold">{r.distance} km</p>
@@ -776,9 +777,9 @@ export function ManageSchedules() {
               {schedules.map(s => (
                 <tr key={s._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
                   <td className="px-6 py-4 font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                    <span>{s.route.startingLocation}</span>
+                    <span>{getTrilingualCity(s.route.startingLocation)}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                    <span>{s.route.destination}</span>
+                    <span>{getTrilingualCity(s.route.destination)}</span>
                   </td>
                   <td className="px-6 py-4">
                     <p className="font-bold">{s.bus.name}</p>
@@ -833,7 +834,7 @@ export function ManageSchedules() {
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Select Route</label>
                   <select value={route} onChange={e => setRoute(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 rounded-xl font-semibold dark:text-white">
                     {routes.map(r => (
-                      <option key={r._id} value={r._id}>{r.startingLocation} &rarr; {r.destination}</option>
+                      <option key={r._id} value={r._id}>{getTrilingualCity(r.startingLocation)} &rarr; {getTrilingualCity(r.destination)}</option>
                     ))}
                   </select>
                 </div>
@@ -981,9 +982,9 @@ export function ManageBookings() {
                   </td>
                   <td className="px-6 py-4">
                     <p className="font-bold flex items-center space-x-1">
-                      <span>{b.schedule?.route.startingLocation}</span>
+                      <span>{getTrilingualCity(b.schedule?.route.startingLocation)}</span>
                       <span>&rarr;</span>
-                      <span>{b.schedule?.route.destination}</span>
+                      <span>{getTrilingualCity(b.schedule?.route.destination)}</span>
                     </p>
                     <p className="text-slate-400 text-[10px]">{b.schedule?.departureDate}</p>
                   </td>

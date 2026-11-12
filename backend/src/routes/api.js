@@ -351,15 +351,23 @@ router.get('/schedules', async (req, res) => {
       result = result.filter(item => {
         let match = true;
         if (from) {
-          const f = from.toLowerCase().trim();
-          const startMatches = item.route.startingLocation.toLowerCase().includes(f) || f.includes(item.route.startingLocation.toLowerCase());
-          const stopMatches = Array.isArray(item.route.stops) && item.route.stops.some(s => s.name.toLowerCase().includes(f) || f.includes(s.name.toLowerCase()));
+          const fTokens = from.toLowerCase().split(/[|/]/).map(s => s.trim()).filter(Boolean);
+          const startMatches = fTokens.some(f => 
+            item.route.startingLocation.toLowerCase().includes(f) || f.includes(item.route.startingLocation.toLowerCase())
+          );
+          const stopMatches = Array.isArray(item.route.stops) && item.route.stops.some(s => 
+            fTokens.some(f => s.name.toLowerCase().includes(f) || f.includes(s.name.toLowerCase()))
+          );
           if (!startMatches && !stopMatches) match = false;
         }
         if (to) {
-          const t = to.toLowerCase().trim();
-          const destMatches = item.route.destination.toLowerCase().includes(t) || t.includes(item.route.destination.toLowerCase());
-          const stopMatches = Array.isArray(item.route.stops) && item.route.stops.some(s => s.name.toLowerCase().includes(t) || t.includes(s.name.toLowerCase()));
+          const tTokens = to.toLowerCase().split(/[|/]/).map(s => s.trim()).filter(Boolean);
+          const destMatches = tTokens.some(t => 
+            item.route.destination.toLowerCase().includes(t) || t.includes(item.route.destination.toLowerCase())
+          );
+          const stopMatches = Array.isArray(item.route.stops) && item.route.stops.some(s => 
+            tTokens.some(t => s.name.toLowerCase().includes(t) || t.includes(s.name.toLowerCase()))
+          );
           if (!destMatches && !stopMatches) match = false;
         }
         if (date) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import yathraLogoLight from '../assets/yathra_logo_transparent.png';
 import yathraLogoDark from '../assets/yathra_logo_dark_transparent.png';
 import yathraLogoOriginal from '../assets/yathra_logo.png';
@@ -7,6 +7,11 @@ import yathraSinhalaLogoLight from '../assets/yathra_sinhala_logo_transparent.pn
 import yathraSinhalaLogoDark from '../assets/yathra_sinhala_logo_dark_transparent.png';
 import yathraSinhalaLogoOriginal from '../assets/yathra_sinhala_logo.png';
 
+// Global session start anchor so all instances (Header, Footer, Modals) animate in 100% lockstep sync
+if (typeof window !== 'undefined' && !window.__YATHRA_ANIM_SYNC_BASE) {
+  window.__YATHRA_ANIM_SYNC_BASE = Date.now();
+}
+
 export default function YathraBrandLogo({ 
   className = "h-13 sm:h-15", 
   isSplash = false,
@@ -14,8 +19,22 @@ export default function YathraBrandLogo({
   animated = true,
   forceTheme = null // 'light' | 'dark' | null (auto)
 }) {
+  // Compute synchronized animation phase delay so header and footer logos animate in exact unison
+  const syncStyle = useMemo(() => {
+    if (typeof window === 'undefined') return undefined;
+    const base = window.__YATHRA_ANIM_SYNC_BASE || Date.now();
+    const elapsedSec = ((Date.now() - base) / 1000).toFixed(4);
+    return {
+      '--yathra-sync-delay': `-${elapsedSec}s`,
+      animationDelay: `-${elapsedSec}s`
+    };
+  }, []);
+
   return (
-    <div className="flex items-center space-x-2 select-none group cursor-pointer">
+    <div 
+      className="flex items-center space-x-2 select-none group cursor-pointer"
+      style={animated ? syncStyle : undefined}
+    >
       {/* 3D Perspective Card Viewport */}
       <div 
         className={`relative inline-flex items-center justify-center transition-all duration-300 group-hover:scale-[1.03] perspective-1000 ${
@@ -35,6 +54,7 @@ export default function YathraBrandLogo({
           className={`absolute inset-0 w-full h-full preserve-3d transition-transform duration-500 ${
             animated ? 'animate-yathra-3d-flip' : ''
           }`}
+          style={animated ? syncStyle : undefined}
           title="Yathra Transit • English / සිංහල"
         >
           {/* ================= FRONT FACE: ENGLISH LOGO ================= */}

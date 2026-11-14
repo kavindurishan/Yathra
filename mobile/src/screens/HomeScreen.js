@@ -10,8 +10,8 @@ export default function HomeScreen({ navigation }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
 
-  const [fromCity, setFromCity] = useState('Colombo');
-  const [toCity, setToCity] = useState('Kandy');
+  const [fromCity, setFromCity] = useState('');
+  const [toCity, setToCity] = useState('');
   const [date, setDate] = useState('Today');
   const [passengers, setPassengers] = useState(1);
   const [showCityPicker, setShowCityPicker] = useState(null); // 'from' | 'to' | null
@@ -23,6 +23,7 @@ export default function HomeScreen({ navigation }) {
   };
 
   const handleSearch = () => {
+    if (!fromCity || !toCity) return;
     navigation.navigate('BusList', {
       from: fromCity,
       to: toCity,
@@ -77,7 +78,9 @@ export default function HomeScreen({ navigation }) {
               </View>
               <View style={styles.inputTextCol}>
                 <Text style={[styles.inputLabel, { color: colors.textSubtle }]}>{t('from')}</Text>
-                <Text style={[styles.inputValue, { color: colors.text }]} numberOfLines={1}>{getTrilingualCity(fromCity)}</Text>
+                <Text style={[styles.inputValue, { color: fromCity ? colors.text : colors.textMuted }]} numberOfLines={1}>
+                  {fromCity ? getTrilingualCity(fromCity) : 'Select Departure City'}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -101,7 +104,9 @@ export default function HomeScreen({ navigation }) {
               </View>
               <View style={styles.inputTextCol}>
                 <Text style={[styles.inputLabel, { color: colors.textSubtle }]}>{t('to')}</Text>
-                <Text style={[styles.inputValue, { color: colors.text }]} numberOfLines={1}>{getTrilingualCity(toCity)}</Text>
+                <Text style={[styles.inputValue, { color: toCity ? colors.text : colors.textMuted }]} numberOfLines={1}>
+                  {toCity ? getTrilingualCity(toCity) : 'Select Destination'}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -233,17 +238,6 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
           ))}
         </ScrollView>
-
-        {/* Promo Code Banner */}
-        <View style={[styles.promoBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[styles.promoIconPill, { backgroundColor: '#fef3c7' }]}>
-            <Text style={styles.promoEmoji}>🎟️</Text>
-          </View>
-          <View style={styles.promoInfoCol}>
-            <Text style={[styles.promoTitle, { color: colors.text }]}>Flat 10% Off with YATHRA10</Text>
-            <Text style={[styles.promoSub, { color: colors.textMuted }]}>Apply code during checkout for instant savings</Text>
-          </View>
-        </View>
 
         {/* Trust Badges */}
         <View style={styles.trustBadgesRow}>
@@ -524,36 +518,6 @@ const styles = StyleSheet.create({
   popPrice: {
     fontSize: 13,
     fontWeight: '800',
-  },
-  promoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 12,
-    marginBottom: 16,
-  },
-  promoIconPill: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  promoEmoji: {
-    fontSize: 20,
-  },
-  promoInfoCol: {
-    flex: 1,
-  },
-  promoTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  promoSub: {
-    fontSize: 11,
-    marginTop: 2,
   },
   trustBadgesRow: {
     flexDirection: 'row',

@@ -254,35 +254,45 @@ export function findMatchingRoute(from, to) {
 /**
  * Builds Google Maps Embed URL with full waypoint trail.
  * If inspectStop is specified, returns high-zoom pin to that specific bus stop.
+ * mapType: 'm' (Normal) or 'k' (Satellite)
  */
-export function buildGoogleMapsRouteUrl(route, inspectStop = null) {
+export function buildGoogleMapsRouteUrl(route, inspectStop = null, mapType = 'm') {
   if (!route) route = SRI_LANKA_BUS_ROUTES['colombo-kandy'];
+
+  const typeParam = mapType === 'k' ? '&t=k' : '&t=m';
 
   if (inspectStop) {
     const query = encodeURIComponent(`${inspectStop} Bus Stand, Sri Lanka`);
-    return `https://maps.google.com/maps?q=${query}&t=m&z=15&output=embed`;
+    return `https://maps.google.com/maps?q=${query}${typeParam}&z=15&output=embed`;
   }
 
-  // For multi-stop route directions:
-  // We use key waypoints along the route to guide the polyline through authentic Sri Lankan bus towns
-  const startLoc = encodeURIComponent(`${route.stops[0]?.name || route.origin}, Sri Lanka`);
-  const finalLoc = encodeURIComponent(`${route.stops[route.stops.length - 1]?.name || route.destination}, Sri Lanka`);
+  // Determine origin and destination accurately
+  const originName = route.startingLocation || route.origin || (route.stops && route.stops[0]?.name) || 'Colombo';
+  const destinationName = route.destination || (route.stops && route.stops[route.stops.length - 1]?.name) || 'Kandy';
 
-  // Choose key representative intermediate waypoints to guide the route path
-  const intermediateStops = route.stops.slice(1, -1);
+  const startLoc = encodeURIComponent(`${originName}, Sri Lanka`);
+  const finalLoc = encodeURIComponent(`${destinationName}, Sri Lanka`);
+
+  // Choose intermediate waypoints to guide road polyline accurately
   let selectedWaypoints = [];
   if (route.keyWaypoints && route.keyWaypoints.length > 0) {
     selectedWaypoints = route.keyWaypoints;
-  } else if (intermediateStops.length > 0) {
-    const step = Math.max(1, Math.floor(intermediateStops.length / 4));
-    for (let i = 0; i < intermediateStops.length; i += step) {
-      selectedWaypoints.push(intermediateStops[i].name);
+  } else if (Array.isArray(route.stops) && route.stops.length > 0) {
+    const isFirstStopOrigin = route.stops[0]?.name?.toLowerCase().includes(originName.toLowerCase());
+    const isLastStopDest = route.stops[route.stops.length - 1]?.name?.toLowerCase().includes(destinationName.toLowerCase());
+    const intermediateStops = route.stops.slice(isFirstStopOrigin ? 1 : 0, isLastStopDest ? -1 : undefined);
+
+    if (intermediateStops.length > 0) {
+      const step = Math.max(1, Math.floor(intermediateStops.length / 4));
+      for (let i = 0; i < intermediateStops.length; i += step) {
+        selectedWaypoints.push(intermediateStops[i].name);
+      }
     }
   }
-  const waypointsParam = selectedWaypoints.map(w => `to:${encodeURIComponent(w + ', Sri Lanka')}`).join('+');
 
+  const waypointsParam = selectedWaypoints.map(w => `to:${encodeURIComponent(w + ', Sri Lanka')}`).join('+');
   const daddr = waypointsParam ? `${waypointsParam}+to:${finalLoc}` : finalLoc;
-  return `https://maps.google.com/maps?saddr=${startLoc}&daddr=${daddr}&output=embed`;
+  return `https://maps.google.com/maps?saddr=${startLoc}&daddr=${daddr}${typeParam}&output=embed`;
 }
 
 /**
@@ -290,9 +300,19 @@ export function buildGoogleMapsRouteUrl(route, inspectStop = null) {
  */
 export function buildExternalGoogleMapsUrl(route) {
   if (!route) route = SRI_LANKA_BUS_ROUTES['colombo-kandy'];
-  const origin = encodeURIComponent(`${route.origin}, Sri Lanka`);
-  const dest = encodeURIComponent(`${route.destination}, Sri Lanka`);
-  const waypoints = route.stops.slice(1, -1).map(s => encodeURIComponent(`${s.name}, Sri Lanka`)).join('|');
+  const originName = route.startingLocation || route.origin || (route.stops && route.stops[0]?.name) || 'Colombo';
+  const destinationName = route.destination || (route.stops && route.stops[route.stops.length - 1]?.name) || 'Kandy';
 
-  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&waypoints=${waypoints}&travelmode=transit`;
+  const origin = encodeURIComponent(`${originName}, Sri Lanka`);
+  const dest = encodeURIComponent(`${destinationName}, Sri Lanka`);
+
+  let waypoints = '';
+  if (Array.isArray(route.stops) && route.stops.length > 0) {
+    const isFirstStopOrigin = route.stops[0]?.name?.toLowerCase().includes(originName.toLowerCase());
+    const isLastStopDest = route.stops[route.stops.length - 1]?.name?.toLowerCase().includes(destinationName.toLowerCase());
+    const intermediateStops = route.stops.slice(isFirstStopOrigin ? 1 : 0, isLastStopDest ? -1 : undefined);
+    waypoints = intermediateStops.slice(0, 5).map(s => encodeURIComponent(`${s.name}, Sri Lanka`)).join('|');
+  }
+
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${waypoints ? `&waypoints=${waypoints}` : ''}&travelmode=transit`;
 }

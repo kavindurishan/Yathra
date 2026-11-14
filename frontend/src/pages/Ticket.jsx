@@ -18,6 +18,7 @@ export default function Ticket() {
   const [showTracker, setShowTracker] = useState(false);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     loadTicketInfo();
   }, [bookingId]);
 
@@ -45,6 +46,7 @@ export default function Ticket() {
       setError('Could not retrieve boarding pass details.');
     } finally {
       setLoading(false);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   };
 

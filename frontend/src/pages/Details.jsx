@@ -45,6 +45,7 @@ export default function Details() {
   const [appliedOffer, setAppliedOffer] = useState(null);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     loadScheduleDetails();
   }, [id]);
 
@@ -106,6 +107,7 @@ export default function Details() {
       setError('Could not retrieve trip details.');
     } finally {
       setLoading(false);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   };
 
@@ -292,6 +294,7 @@ export default function Details() {
       });
 
       if (data.success) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         navigate(`/payment/${data.booking._id}`);
       } else {
         alert(data.message || 'Checkout failed');

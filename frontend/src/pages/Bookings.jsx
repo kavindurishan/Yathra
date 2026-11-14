@@ -56,6 +56,7 @@ export default function Bookings() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     loadMyBookings();
   }, []);
 
@@ -71,6 +72,7 @@ export default function Bookings() {
       setError('Could not retrieve bookings history. Please verify the backend.');
     } finally {
       setLoading(false);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   };
 

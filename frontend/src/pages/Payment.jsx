@@ -27,6 +27,7 @@ export default function Payment() {
   const [policyAgreed, setPolicyAgreed] = useState(true);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     loadBookingDetails();
   }, [bookingId]);
 
@@ -47,6 +48,7 @@ export default function Payment() {
       setError('Could not retrieve checkout details.');
     } finally {
       setLoading(false);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   };
 
@@ -67,6 +69,7 @@ export default function Payment() {
       });
 
       if (data.success) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         navigate(`/ticket/${bookingId}`);
       } else {
         alert(data.message || 'Payment processing failed.');

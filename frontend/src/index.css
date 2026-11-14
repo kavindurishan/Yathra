@@ -102,18 +102,22 @@
 .animate-yathra-pin {
   transform-origin: center center;
   animation: yathra-pin-flip 3.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+  animation-delay: var(--yathra-sync-delay, 0s);
 }
 
 .animate-yathra-glide {
   animation: yathra-bus-glide 2.4s ease-in-out infinite;
+  animation-delay: var(--yathra-sync-delay, 0s);
 }
 
 .animate-yathra-sheen {
   animation: yathra-sheen 6s ease-in-out infinite;
+  animation-delay: var(--yathra-sync-delay, 0s);
 }
 
 .animate-yathra-radar {
   animation: yathra-radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation-delay: var(--yathra-sync-delay, 0s);
 }
 
 /* 3D Bilingual Logo Flip Animation (English <-> Sinhala) */
@@ -152,12 +156,9 @@
 
 .animate-yathra-3d-flip {
   animation: yathra-3d-flip 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: var(--yathra-sync-delay, 0s);
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-}
-
-.animate-yathra-3d-flip:hover {
-  animation-play-state: paused;
 }
 
 /* Ticket Cutout Effect */
@@ -181,3 +182,48 @@
 .ticket-dashed-border::after {
   right: -10px;
 }
+
+/* Leaflet Clean Route Map Styling */
+.leaflet-container {
+  font-family: inherit !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.leaflet-bar a {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  font-weight: bold !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #f8fafc !important;
+  color: #0284c7 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  padding: 2px !important;
+}
+
+.leaflet-popup-tip-container {
+  margin-top: -1px !important;
+}
+
+.custom-circle-icon {
+  background: transparent !important;
+  border: none !important;
+}
+

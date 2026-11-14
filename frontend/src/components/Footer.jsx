@@ -139,52 +139,97 @@ export default function Footer() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
 
         {/* ========================================================== */}
-        {/* 4-COLUMN CONTENT GRID                                      */}
+        {/* 5-COLUMN BALANCED CONTENT GRID                             */}
         {/* ========================================================== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-10 border-b border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 xl:gap-8 pb-10 border-b border-slate-800/80">
           
-          {/* Column 1: Brand & Connect With Us (Span 4) */}
-          <div className="lg:col-span-4 space-y-4">
-            {/* Brand Logo & Title directly in line before content underneath (No separate row) */}
-            <div className="flex items-center space-x-3.5">
-              <Link to="/" className="flex items-center group overflow-visible">
+          {/* Column 1: Brand Logo & We Accept Payment Badges */}
+          <div className="space-y-4">
+            <div>
+              <Link to="/" className="inline-flex items-center group overflow-visible">
                 <YathraBrandLogo 
-                  className="h-11 sm:h-13 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" 
+                  className="h-12 sm:h-14 md:h-16 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" 
                   forceTheme="dark" 
                   animated={true} 
                 />
               </Link>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-wider uppercase font-mono">
-                    YATHRA
-                  </h2>
-                  <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">
-                    National Transit
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  Your Journey, Our Priority.
-                </p>
-              </div>
             </div>
 
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-semibold text-slate-300 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>A KRM Group Brand</span>
+            {/* "We accept" payment strip placed directly under the logo */}
+            <div className="pt-1">
+              <WeAcceptPaymentStrip showTitle={true} />
             </div>
+          </div>
 
-            <div className="space-y-1.5 pt-1">
-              <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
-                Connect With Us
-              </span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Follow Yathra on official networks for live expressway alerts, route additions &amp; passenger support notices.
-              </p>
-            </div>
+          {/* Column 2: Popular Transit Corridors (Ranked dynamically by customer booking count) */}
+          <div className="space-y-3">
+            <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
+              Popular Express Corridors
+            </span>
+            <ul className="space-y-2 text-xs">
+              {popularRoutes.map((route) => (
+                <li key={route._id || `${route.startingLocation}-${route.destination}`}>
+                  <Link 
+                    to={`/schedules?from=${encodeURIComponent(route.startingLocation)}&to=${encodeURIComponent(route.destination)}`} 
+                    className="text-slate-400 hover:text-cyan-300 transition-colors inline-block py-0.5"
+                  >
+                    {route.startingLocation} ⇄ {route.destination}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Quick Navigation & Passenger Tools */}
+          <div className="space-y-3">
+            <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
+              Passenger Links
+            </span>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link to="/" className="text-slate-400 hover:text-cyan-300 transition-colors inline-block py-0.5">
+                  Find Available Buses
+                </Link>
+              </li>
+              <li>
+                <Link to="/schedules" className="text-slate-400 hover:text-cyan-300 transition-colors inline-block py-0.5">
+                  Live Timetables
+                </Link>
+              </li>
+              <li>
+                <Link to="/bookings" className="text-slate-400 hover:text-cyan-300 transition-colors inline-block py-0.5">
+                  My Bookings
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="text-slate-400 hover:text-cyan-300 transition-colors inline-block py-0.5">
+                  About Yathra
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-slate-400 hover:text-cyan-300 transition-colors inline-block py-0.5">
+                  Contact &amp; Support
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin" className="text-slate-500 hover:text-slate-300 transition-colors inline-block py-0.5">
+                  Operator Login
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Connect With Us (Social Networks in same row) */}
+          <div className="space-y-3">
+            <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
+              Connect With Us
+            </span>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Follow Yathra on official networks for live expressway alerts, route additions &amp; notices.
+            </p>
 
             {/* Proper Official Social Media Icons */}
-            <div className="flex items-center space-x-2 pt-1">
+            <div className="flex items-center space-x-2 pt-1 flex-wrap gap-y-2">
               <a 
                 href="https://facebook.com" 
                 target="_blank" 
@@ -231,87 +276,14 @@ export default function Footer() {
                 <YouTubeIcon className="w-4 h-4" />
               </a>
             </div>
-
-            <div className="pt-2 text-xs text-slate-400 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Passenger Assistance</span>
-              <a href="mailto:support@yathra.lk" className="text-cyan-400 hover:underline font-mono text-xs block">
-                support@yathra.lk
-              </a>
-            </div>
           </div>
 
-          {/* Column 2: Popular Transit Corridors (Ranked dynamically by customer booking count, Span 4) */}
-          <div className="lg:col-span-4 space-y-3">
-            <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
-              Popular Express Corridors
-            </span>
-            <ul className="space-y-2 text-xs">
-              {popularRoutes.map((route, idx) => (
-                <li key={route._id || `${route.startingLocation}-${route.destination}`}>
-                  <Link 
-                    to={`/schedules?from=${encodeURIComponent(route.startingLocation)}&to=${encodeURIComponent(route.destination)}`} 
-                    className="text-slate-400 hover:text-cyan-300 transition-colors flex items-center justify-between group py-0.5"
-                  >
-                    <span className="group-hover:translate-x-1 transition-transform flex items-center space-x-1.5">
-                      <span className="text-slate-600 group-hover:text-cyan-400 text-[11px]">→</span>
-                      <span>{route.startingLocation} ⇄ {route.destination}</span>
-                    </span>
-                    {idx === 0 && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">
-                        #1 Most Booked
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Quick Navigation & Passenger Tools (Span 2) */}
-          <div className="lg:col-span-2 space-y-3">
-            <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
-              Passenger Links
-            </span>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/" className="text-slate-400 hover:text-cyan-300 transition-colors">
-                  Find Available Buses
-                </Link>
-              </li>
-              <li>
-                <Link to="/schedules" className="text-slate-400 hover:text-cyan-300 transition-colors">
-                  Live Timetables
-                </Link>
-              </li>
-              <li>
-                <Link to="/bookings" className="text-slate-400 hover:text-cyan-300 transition-colors">
-                  My Bookings
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-slate-400 hover:text-cyan-300 transition-colors">
-                  About Yathra
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-slate-400 hover:text-cyan-300 transition-colors">
-                  Contact &amp; Support
-                </Link>
-              </li>
-              <li>
-                <Link to="/admin" className="text-slate-500 hover:text-slate-300 transition-colors">
-                  Operator Login
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: 24/7 Transit Support Desk (Span 3) */}
-          <div className="lg:col-span-3 space-y-3">
+          {/* Column 5: 24/7 Transit Support Desk & All Contacts */}
+          <div className="space-y-3">
             <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest block">
               24/7 Transit Support Desk
             </span>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Assisting passengers islandwide with coach schedules, cancellations &amp; live tracking.
             </p>
 
@@ -344,21 +316,21 @@ export default function Footer() {
                 </div>
               </a>
 
-              <div className="flex items-start space-x-2 text-[11px] text-slate-400 pt-1">
-                <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5" />
-                <span>Bastian Mawatha Bus Stand, Pettah / Fort, Colombo 11</span>
-              </div>
+              <a 
+                href="mailto:support@yathra.lk"
+                className="flex items-center space-x-2.5 p-2 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 text-slate-300 hover:text-white transition-all group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-sky-950 border border-sky-800/60 flex items-center justify-center text-sky-400 shrink-0">
+                  <Mail className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase font-bold text-slate-500 block">Email Support</span>
+                  <span className="font-mono text-xs text-slate-300 group-hover:text-sky-300">support@yathra.lk</span>
+                </div>
+              </a>
             </div>
           </div>
 
-        </div>
-
-        {/* ========================================================== */}
-        {/* PAYMENT BADGES ROW                                         */}
-        {/* ========================================================== */}
-        <div className="py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border-b border-slate-800/80">
-          {/* "We accept" strip with Official VISA, Mastercard, and AMEX logos */}
-          <WeAcceptPaymentStrip />
         </div>
 
         {/* ========================================================== */}

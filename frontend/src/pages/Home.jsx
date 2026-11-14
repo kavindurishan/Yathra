@@ -7,7 +7,6 @@ import {
   ArrowRightLeft, Sparkles, Navigation, CheckCircle2, ChevronRight, Zap
 } from 'lucide-react';
 import heroBusImage from '../assets/hero_bus.jpg';
-import SriLankaRouteMapExplorer from '../components/SriLankaRouteMapExplorer';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -15,14 +14,12 @@ export default function Home() {
   
   const [fromList, setFromList] = useState([]);
   const [toList, setToList] = useState([]);
-  const [fromInput, setFromInput] = useState('Makumbura');
-  const [toInput, setToInput] = useState('Galle');
+  const [fromInput, setFromInput] = useState('');
+  const [toInput, setToInput] = useState('');
   const [departureDate, setDepartureDate] = useState('');
-  const [offers, setOffers] = useState([]);
 
   useEffect(() => {
     loadRouteOptions();
-    loadOffers();
   }, []);
 
   const loadRouteOptions = async () => {
@@ -33,9 +30,6 @@ export default function Home() {
         const dests = [...new Set(data.routes.map(r => r.destination))];
         setFromList(starts);
         setToList(dests);
-        
-        if (starts.length > 0) setFromInput(starts[0]);
-        if (dests.length > 0) setToInput(dests[0]);
       } else {
         setOfflineRoutes();
       }
@@ -50,22 +44,6 @@ export default function Home() {
     const defaultDests = ['Galle', 'Matara', 'Kandy', 'Badulla', 'Jaffna', 'Anuradhapura', 'Kurunegala', 'Nuwara Eliya', 'Colombo Fort'];
     setFromList(defaultStarts);
     setToList(defaultDests);
-    setFromInput('Makumbura');
-    setToInput('Galle');
-  };
-
-  const loadOffers = async () => {
-    try {
-      const data = await api.offers.getAll();
-      if (data.success && data.offers) {
-        setOffers(data.offers.slice(0, 3));
-      }
-    } catch (err) {
-      setOffers([
-        { code: 'YATHRA10', value: 10, discountType: 'Percentage', minBookingValue: 10 },
-        { code: 'WELCOME50', value: 5, discountType: 'Fixed', minBookingValue: 20 }
-      ]);
-    }
   };
 
   // Swap Origin and Destination
@@ -75,18 +53,10 @@ export default function Home() {
     setToInput(temp);
   };
 
-  // Quick Expressway Route preset selection
-  const handleQuickRoute = (from, to) => {
-    setFromInput(from);
-    setToInput(to);
-    if (!departureDate) {
-      setDepartureDate(todayStr);
-    }
-  };
-
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!fromInput || !toInput || !departureDate) return;
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     navigate(`/schedules?from=${encodeURIComponent(fromInput)}&to=${encodeURIComponent(toInput)}&date=${departureDate}`);
   };
 
@@ -98,40 +68,6 @@ export default function Home() {
 
   // Get current date formatted for min date attribute
   const todayStr = new Date().toISOString().split('T')[0];
-
-  // Dynamic route statistics helper for Sri Lankan corridors
-  const getRouteDetails = (from, to) => {
-    const f = (from || '').toLowerCase();
-    const t = (to || '').toLowerCase();
-
-    if ((f.includes('galle') && (t.includes('colombo') || t.includes('makumbura') || t.includes('kottawa'))) ||
-        ((f.includes('colombo') || f.includes('makumbura') || f.includes('kottawa')) && t.includes('galle'))) {
-      return { distance: '118 km', duration: '1h 20m', highway: 'E01 Southern Expressway', corridor: 'Southern Highway Corridor' };
-    }
-    if ((f.includes('matara') && (t.includes('colombo') || t.includes('makumbura'))) ||
-        ((f.includes('colombo') || f.includes('makumbura')) && t.includes('matara'))) {
-      return { distance: '158 km', duration: '1h 50m', highway: 'E01 Southern Expressway', corridor: 'Southern Coastal Route' };
-    }
-    if ((f.includes('kandy') && (t.includes('colombo') || t.includes('kadawatha'))) ||
-        ((f.includes('colombo') || f.includes('kadawatha')) && t.includes('kandy'))) {
-      return { distance: '115 km', duration: '2h 15m', highway: 'E04 Central Expressway & A1', corridor: 'Central Hill Corridor' };
-    }
-    if (f.includes('jaffna') || t.includes('jaffna')) {
-      return { distance: '395 km', duration: '6h 30m', highway: 'A9 / E04 Express', corridor: 'Northern Direct Line' };
-    }
-    if (f.includes('badulla') || t.includes('badulla')) {
-      return { distance: '218 km', duration: '5h 10m', highway: 'Highland Mountain Route', corridor: 'Uva Province Corridor' };
-    }
-    return { distance: '~120 km', duration: '1h 45m', highway: 'National Transit Corridor', corridor: 'Intercity Express Corridor' };
-  };
-
-  const routeInfo = getRouteDetails(fromInput, toInput);
-
-  // Sri Lankan Google Maps Directions URL dynamically plotting the exact driven transit route
-  const mapOrigin = encodeURIComponent(`${fromInput || 'Colombo Fort'}, Sri Lanka`);
-  const mapDestination = encodeURIComponent(`${toInput || 'Galle'}, Sri Lanka`);
-  const googleMapEmbedUrl = `https://maps.google.com/maps?saddr=${mapOrigin}&daddr=${mapDestination}&output=embed`;
-  const externalGoogleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${mapOrigin}&destination=${mapDestination}&travelmode=transit`;
 
   return (
     <div className="space-y-16 pb-20 select-none">
@@ -188,14 +124,6 @@ export default function Home() {
                 මෙතනින් Bookings දාන්න
               </span>
             </button>
-
-            <a
-              href="#route-map-section"
-              className="px-6 py-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 hover:text-white font-bold text-sm backdrop-blur-md transition-all flex items-center gap-2"
-            >
-              <Navigation className="w-4 h-4 text-cyan-400" />
-              <span>Explore Live Map (සිතියම)</span>
-            </a>
           </div>
 
           {/* Feature Trust Highlights */}
@@ -232,75 +160,42 @@ export default function Home() {
       <section ref={bookingSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
         <div className="w-full bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
           
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-800">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                <span>Select Your Journey</span>
-                <span className="text-xs font-bold text-cyan-400 bg-cyan-950/70 px-2 py-0.5 rounded-full border border-cyan-800/50">
-                  Direct Line
-                </span>
-              </h2>
-              <p className="text-xs text-slate-400">ඔබගේ ආරම්භක ස්ථානය සහ ගමනාන්තය තෝරා පහසුවෙන්ම ආසන වෙන්කරගන්න</p>
-            </div>
-
-            {/* Popular Highway Quick Route Chips */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mr-1">Fast Lanes:</span>
-              <button 
-                type="button"
-                onClick={() => handleQuickRoute('Colombo', 'Kandy')}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-cyan-950/80 border border-slate-700 hover:border-cyan-500 text-xs font-semibold text-slate-300 hover:text-cyan-300 transition-all"
-              >
-                Colombo ⇄ Kandy (01)
-              </button>
-              <button 
-                type="button"
-                onClick={() => handleQuickRoute('Panadura', 'Kandy')}
-                className="px-2.5 py-1 rounded-lg bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-500/80 text-xs font-extrabold text-cyan-300 transition-all shadow-sm"
-              >
-                Panadura ⇄ Kandy (17)
-              </button>
-              <button 
-                type="button"
-                onClick={() => handleQuickRoute('Makumbura', 'Galle')}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-cyan-950/80 border border-slate-700 hover:border-cyan-500 text-xs font-semibold text-slate-300 hover:text-cyan-300 transition-all"
-              >
-                MMC ⇄ Galle (E01)
-              </button>
-              <button 
-                type="button"
-                onClick={() => handleQuickRoute('Kadawatha', 'Kandy')}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-cyan-950/80 border border-slate-700 hover:border-cyan-500 text-xs font-semibold text-slate-300 hover:text-cyan-300 transition-all"
-              >
-                Kadawatha ⇄ Kandy (E04)
-              </button>
-              <button 
-                type="button"
-                onClick={() => handleQuickRoute('Colombo Fort', 'Matara')}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-cyan-950/80 border border-slate-700 hover:border-cyan-500 text-xs font-semibold text-slate-300 hover:text-cyan-300 transition-all"
-              >
-                Colombo ⇄ Matara
-              </button>
-            </div>
+          {/* Booking Section Topic Header (Centered in the middle) */}
+          <div className="text-center mb-8 pb-4 border-b border-slate-800/80 max-w-xl mx-auto space-y-1.5">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center justify-center gap-2">
+              <span>Select Your Journey</span>
+              <span className="text-xs font-bold text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/50">
+                Direct Line
+              </span>
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 font-medium">
+              ඔබගේ ආරම්භක ස්ථානය සහ ගමනාන්තය තෝරා පහසුවෙන්ම ආසන වෙන්කරගන්න
+            </p>
           </div>
 
           {/* Booking Inputs Form */}
           <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
             
-            {/* Origin Input */}
-            <div className="md:col-span-4 space-y-1.5 bg-slate-950/80 p-3 rounded-2xl border border-slate-800 focus-within:border-cyan-500 transition-colors">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <span className="text-cyan-400 mr-1">📍</span>
+            {/* Origin Input (Light color in both Light & Dark mode) */}
+            <div className="md:col-span-4 space-y-1.5 bg-white p-3 rounded-2xl border border-slate-200 focus-within:border-cyan-500 hover:border-slate-300 transition-colors shadow-md">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <span className="text-cyan-600 mr-1">📍</span>
                 <span>Leaving From</span>
-                <span className="text-slate-400 text-[10px] ml-1 font-medium">(පිටත්වන ස්ථානය / புறப்படும் இடம்)</span>
+                <span className="text-slate-500 text-[10px] ml-1 font-medium">(පිටත්වන ස්ථානය / புறப்படும் இடம்)</span>
               </label>
               <select
+                required
                 value={fromInput}
                 onChange={(e) => setFromInput(e.target.value)}
-                className="w-full bg-transparent text-slate-100 font-bold text-sm focus:outline-none cursor-pointer py-1"
+                className={`w-full bg-transparent font-bold text-sm focus:outline-none cursor-pointer py-1 ${
+                  fromInput ? 'text-slate-900' : 'text-slate-500 font-normal'
+                }`}
               >
+                <option value="" disabled className="bg-white text-slate-500">
+                  Select Departure City (පිටත්වන නගරය තෝරන්න)
+                </option>
                 {fromList.map(city => (
-                  <option key={city} value={city} className="bg-slate-900 text-white font-semibold">
+                  <option key={city} value={city} className="bg-white text-slate-900 font-semibold">
                     {getTrilingualCity(city)}
                   </option>
                 ))}
@@ -319,32 +214,38 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Destination Input */}
-            <div className="md:col-span-4 space-y-1.5 bg-slate-950/80 p-3 rounded-2xl border border-slate-800 focus-within:border-cyan-500 transition-colors">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <span className="text-indigo-400 mr-1">🏁</span>
+            {/* Destination Input (Light color in both Light & Dark mode) */}
+            <div className="md:col-span-4 space-y-1.5 bg-white p-3 rounded-2xl border border-slate-200 focus-within:border-cyan-500 hover:border-slate-300 transition-colors shadow-md">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <span className="text-indigo-600 mr-1">🏁</span>
                 <span>Going To</span>
-                <span className="text-slate-400 text-[10px] ml-1 font-medium">(ගමනාන්තය / சேருமிடம்)</span>
+                <span className="text-slate-500 text-[10px] ml-1 font-medium">(ගමනාන්තය / சேருமிடம்)</span>
               </label>
               <select
+                required
                 value={toInput}
                 onChange={(e) => setToInput(e.target.value)}
-                className="w-full bg-transparent text-slate-100 font-bold text-sm focus:outline-none cursor-pointer py-1"
+                className={`w-full bg-transparent font-bold text-sm focus:outline-none cursor-pointer py-1 ${
+                  toInput ? 'text-slate-900' : 'text-slate-500 font-normal'
+                }`}
               >
+                <option value="" disabled className="bg-white text-slate-500">
+                  Select Destination (ගමනාන්තය තෝරන්න)
+                </option>
                 {toList.map(city => (
-                  <option key={city} value={city} className="bg-slate-900 text-white font-semibold">
+                  <option key={city} value={city} className="bg-white text-slate-900 font-semibold">
                     {getTrilingualCity(city)}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Date Input */}
-            <div className="md:col-span-3 space-y-1.5 bg-slate-950/80 p-3 rounded-2xl border border-slate-800 focus-within:border-cyan-500 transition-colors">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <span className="text-emerald-400 mr-1">📅</span>
+            {/* Date Input (Light color in both Light & Dark mode) */}
+            <div className="md:col-span-3 space-y-1.5 bg-white p-3 rounded-2xl border border-slate-200 focus-within:border-cyan-500 hover:border-slate-300 transition-colors shadow-md">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <span className="text-emerald-600 mr-1">📅</span>
                 <span>Travel Date</span>
-                <span className="text-slate-400 text-[10px] ml-1 font-medium">(ගමන් දිනය / பயண தேதி)</span>
+                <span className="text-slate-500 text-[10px] ml-1 font-medium">(ගමන් දිනය / பயண தேதி)</span>
               </label>
               <input
                 type="date"
@@ -352,7 +253,7 @@ export default function Home() {
                 min={todayStr}
                 value={departureDate}
                 onChange={(e) => setDepartureDate(e.target.value)}
-                className="w-full bg-transparent text-slate-100 font-bold text-sm focus:outline-none py-1 [color-scheme:dark]"
+                className="w-full bg-transparent text-slate-900 font-bold text-sm focus:outline-none py-1 [color-scheme:light]"
               />
             </div>
 
@@ -375,60 +276,6 @@ export default function Home() {
 
           </form>
 
-        </div>
-      </section>
-
-      {/* ============================================================== */}
-      {/* SRI LANKAN BUS ROUTES & GOOGLE MAPS TRANSIT EXPLORER           */}
-      {/* ============================================================== */}
-      <section id="route-map-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-        <SriLankaRouteMapExplorer 
-          initialRouteId="colombo-kandy"
-          onSelectRouteForBooking={(f, t) => {
-            setFromInput(f);
-            setToInput(t);
-            scrollToBooking();
-          }}
-        />
-      </section>
-
-      {/* ============================================================== */}
-      {/* PROMOS & EXCLUSIVE VOUCHERS                                    */}
-      {/* ============================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-baseline mb-6">
-          <div>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-              Exclusive Yathra Promos
-            </h3>
-            <span className="text-xs text-slate-400">විශේෂ වට්ටම් සහ දීමනා කේත</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {offers.map(offer => (
-            <div 
-              key={offer.code} 
-              className="p-6 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-3xl flex justify-between items-center relative overflow-hidden shadow-lg"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-cyan-500/10 blur-xl pointer-events-none" />
-              <div className="space-y-1.5 z-10">
-                <span className="text-[10px] font-bold tracking-wider text-cyan-400 uppercase">
-                  Discount Voucher • වට්ටම් කූපන්
-                </span>
-                <h4 className="font-extrabold text-lg text-white">
-                  Save {offer.discountType === 'Percentage' ? `${offer.value}%` : `$${offer.value}`} on your next trip!
-                </h4>
-                <p className="text-xs text-slate-400 font-semibold">
-                  Valid for bookings above ${offer.minBookingValue}
-                </p>
-              </div>
-              <div className="flex flex-col items-center bg-slate-900 border border-slate-700 rounded-2xl p-3 border-dashed z-10">
-                <span className="text-[9px] uppercase font-bold text-slate-400 mb-0.5">Use Code</span>
-                <span className="font-extrabold text-sm tracking-wider text-cyan-400">{offer.code}</span>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 

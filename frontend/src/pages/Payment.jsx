@@ -424,6 +424,26 @@ export default function Payment() {
                 </div>
               </div>
 
+              {/* Passenger Contacts Summary */}
+              {booking.passengers && booking.passengers.length > 0 && (
+                <div className="pt-2 border-t border-slate-800/80">
+                  <span className="block text-[8px] font-bold text-slate-500 uppercase mb-1.5">
+                    Passenger Contacts (මගී ඇමතුම් විස්තර)
+                  </span>
+                  <div className="space-y-1.5">
+                    {booking.passengers.map((p, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-slate-950/70 p-2 rounded-xl border border-slate-800 text-[11px]">
+                        <div className="truncate max-w-[150px]">
+                          <p className="font-bold text-slate-200 truncate">{p.fullName}</p>
+                          <p className="text-[9px] text-slate-500">{p.seatNumber || `Seat ${idx+1}`}</p>
+                        </div>
+                        <span className="font-mono text-emerald-400 font-bold text-[10px]">{p.phone || 'No phone'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-slate-800/80 pt-3">
                 <span className="block text-[8px] font-bold text-slate-500 uppercase mb-2">Seating Arrangement</span>
                 <div className="bg-slate-950/60 p-2 rounded-2xl border border-slate-800">

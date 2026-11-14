@@ -977,8 +977,25 @@ export function ManageBookings() {
                 <tr key={b._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
                   <td className="px-6 py-4 font-mono font-bold text-[10px] uppercase">{b._id.slice(0, 8)}</td>
                   <td className="px-6 py-4">
-                    <p className="font-bold text-slate-900 dark:text-white">{b.customer?.fullName || 'Guest'}</p>
-                    <p className="text-[9px] text-slate-400">{b.customer?.phone}</p>
+                    <p className="font-bold text-slate-900 dark:text-white">
+                      {b.passengers && b.passengers.length > 0 
+                        ? b.passengers.map(p => p.fullName).join(', ') 
+                        : (b.customer?.fullName || 'Guest')}
+                    </p>
+                    <div className="text-[10px] space-y-0.5 mt-1">
+                      {b.passengers && b.passengers.length > 0 ? (
+                        b.passengers.map((p, idx) => (
+                          <div key={idx} className="flex items-center space-x-1.5 text-slate-400">
+                            <span className="font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1 rounded text-[9px]">
+                              {p.seatNumber || `S${idx + 1}`}
+                            </span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{p.phone || b.customer?.phone || 'No phone'}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-slate-400">{b.customer?.phone || 'No phone'}</p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <p className="font-bold flex items-center space-x-1">

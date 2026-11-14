@@ -5,7 +5,7 @@ import { getTrilingualCity } from '../services/cityTranslations';
 import RouteGoogleMapPanel from '../components/RouteGoogleMapPanel';
 import { 
   Wifi, BatteryCharging, Tv, ShieldAlert, 
-  Clock, ArrowRight, ChevronDown, ChevronUp, AlertTriangle,
+  Clock, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, AlertTriangle,
   Navigation, MapPin, Compass
 } from 'lucide-react';
 
@@ -74,6 +74,22 @@ export default function BusList() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      {/* Top Back Navigation Bar */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            if (window.history.state && window.history.state.idx > 0) navigate(-1);
+            else navigate('/');
+          }}
+          className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer group"
+        >
+          <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Back to Search (ආපසු යන්න)</span>
+        </button>
+      </div>
+
       {/* Header Search Info Summary */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-6 rounded-2xl shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>

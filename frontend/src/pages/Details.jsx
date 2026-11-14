@@ -6,7 +6,8 @@ import { getTrilingualCity } from '../services/cityTranslations';
 import SeatMap from '../components/SeatMap';
 import { 
   Wifi, BatteryCharging, Tv, Clock, MapPin, 
-  ArrowRight, ShieldAlert, Award, Tag, Sparkles, AlertTriangle, Info, CheckCircle2
+  ArrowRight, ArrowLeft, ShieldAlert, Award, Tag, Sparkles, AlertTriangle, Info, CheckCircle2,
+  Phone, Mail, User
 } from 'lucide-react';
 
 export default function Details() {
@@ -186,9 +187,19 @@ export default function Details() {
       updated = [...selectedSeats, seatNum];
       setSelectedSeats(updated);
       
+      const isFirst = selectedSeats.length === 0;
+      const primaryPhone = passengers[selectedSeats[0]]?.phone || user?.phone || '';
+      const primaryEmail = passengers[selectedSeats[0]]?.email || user?.email || '';
+
       setPassengers({
         ...passengers,
-        [seatNum]: { fullName: '', age: '', gender: 'Male' }
+        [seatNum]: { 
+          fullName: isFirst && user?.fullName ? user.fullName : '', 
+          phone: isFirst && user?.phone ? user.phone : primaryPhone,
+          email: isFirst && user?.email ? user.email : primaryEmail,
+          age: '', 
+          gender: 'Male' 
+        }
       });
     }
 
@@ -266,16 +277,30 @@ export default function Details() {
     }
 
     const passArray = [];
-    for (let seat of selectedSeats) {
+    for (let i = 0; i < selectedSeats.length; i++) {
+      const seat = selectedSeats[i];
       const p = passengers[seat];
-      if (!p || !p.fullName || !p.age) {
-        alert(`Please complete the details for passenger in Seat ${seat}`);
+      if (!p || !p.fullName || !p.fullName.trim() || !p.age) {
+        alert(`Please complete the details (Name and Age) for passenger in Seat ${seat}`);
         return;
       }
+
+      // Contact detail validation: ensures we have a valid contact phone for the passenger
+      const contactPhone = (p.phone && p.phone.trim()) || 
+                           (passengers[selectedSeats[0]]?.phone && passengers[selectedSeats[0]]?.phone.trim()) || 
+                           (user?.phone && user.phone.trim()) || '';
+
+      if (!contactPhone) {
+        alert(`Please enter a contact phone number for Seat ${seat}. (හදිසි ඇමතුම් හා ගමන් තොරතුරු සඳහා දුරකථන අංකයක් අවශ්‍ය වේ)`);
+        return;
+      }
+
       passArray.push({
-        fullName: p.fullName,
+        fullName: p.fullName.trim(),
+        phone: (p.phone && p.phone.trim()) || contactPhone,
+        email: (p.email && p.email.trim()) || (passengers[selectedSeats[0]]?.email && passengers[selectedSeats[0]]?.email.trim()) || (user?.email || ''),
         age: parseInt(p.age),
-        gender: p.gender,
+        gender: p.gender || 'Male',
         seatNumber: seat
       });
     }
@@ -331,7 +356,23 @@ export default function Details() {
   const droppingOptions = getDroppingOptions();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+      {/* Top Back Navigation Bar */}
+      <div>
+        <button
+          type="button"
+          onClick={() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            if (window.history.state && window.history.state.idx > 0) navigate(-1);
+            else navigate('/schedules');
+          }}
+          className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer group"
+        >
+          <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Back to Bus Schedules (ආපසු බස් ලැයිස්තුවට)</span>
+        </button>
+      </div>
+
       {/* Route header details */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary-500/10 blur-3xl pointer-events-none" />
@@ -523,9 +564,9 @@ export default function Details() {
                   <span className="text-[11px] text-slate-400 font-semibold">Government ID / Passport Match</span>
                 </div>
 
-                <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1">
+                <div className="space-y-4 max-h-[440px] overflow-y-auto pr-1">
                   {selectedSeats.map((seat) => (
-                    <div key={seat} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-3 relative">
+                    <div key={seat} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-3.5 relative shadow-xs">
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
                           <span>Passenger for</span>
@@ -540,9 +581,14 @@ export default function Details() {
                         )}
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="sm:col-span-1.5">
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        {/* Full Name */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1 flex items-center space-x-1">
+                            <User className="w-3 h-3 text-primary-500" />
+                            <span>Full Name (සම්පූර්ණ නම)</span>
+                            <span className="text-rose-500 font-bold">*</span>
+                          </label>
                           <input
                             type="text"
                             required
@@ -553,32 +599,80 @@ export default function Details() {
                           />
                         </div>
 
+                        {/* Contact Phone Number */}
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1 flex items-center space-x-1">
+                            <Phone className="w-3 h-3 text-emerald-500" />
+                            <span>Contact Number (දුරකථන අංකය)</span>
+                            <span className="text-rose-500 font-bold">*</span>
+                          </label>
                           <input
-                            type="number"
+                            type="tel"
                             required
-                            min="2"
-                            max="100"
-                            placeholder="Age"
-                            value={passengers[seat]?.age || ''}
-                            onChange={(e) => handlePassengerChange(seat, 'age', e.target.value)}
+                            placeholder="e.g. 077 123 4567"
+                            value={passengers[seat]?.phone || ''}
+                            onChange={(e) => handlePassengerChange(seat, 'phone', e.target.value)}
                             className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
                           />
                         </div>
 
+                        {/* Email Address */}
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gender</label>
-                          <select
-                            value={passengers[seat]?.gender || 'Male'}
-                            onChange={(e) => handlePassengerChange(seat, 'gender', e.target.value)}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white cursor-pointer"
-                          >
-                            <option value="Male">Male (පුරුෂ)</option>
-                            <option value="Female">Female (ස්ත්‍රී - Protected)</option>
-                            <option value="Other">Other</option>
-                          </select>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1 flex items-center space-x-1">
+                            <Mail className="w-3 h-3 text-cyan-500" />
+                            <span>Email Address (විද්‍යුත් තැපෑල)</span>
+                            <span className="text-[9px] text-slate-400 font-normal lowercase ml-1">(SMS/E-Ticket)</span>
+                          </label>
+                          <input
+                            type="email"
+                            placeholder="e.g. passenger@email.com"
+                            value={passengers[seat]?.email || ''}
+                            onChange={(e) => handlePassengerChange(seat, 'email', e.target.value)}
+                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+                          />
                         </div>
+
+                        {/* Age & Gender in dual grid */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                              <span>Age (වයස)</span>
+                              <span className="text-rose-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <input
+                              type="number"
+                              required
+                              min="2"
+                              max="100"
+                              placeholder="Age"
+                              value={passengers[seat]?.age || ''}
+                              onChange={(e) => handlePassengerChange(seat, 'age', e.target.value)}
+                              className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                              <span>Gender (ස්ත්‍රී/පුරුෂ)</span>
+                              <span className="text-rose-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <select
+                              value={passengers[seat]?.gender || 'Male'}
+                              onChange={(e) => handlePassengerChange(seat, 'gender', e.target.value)}
+                              className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white cursor-pointer"
+                            >
+                              <option value="Male">Male (පුරුෂ)</option>
+                              <option value="Female">Female (ස්ත්‍රී - Protected)</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contact helper message */}
+                      <div className="flex items-center space-x-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50/60 dark:bg-emerald-950/20 px-2.5 py-1.5 rounded-lg border border-emerald-200/50 dark:border-emerald-900/30">
+                        <Phone className="w-3 h-3 shrink-0" />
+                        <span>ගමන් වේලාවන් දැනුම්දීමට හා හදිසි අවශ්‍යතාවලදී කොන්දොස්තර මහතා හෝ පාලක මැදිරිය විසින් මෙම අංකය අමතනු ලැබේ.</span>
                       </div>
                     </div>
                   ))}

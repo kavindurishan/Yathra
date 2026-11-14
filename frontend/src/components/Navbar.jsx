@@ -6,7 +6,7 @@ import { api } from '../services/api';
 import YathraBrandLogo from './YathraBrandLogo';
 import { 
   Sun, Moon, Bell, LogOut, User as UserIcon, 
-  Menu, X, Calendar, Compass, ShieldAlert, Award
+  Menu, X, Calendar, Compass, ShieldAlert, Award, ArrowLeft
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -80,12 +80,39 @@ export default function Navbar() {
   const unreadCount = notifications.filter(n => !n.read).length;
   const isAdmin = user && (user.role === 'Admin' || user.role === 'Operator');
 
+  const handleGoBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      if (location.pathname.startsWith('/schedules/')) {
+        navigate('/schedules');
+      } else if (location.pathname.startsWith('/payment/')) {
+        navigate(-1);
+      } else {
+        navigate('/');
+      }
+    }
+  };
+
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-18 sm:h-20 items-center">
           {/* Logo and Brand */}
           <div className="flex items-center">
+            {/* Universal Back Navigation Button (available on all non-root pages) */}
+            {location.pathname !== '/' && (
+              <button
+                type="button"
+                onClick={handleGoBack}
+                title="Go Back (ආපසු යන්න)"
+                className="mr-2 sm:mr-3.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center space-x-1.5 shadow-xs cursor-pointer group border border-slate-200/80 dark:border-slate-700/80"
+              >
+                <ArrowLeft className="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:-translate-x-0.5 transition-transform" />
+                <span className="text-xs font-black tracking-tight">Back</span>
+              </button>
+            )}
+
             <Link to="/" className="flex items-center group py-1 overflow-visible">
               <YathraBrandLogo className="h-12 sm:h-14 md:h-16 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" />
             </Link>
@@ -283,6 +310,19 @@ export default function Navbar() {
       {/* Mobile Collapsed Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-slate-900 px-4 pt-2 pb-4 space-y-1">
+          {location.pathname !== '/' && (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleGoBack();
+              }}
+              className="w-full flex items-center space-x-2 px-3 py-2.5 rounded-xl text-sm font-bold text-primary-600 dark:text-primary-400 bg-primary-50/70 dark:bg-primary-950/40 mb-2 border border-primary-200/60 dark:border-primary-800/50 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Go Back (ආපසු යන්න)</span>
+            </button>
+          )}
           <Link 
             to="/" 
             onClick={() => setMobileMenuOpen(false)}

@@ -302,6 +302,33 @@ export default function Bookings() {
                   </div>
                 </div>
 
+                {/* Passenger contacts list */}
+                {booking.passengers && booking.passengers.length > 0 && (
+                  <div className="pl-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                      Passenger Contacts (මගී ඇමතුම් විස්තර):
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {booking.passengers.map((p, idx) => (
+                        <div key={idx} className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 text-[11px]">
+                          <span className="font-extrabold text-slate-800 dark:text-slate-200">{p.fullName}</span>
+                          <span className="text-primary-600 dark:text-primary-400 font-bold text-[10px]">({p.seatNumber || `Seat ${idx+1}`})</span>
+                          {p.phone && (
+                            <a
+                              href={`tel:${getCleanPhone(p.phone)}`}
+                              className="text-emerald-600 dark:text-emerald-400 font-bold text-[10px] hover:underline flex items-center space-x-0.5 ml-1"
+                              title="Call Passenger"
+                            >
+                              <Phone className="w-2.5 h-2.5" />
+                              <span>{p.phone}</span>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {expandedBookingId === booking._id && (
                   <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800 rounded-xl space-y-3">
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Seating Arrangement Review</span>

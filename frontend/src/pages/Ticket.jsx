@@ -6,7 +6,7 @@ import LiveBusTrackerModal from '../components/LiveBusTrackerModal';
 import YathraBrandLogo from '../components/YathraBrandLogo';
 import { 
   Printer, ArrowLeft, Calendar, Compass, MapPin, 
-  User, CheckCircle, Smartphone, Info, Bus, Phone, MessageSquare, AlertTriangle
+  User, CheckCircle, Smartphone, Info, Bus, Phone, MessageSquare, AlertTriangle, Mail
 } from 'lucide-react';
 
 export default function Ticket() {
@@ -220,28 +220,55 @@ export default function Ticket() {
         <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           {/* Passenger details block */}
           <div className="md:col-span-8 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Passenger Names</span>
-                <div className="space-y-1 mt-1">
-                  {booking.passengers.map((p, i) => (
-                    <p key={i} className="text-xs font-extrabold text-slate-850 dark:text-slate-100 flex items-center space-x-1.5">
-                      <User className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{p.fullName} ({p.age}, {p.gender})</span>
-                    </p>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Seats Assigned</span>
-                <div className="flex flex-wrap gap-1.5 mt-1.5">
+            {/* Passenger Information & Contact Details */}
+            <div className="space-y-3">
+              <div className="flex flex-wrap justify-between items-center gap-1.5 pb-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                  Passenger Details & Contacts (මගී විස්තර හා ඇමතුම්)
+                </span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-[9px] font-bold text-slate-400 mr-1">Seats:</span>
                   {booking.seatsBooked.map(seat => (
-                    <span key={seat} className="bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 text-[11px] font-black px-2.5 py-0.5 rounded-lg">
+                    <span key={seat} className="bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 text-[10px] font-black px-2 py-0.5 rounded-md">
                       Seat {seat}
                     </span>
                   ))}
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                {booking.passengers.map((p, i) => (
+                  <div key={i} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex flex-wrap justify-between items-center gap-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 border border-primary-200/50 dark:border-primary-850 flex items-center justify-center font-black text-xs">
+                        {p.seatNumber || (booking.seatsBooked[i] || `P${i+1}`)}
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-slate-850 dark:text-slate-100 flex items-center space-x-1.5">
+                          <span>{p.fullName}</span>
+                          <span className="text-[10px] text-slate-400 font-semibold">({p.age} yrs &bull; {p.gender})</span>
+                        </p>
+                        {p.email && (
+                          <p className="text-[10px] text-slate-400 flex items-center space-x-1">
+                            <Mail className="w-2.5 h-2.5 text-slate-400" />
+                            <span>{p.email}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {p.phone && (
+                      <a
+                        href={`tel:${getCleanPhone(p.phone)}`}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold flex items-center space-x-1 hover:bg-emerald-100 transition-colors"
+                        title="Call Passenger Phone"
+                      >
+                        <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                        <span>{p.phone}</span>
+                      </a>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 

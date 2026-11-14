@@ -15,9 +15,14 @@ export default function SriLankaRouteMapExplorer({
 }) {
   const [selectedRouteKey, setSelectedRouteKey] = useState(initialRouteId);
   const [inspectedStop, setInspectedStop] = useState(null);
+  const [mapLayerType, setMapLayerType] = useState('roadmap'); // 'roadmap' | 'satellite'
 
   const activeRoute = SRI_LANKA_BUS_ROUTES[selectedRouteKey] || SRI_LANKA_BUS_ROUTES['colombo-kandy'];
-  const googleMapUrl = buildGoogleMapsRouteUrl(activeRoute, inspectedStop);
+  const googleMapUrl = buildGoogleMapsRouteUrl(
+    activeRoute, 
+    inspectedStop, 
+    mapLayerType === 'satellite' ? 'k' : 'm'
+  );
   const externalGoogleMapsUrl = buildExternalGoogleMapsUrl(activeRoute);
 
   const handleRouteSwitch = (key) => {
@@ -102,7 +107,7 @@ export default function SriLankaRouteMapExplorer({
       {/* Embedded Google Map with Real Waypoint Trajectory */}
       <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl h-80 sm:h-[420px] w-full bg-slate-950">
         <iframe
-          key={`${selectedRouteKey}-${inspectedStop || 'full'}`}
+          key={`${selectedRouteKey}-${inspectedStop || 'full'}-${mapLayerType}`}
           title={`Sri Lankan Transit Route Map: ${activeRoute.name}`}
           src={googleMapUrl}
           className="w-full h-full border-0 filter brightness-[0.92] contrast-[1.05]"
@@ -111,29 +116,59 @@ export default function SriLankaRouteMapExplorer({
         />
 
         {/* Top Floating Controls */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none gap-2">
+        <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between pointer-events-none gap-2">
           {/* Active View Indicator */}
           <div className="pointer-events-auto bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs text-white backdrop-blur-md shadow-lg flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-bold">
               {inspectedStop ? (
-                <>📍 Inspecting Bus Stand: <strong className="text-cyan-400">{inspectedStop}</strong></>
+                <>📍 Inspecting: <strong className="text-cyan-400">{inspectedStop}</strong></>
               ) : (
-                <>🛣️ Full Transit Route & Highway Trajectory</>
+                <>🛣️ Route & Waypoint Line</>
               )}
             </span>
           </div>
 
-          <div className="flex items-center space-x-2 pointer-events-auto">
+          <div className="flex items-center space-x-2 pointer-events-auto flex-wrap gap-y-1.5">
+            {/* Two Views Switcher Tabs (Roadmap vs Satellite) */}
+            <div className="inline-flex p-0.5 bg-slate-900/95 border border-slate-700 rounded-xl text-xs font-bold shadow-lg backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => setMapLayerType('roadmap')}
+                className={`px-2.5 py-1 rounded-lg flex items-center space-x-1 transition-all cursor-pointer ${
+                  mapLayerType === 'roadmap'
+                    ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Standard Roadmap View (සාමාන්‍ය මාර්ග සිතියම)"
+              >
+                <span>🗺️</span>
+                <span className="text-[11px]">Roadmap (මාර්ග)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapLayerType('satellite')}
+                className={`px-2.5 py-1 rounded-lg flex items-center space-x-1 transition-all cursor-pointer ${
+                  mapLayerType === 'satellite'
+                    ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Satellite Imagery View (චන්ද්‍රිකා සිතියම)"
+              >
+                <span>🛰️</span>
+                <span className="text-[11px]">Satellite (චන්ද්‍රිකා)</span>
+              </button>
+            </div>
+
             {inspectedStop && (
               <button
                 type="button"
                 onClick={() => setInspectedStop(null)}
-                className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs backdrop-blur-md shadow-lg flex items-center gap-1 transition-all"
+                className="px-2.5 py-1 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs backdrop-blur-md shadow-lg flex items-center gap-1 transition-all cursor-pointer"
                 title="Reset to view the entire route line"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Reset to Full Route</span>
+                <span className="hidden sm:inline">Reset</span>
               </button>
             )}
 
@@ -141,11 +176,11 @@ export default function SriLankaRouteMapExplorer({
               href={externalGoogleMapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-cyan-300 font-bold text-xs backdrop-blur-md shadow-lg flex items-center gap-1.5 transition-all hover:scale-105"
+              className="px-2.5 py-1 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-cyan-300 font-bold text-xs backdrop-blur-md shadow-lg flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer"
               title="Open full Google Maps driving navigation with all waypoints"
             >
               <Compass className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">Open in Google Maps</span>
+              <span className="hidden sm:inline">Google Maps</span>
               <ExternalLink className="w-3 h-3 text-cyan-400/80" />
             </a>
           </div>

@@ -7,6 +7,7 @@ import {
   ArrowRightLeft, Sparkles, Navigation, CheckCircle2, ChevronRight, Zap
 } from 'lucide-react';
 import heroBusImage from '../assets/hero_bus.jpg';
+import SriLankaRouteMapExplorer from '../components/SriLankaRouteMapExplorer';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -124,6 +125,14 @@ export default function Home() {
                 මෙතනින් Bookings දාන්න
               </span>
             </button>
+
+            <a
+              href="#route-map-section"
+              className="px-6 py-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 hover:text-white font-bold text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer shadow-lg"
+            >
+              <Navigation className="w-4 h-4 text-cyan-400" />
+              <span>Explore Live Map (සිතියම)</span>
+            </a>
           </div>
 
           {/* Feature Trust Highlights */}
@@ -277,6 +286,20 @@ export default function Home() {
           </form>
 
         </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SRI LANKAN BUS ROUTES & GOOGLE MAPS TRANSIT EXPLORER           */}
+      {/* ============================================================== */}
+      <section id="route-map-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <SriLankaRouteMapExplorer 
+          initialRouteId="colombo-kandy"
+          onSelectRouteForBooking={(f, t) => {
+            setFromInput(f);
+            setToInput(t);
+            scrollToBooking();
+          }}
+        />
       </section>
 
       {/* ============================================================== */}

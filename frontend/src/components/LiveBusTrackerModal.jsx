@@ -12,6 +12,7 @@ export default function LiveBusTrackerModal({ bookingId, onClose }) {
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [mapViewMode, setMapViewMode] = useState('busLocation'); // 'busLocation' | 'routePath' | 'inspectStop'
+  const [mapLayerType, setMapLayerType] = useState('roadmap'); // 'roadmap' | 'satellite'
   const [inspectedStop, setInspectedStop] = useState(null);
 
   useEffect(() => {
@@ -165,38 +166,72 @@ export default function LiveBusTrackerModal({ bookingId, onClose }) {
                     </span>
                   </div>
 
-                  {/* Map View Mode Tabs */}
-                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold self-start sm:self-auto">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInspectedStop(null);
-                        setMapViewMode('busLocation');
-                      }}
-                      className={`px-3 py-1 rounded-lg transition-all text-[11px] flex items-center space-x-1 ${
-                        mapViewMode === 'busLocation' && !inspectedStop
-                          ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm font-black'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <MapPin className="w-3 h-3" />
-                      <span>Bus Spot / ස්ථානය</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInspectedStop(null);
-                        setMapViewMode('routePath');
-                      }}
-                      className={`px-3 py-1 rounded-lg transition-all text-[11px] flex items-center space-x-1 ${
-                        mapViewMode === 'routePath' && !inspectedStop
-                          ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm font-black'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <Navigation className="w-3 h-3" />
-                      <span>Route Path / මාර්ගය</span>
-                    </button>
+                  {/* Map View Mode Tabs & Layer Toggle */}
+                  <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto">
+                    {/* View Modes */}
+                    <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInspectedStop(null);
+                          setMapViewMode('busLocation');
+                        }}
+                        className={`px-2.5 py-1 rounded-lg transition-all text-[11px] flex items-center space-x-1 ${
+                          mapViewMode === 'busLocation' && !inspectedStop
+                            ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm font-black'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        <MapPin className="w-3 h-3" />
+                        <span>Bus Spot</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInspectedStop(null);
+                          setMapViewMode('routePath');
+                        }}
+                        className={`px-2.5 py-1 rounded-lg transition-all text-[11px] flex items-center space-x-1 ${
+                          mapViewMode === 'routePath' && !inspectedStop
+                            ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm font-black'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        <Navigation className="w-3 h-3" />
+                        <span>Route Path</span>
+                      </button>
+                    </div>
+
+                    {/* Two Views Switcher (Roadmap vs Satellite) */}
+                    <div className="flex items-center space-x-0.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setMapLayerType('roadmap')}
+                        className={`px-2 py-1 rounded-lg transition-all text-[11px] flex items-center space-x-1 cursor-pointer ${
+                          mapLayerType === 'roadmap'
+                            ? 'bg-white dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 shadow-sm font-black'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                        title="Roadmap View (සාමාන්‍ය මාර්ග සිතියම)"
+                      >
+                        <span>🗺️</span>
+                        <span>Roadmap</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMapLayerType('satellite')}
+                        className={`px-2 py-1 rounded-lg transition-all text-[11px] flex items-center space-x-1 cursor-pointer ${
+                          mapLayerType === 'satellite'
+                            ? 'bg-white dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 shadow-sm font-black'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                        title="Satellite View (චන්ද්‍රිකා සිතියම)"
+                      >
+                        <span>🛰️</span>
+                        <span>Satellite</span>
+                      </button>
+                    </div>
+
                     {inspectedStop && (
                       <span className="px-2.5 py-1 rounded-lg bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 text-[10px] font-black">
                         Halt: {inspectedStop}
@@ -208,12 +243,13 @@ export default function LiveBusTrackerModal({ bookingId, onClose }) {
                 {/* Google Map Embedded Frame */}
                 <div className="relative rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-lg h-64 sm:h-80 w-full bg-slate-950">
                   <iframe
+                    key={`${trackingData.currentStop || ''}-${mapViewMode}-${inspectedStop || 'none'}-${mapLayerType}`}
                     title={`Live Bus Location: ${trackingData.currentStop || trackingData.startingLocation}`}
                     src={
                       inspectedStop
-                        ? `https://maps.google.com/maps?q=${encodeURIComponent(inspectedStop + ' Bus Stand Sri Lanka')}&t=m&z=15&output=embed`
+                        ? `https://maps.google.com/maps?q=${encodeURIComponent(inspectedStop + ' Bus Stand Sri Lanka')}&t=${mapLayerType === 'satellite' ? 'k' : 'm'}&z=15&output=embed`
                         : mapViewMode === 'busLocation'
-                        ? `https://maps.google.com/maps?q=${encodeURIComponent((trackingData.currentStop || trackingData.startingLocation) + ', Sri Lanka')}&t=m&z=14&output=embed`
+                        ? `https://maps.google.com/maps?q=${encodeURIComponent((trackingData.currentStop || trackingData.startingLocation) + ', Sri Lanka')}&t=${mapLayerType === 'satellite' ? 'k' : 'm'}&z=14&output=embed`
                         : `https://maps.google.com/maps?saddr=${encodeURIComponent((trackingData.currentStop || trackingData.startingLocation) + ', Sri Lanka')}&daddr=${
                             (trackingData.stops || [])
                               .filter(s => !s.passed && !s.isCurrent)
@@ -222,7 +258,7 @@ export default function LiveBusTrackerModal({ bookingId, onClose }) {
                               .join('+') 
                               ? `${(trackingData.stops || []).filter(s => !s.passed && !s.isCurrent).slice(0, 4).map(s => `to:${encodeURIComponent(s.name + ', Sri Lanka')}`).join('+')}+to:${encodeURIComponent(trackingData.destination + ', Sri Lanka')}`
                               : encodeURIComponent(trackingData.destination + ', Sri Lanka')
-                          }&output=embed`
+                          }&t=${mapLayerType === 'satellite' ? 'k' : 'm'}&output=embed`
                     }
                     className="w-full h-full border-0 filter brightness-[0.92] contrast-[1.05]"
                     loading="lazy"

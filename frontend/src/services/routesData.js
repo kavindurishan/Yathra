@@ -259,7 +259,9 @@ export function findMatchingRoute(from, to) {
 export function buildGoogleMapsRouteUrl(route, inspectStop = null, mapType = 'm') {
   if (!route) route = SRI_LANKA_BUS_ROUTES['colombo-kandy'];
 
-  const typeParam = mapType === 'k' ? '&t=k' : '&t=m';
+  // Supports 'k', 'satellite', 'sat', 'hybrid', 'h' for satellite view; default 'm' for roadmap
+  const isSatellite = (mapType === 'k' || mapType === 'satellite' || mapType === 'sat' || mapType === 'hybrid' || mapType === 'h');
+  const typeParam = isSatellite ? '&t=k' : '&t=m';
 
   if (inspectStop) {
     const query = encodeURIComponent(`${inspectStop} Bus Stand, Sri Lanka`);

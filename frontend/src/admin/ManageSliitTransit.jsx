@@ -66,6 +66,17 @@ export default function ManageSliitTransit() {
     lng: 79.9500
   });
 
+  // Inline editing state for individual halts
+  const [editingStopIndex, setEditingStopIndex] = useState(null);
+  const [editingStopData, setEditingStopData] = useState({
+    name: '',
+    nameSi: '',
+    timeOffset: '+10m',
+    km: 0,
+    lat: 6.9000,
+    lng: 79.9500
+  });
+
   useEffect(() => {
     loadShuttles();
   }, []);
@@ -159,6 +170,7 @@ export default function ManageSliitTransit() {
       lat: 6.9000,
       lng: 79.9500
     });
+    setEditingStopIndex(null);
     setIsEditModalOpen(true);
   };
 
@@ -174,24 +186,25 @@ export default function ManageSliitTransit() {
       busNumber: shuttle.busNumber || '',
       busName: shuttle.busName || '',
       busType: shuttle.busType || 'AC Luxury Coach',
-      fare: shuttle.fare || 250,
-      monthlyPassFare: shuttle.monthlyPassFare || 6500,
+      fare: shuttle.fare !== undefined ? shuttle.fare : 250,
+      monthlyPassFare: shuttle.monthlyPassFare !== undefined ? shuttle.monthlyPassFare : 6500,
       driverName: shuttle.driverName || '',
       driverPhone: shuttle.driverPhone || '',
       driverWhatsapp: shuttle.driverWhatsapp || '',
       conductorName: shuttle.conductorName || '',
       conductorPhone: shuttle.conductorPhone || '',
       seatCapacity: shuttle.seatCapacity || 45,
-      availableSeats: shuttle.availableSeats || 0,
+      availableSeats: shuttle.availableSeats !== undefined ? shuttle.availableSeats : 15,
       occupancyStatus: shuttle.occupancyStatus || 'Seats Available',
       departureTimeMorning: shuttle.departureTimeMorning || '06:15 AM',
       arrivalTimeMorning: shuttle.arrivalTimeMorning || '07:45 AM',
       departureTimeEvening: shuttle.departureTimeEvening || '04:45 PM',
       arrivalTimeEvening: shuttle.arrivalTimeEvening || '06:15 PM',
-      delayNotice: shuttle.delayNotice || '',
+      delayNotice: shuttle.delayNotice || 'Operating smoothly on schedule.',
       status: shuttle.status || 'Active',
-      stops: shuttle.stops || []
+      stops: shuttle.stops ? [...shuttle.stops] : []
     });
+    setEditingStopIndex(null);
     setNewWaypoint({
       name: '',
       nameSi: '',
@@ -260,6 +273,34 @@ export default function ManageSliitTransit() {
     });
   };
 
+  // Start inline editing a halt
+  const handleStartEditStop = (index) => {
+    setEditingStopIndex(index);
+    setEditingStopData({ ...formData.stops[index] });
+  };
+
+  // Save inline edited halt
+  const handleSaveEditedStop = () => {
+    if (editingStopIndex === null) return;
+    const stopsCopy = [...formData.stops];
+    stopsCopy[editingStopIndex] = {
+      ...stopsCopy[editingStopIndex],
+      name: editingStopData.name.trim() || stopsCopy[editingStopIndex].name,
+      nameSi: editingStopData.nameSi.trim() || stopsCopy[editingStopIndex].nameSi,
+      timeOffset: editingStopData.timeOffset || stopsCopy[editingStopIndex].timeOffset,
+      km: Number(editingStopData.km) >= 0 ? Number(editingStopData.km) : (stopsCopy[editingStopIndex].km || 0),
+      lat: Number(editingStopData.lat) || stopsCopy[editingStopIndex].lat || 6.9000,
+      lng: Number(editingStopData.lng) || stopsCopy[editingStopIndex].lng || 79.9500
+    };
+    setFormData({ ...formData, stops: stopsCopy });
+    setEditingStopIndex(null);
+  };
+
+  // Cancel inline editing a halt
+  const handleCancelEditStop = () => {
+    setEditingStopIndex(null);
+  };
+
   // Move waypoint up in sequence
   const handleMoveStopUp = (index) => {
     if (index === 0) return;
@@ -290,13 +331,40 @@ export default function ManageSliitTransit() {
   const handleSaveSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        fare: Number(formData.fare) || 0,
+        monthlyPassFare: Number(formData.monthlyPassFare) || 0,
+        seatCapacity: Number(formData.seatCapacity) || 45,
+        availableSeats: Number(formData.availableSeats) >= 0 ? Number(formData.availableSeats) : 0,
+        // Preserve stops from selected shuttle or formData
+        stops: selectedShuttle?.stops || formData.stops || []
+      };
+
       if (selectedShuttle) {
         // Update existing
-        await api.campus.update(selectedShuttle._id, formData);
+        const targetId = selectedShuttle._id || selectedShuttle.routeId || formData.routeId;
+        
+        // Optimistic UI update so the cards reflect changes immediately
+        setShuttles(prev => prev.map(s => {
+          if (s._id === targetId || s.routeId === targetId || s.routeId === formData.routeId) {
+            return { ...s, ...payload };
+          }
+          return s;
+        }));
+
+        try {
+          await api.campus.update(targetId, payload);
+        } catch (apiErr) {
+          console.warn('Backend update sync warning:', apiErr);
+        }
         showNotification(`Successfully updated ${formData.routeName}`);
       } else {
         // Create new
-        await api.campus.create(formData);
+        const res = await api.campus.create(payload);
+        if (res && res.shuttle) {
+          setShuttles(prev => [...prev, res.shuttle]);
+        }
         showNotification(`Successfully added ${formData.routeName}`);
       }
       setIsEditModalOpen(false);
@@ -306,11 +374,13 @@ export default function ManageSliitTransit() {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete the route "${name}"?`)) return;
+  const handleDelete = async (shuttleOrId, name) => {
+    const id = typeof shuttleOrId === 'object' ? (shuttleOrId._id || shuttleOrId.routeId) : shuttleOrId;
+    const routeName = name || (typeof shuttleOrId === 'object' ? shuttleOrId.routeName : 'this route');
+    if (!window.confirm(`Are you sure you want to delete the route "${routeName}"?`)) return;
     try {
       await api.campus.delete(id);
-      showNotification(`Deleted ${name}`);
+      showNotification(`Deleted ${routeName}`);
       loadShuttles();
     } catch (err) {
       alert('Delete failed: ' + (err.message || 'Error'));
@@ -343,7 +413,8 @@ export default function ManageSliitTransit() {
   };
 
   // Virtual GPS Simulator Step
-  const handleSimulateStep = async (id, action = 'next') => {
+  const handleSimulateStep = async (shuttleOrId, action = 'next') => {
+    const id = typeof shuttleOrId === 'object' ? (shuttleOrId._id || shuttleOrId.routeId) : shuttleOrId;
     try {
       const res = await api.campus.simulateStep(id, action);
       if (res.success) {
@@ -576,50 +647,51 @@ export default function ManageSliitTransit() {
 
               {/* Action Toolbar */}
               <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(shuttle)}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer"
+                  title="Edit Route, Driver, Bus, Fare, Times, and Waypoints"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit Details (තොරතුරු වෙනස් කරන්න)</span>
+                </button>
+
                 <div className="flex items-center space-x-1.5">
                   <button
                     type="button"
-                    onClick={() => handleSimulateStep(shuttle._id, 'next')}
-                    className="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] flex items-center space-x-1 shadow-sm transition-all cursor-pointer"
-                    title="Advance virtual bus forward to the next stop"
-                  >
-                    <Play className="w-3 h-3 fill-white" />
-                    <span>Simulate Step</span>
-                  </button>
-
-                  <button
-                    type="button"
                     onClick={() => handleOpenRouteStudio(shuttle)}
-                    className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-[11px] flex items-center space-x-1 shadow-sm transition-all transform hover:scale-105 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-[11px] flex items-center space-x-1 shadow-sm transition-all cursor-pointer"
                     title="Click to manually draw or trace the bus route directly on the map"
                   >
                     <span>✏️</span>
-                    <span>Draw on Map (පාර අඳින්න)</span>
+                    <span>Draw on Map</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleOpenMapPreview(shuttle)}
                     className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] flex items-center space-x-1 transition-all cursor-pointer"
+                    title="Preview route path"
                   >
                     <Navigation className="w-3 h-3 text-cyan-500" />
-                    <span>Preview Path</span>
+                    <span>Preview</span>
                   </button>
-                </div>
 
-                <div className="flex items-center space-x-1">
                   <button
                     type="button"
-                    onClick={() => handleOpenEdit(shuttle)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-all cursor-pointer"
-                    title="Edit Route & Waypoints"
+                    onClick={() => handleSimulateStep(shuttle, 'next')}
+                    className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] flex items-center space-x-1 transition-all cursor-pointer"
+                    title="Advance virtual bus forward to the next stop"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Play className="w-3 h-3 text-blue-500 fill-blue-500" />
+                    <span>Step</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => handleDelete(shuttle._id, shuttle.routeName)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+                    onClick={() => handleDelete(shuttle)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
                     title="Delete Route"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -661,438 +733,460 @@ export default function ManageSliitTransit() {
             {/* Modal Form */}
             <form onSubmit={handleSaveSubmit} className="p-4 sm:p-6 space-y-6 text-xs">
               
-              {/* Basic Route Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* SECTION 1: Route & Corridor Identity */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-black text-xs uppercase tracking-wider">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>1. Route & Service Identity (මාර්ග තොරතුරු)</span>
+                </div>
                 
-                {/* Route Name English */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name (English)</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.routeName}
-                    onChange={(e) => setFormData({ ...formData, routeName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. Panadura ⇄ SLIIT Malabe Shuttle"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name (English)</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.routeName}
+                      onChange={(e) => setFormData({ ...formData, routeName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="Panadura ⇄ SLIIT Malabe Shuttle"
+                    />
+                  </div>
 
-                {/* Route Name Sinhala */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name (සිංහල)</label>
-                  <input
-                    type="text"
-                    value={formData.routeNameSi}
-                    onChange={(e) => setFormData({ ...formData, routeNameSi: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. පානදුර ⇄ SLIIT මාලඹේ සේවාව"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name (සිංහල)</label>
+                    <input
+                      type="text"
+                      value={formData.routeNameSi}
+                      onChange={(e) => setFormData({ ...formData, routeNameSi: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="පානදුර ⇄ SLIIT මාලඹේ සේවාව"
+                    />
+                  </div>
 
-                {/* Route Code */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Code</label>
-                  <input
-                    type="text"
-                    value={formData.routeNumber}
-                    onChange={(e) => setFormData({ ...formData, routeNumber: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-mono font-bold"
-                    placeholder="e.g. SLIIT-SH-01"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Code</label>
+                    <input
+                      type="text"
+                      value={formData.routeNumber}
+                      onChange={(e) => setFormData({ ...formData, routeNumber: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold"
+                      placeholder="SLIIT-SH-01"
+                    />
+                  </div>
 
-                {/* Origin */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Origin (ආරම්භක නැවතුම)</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.origin}
-                    onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. Panadura Bus Stand"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Origin Town (ආරම්භය)</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.origin}
+                      onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="Panadura Bus Stand"
+                    />
+                  </div>
 
-                {/* Destination */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Destination (ගමනාන්තය)</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.destination}
-                    onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="SLIIT Malabe Campus"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Destination (ගමනාන්තය)</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.destination}
+                      onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="SLIIT Malabe Campus"
+                    />
+                  </div>
 
-                {/* Bus Number */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Bus Registration No.</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.busNumber}
-                    onChange={(e) => setFormData({ ...formData, busNumber: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-mono font-bold"
-                    placeholder="e.g. WP NB-5208"
-                  />
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Service Status (ක්‍රියාකාරීත්වය)</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                    >
+                      <option value="Active">🟢 Active (ධාවනයේ පවතී)</option>
+                      <option value="Maintenance">🟡 Maintenance (නඩත්තු කටයුතු)</option>
+                      <option value="Inactive">🔴 Inactive (තාවකාලිකව අත්හිටුවා ඇත)</option>
+                    </select>
+                  </div>
                 </div>
-
-                {/* Ticket Fare (Rs) */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Single Ride Fare (ගාස්තුව - Rs.)</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={formData.fare}
-                    onChange={(e) => setFormData({ ...formData, fare: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                  />
-                </div>
-
-                {/* Monthly Pass Fare */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Monthly Pass Fare (මාසික පාස් - Rs.)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.monthlyPassFare}
-                    onChange={(e) => setFormData({ ...formData, monthlyPassFare: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                  />
-                </div>
-
-                {/* Driver Name */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Name (රියදුරු නම)</label>
-                  <input
-                    type="text"
-                    value={formData.driverName}
-                    onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. Chaminda Jayalath"
-                  />
-                </div>
-
-                {/* Driver Phone Number */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Phone (දුරකථන අංකය)</label>
-                  <input
-                    type="text"
-                    value={formData.driverPhone}
-                    onChange={(e) => setFormData({ ...formData, driverPhone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. +94 77 894 1234"
-                  />
-                </div>
-
-                {/* Driver WhatsApp */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">WhatsApp (94xxxxxxxxx)</label>
-                  <input
-                    type="text"
-                    value={formData.driverWhatsapp}
-                    onChange={(e) => setFormData({ ...formData, driverWhatsapp: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. 94778941234"
-                  />
-                </div>
-
-                {/* Morning Run Departure */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning Departure Time</label>
-                  <input
-                    type="text"
-                    value={formData.departureTimeMorning}
-                    onChange={(e) => setFormData({ ...formData, departureTimeMorning: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="06:15 AM"
-                  />
-                </div>
-
-                {/* Morning Run SLIIT Arrival ETA */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning SLIIT Arrival ETA</label>
-                  <input
-                    type="text"
-                    value={formData.arrivalTimeMorning}
-                    onChange={(e) => setFormData({ ...formData, arrivalTimeMorning: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="07:45 AM"
-                  />
-                </div>
-
-                {/* Evening Run Departure */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening SLIIT Departure</label>
-                  <input
-                    type="text"
-                    value={formData.departureTimeEvening}
-                    onChange={(e) => setFormData({ ...formData, departureTimeEvening: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="04:45 PM"
-                  />
-                </div>
-
-                {/* Occupancy Status */}
-                <div className="space-y-1">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300">Occupancy Status</label>
-                  <select
-                    value={formData.occupancyStatus}
-                    onChange={(e) => setFormData({ ...formData, occupancyStatus: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold cursor-pointer"
-                  >
-                    <option value="Seats Available">Seats Available (ආසන ඇත)</option>
-                    <option value="Standing Only">Standing Only (හිටගෙන යා හැක)</option>
-                    <option value="Bus Full">Bus Full (රථය පිරී ඇත)</option>
-                  </select>
-                </div>
-
               </div>
 
-              {/* Traffic / Delay Notice */}
-              <div className="space-y-1">
-                <label className="font-extrabold text-slate-700 dark:text-slate-300">Traffic / Delay Announcement (ප්‍රමාද දැනුම්දීම)</label>
+              {/* SECTION 2: Vehicle & Passenger Capacity */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-black text-xs uppercase tracking-wider">
+                  <Bus className="w-3.5 h-3.5" />
+                  <span>2. Vehicle & Capacity (බස් රථය සහ ආසන)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Bus Registration No. (ලියාපදිංචි අංකය)</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.busNumber}
+                      onChange={(e) => setFormData({ ...formData, busNumber: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold"
+                      placeholder="WP NB-5208"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Bus Label / Model Name</label>
+                    <input
+                      type="text"
+                      value={formData.busName}
+                      onChange={(e) => setFormData({ ...formData, busName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="SLIIT Panadura Luxury Coach"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Bus Category / Type</label>
+                    <select
+                      value={formData.busType}
+                      onChange={(e) => setFormData({ ...formData, busType: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                    >
+                      <option value="AC Luxury Coach">AC Luxury Coach</option>
+                      <option value="Semi Luxury">Semi Luxury Coach</option>
+                      <option value="Express Non-AC">Express Non-AC Coach</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Total Seat Capacity (මුළු ආසන)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.seatCapacity === 0 ? 0 : (formData.seatCapacity || '')}
+                      onChange={(e) => setFormData({ ...formData, seatCapacity: e.target.value === '' ? '' : Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Available Seats (ඉතිරි ආසන)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.availableSeats === 0 ? 0 : (formData.availableSeats || '')}
+                      onChange={(e) => setFormData({ ...formData, availableSeats: e.target.value === '' ? '' : Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Occupancy Status</label>
+                    <select
+                      value={formData.occupancyStatus}
+                      onChange={(e) => setFormData({ ...formData, occupancyStatus: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                    >
+                      <option value="Seats Available">Seats Available (ආසන ඇත)</option>
+                      <option value="Standing Only">Standing Only (හිටගෙන යා හැක)</option>
+                      <option value="Bus Full">Bus Full (රථය පිරී ඇත)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: Driver & Crew Contacts */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-black text-xs uppercase tracking-wider">
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>3. Driver & Crew Contacts (රියදුරු සහ කාර්ය මණ්ඩලය)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Name (රියදුරු නම)</label>
+                    <input
+                      type="text"
+                      value={formData.driverName}
+                      onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="e.g. Chaminda Jayalath"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Phone (දුරකථන අංකය)</label>
+                    <input
+                      type="text"
+                      value={formData.driverPhone}
+                      onChange={(e) => setFormData({ ...formData, driverPhone: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="+94 76 688 8078"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">WhatsApp (94xxxxxxxxx)</label>
+                    <input
+                      type="text"
+                      value={formData.driverWhatsapp}
+                      onChange={(e) => setFormData({ ...formData, driverWhatsapp: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="94766888078"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Conductor Name (කොන්දොස්තර නම)</label>
+                    <input
+                      type="text"
+                      value={formData.conductorName}
+                      onChange={(e) => setFormData({ ...formData, conductorName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="Sunil Shantha"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Conductor Phone (කොන්දොස්තර දුරකථනය)</label>
+                    <input
+                      type="text"
+                      value={formData.conductorPhone}
+                      onChange={(e) => setFormData({ ...formData, conductorPhone: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="+94 71 456 7890"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 4: Fares & Timings */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wider">
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>4. Fares & Timetable (ගාස්තු සහ ධාවන වේලාවන්)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {/* Single Ride Fare */}
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Single Ride Fare (ගාස්තුව - Rs.)</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={formData.fare === 0 ? 0 : (formData.fare || '')}
+                      onChange={(e) => setFormData({ ...formData, fare: e.target.value === '' ? '' : Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="e.g. 250"
+                    />
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {[200, 250, 300, 350, 400].map(f => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, fare: f })}
+                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                        >
+                          Rs. {f}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Monthly Pass Fare */}
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Monthly Pass Fare (මාසික පාස් - Rs.)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.monthlyPassFare === 0 ? 0 : (formData.monthlyPassFare || '')}
+                      onChange={(e) => setFormData({ ...formData, monthlyPassFare: e.target.value === '' ? '' : Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="e.g. 6500"
+                    />
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {[5500, 6000, 6500, 7000, 7500].map(p => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, monthlyPassFare: p })}
+                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                        >
+                          Rs. {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Morning Departure Time */}
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning Departure Time (ආරම්භක වේලාව)</label>
+                    <input
+                      type="text"
+                      value={formData.departureTimeMorning || ''}
+                      onChange={(e) => setFormData({ ...formData, departureTimeMorning: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="06:15 AM"
+                    />
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {['06:00 AM', '06:15 AM', '06:30 AM', '06:45 AM'].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, departureTimeMorning: t })}
+                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Morning SLIIT Arrival ETA */}
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning SLIIT Arrival ETA (ළඟාවීම)</label>
+                    <input
+                      type="text"
+                      value={formData.arrivalTimeMorning || ''}
+                      onChange={(e) => setFormData({ ...formData, arrivalTimeMorning: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="07:45 AM"
+                    />
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {['07:30 AM', '07:45 AM', '08:00 AM', '08:15 AM'].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, arrivalTimeMorning: t })}
+                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Evening SLIIT Departure */}
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening SLIIT Departure (සවස පිටත්වීම)</label>
+                    <input
+                      type="text"
+                      value={formData.departureTimeEvening || ''}
+                      onChange={(e) => setFormData({ ...formData, departureTimeEvening: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="04:45 PM"
+                    />
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {['04:30 PM', '04:45 PM', '05:00 PM', '05:15 PM'].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, departureTimeEvening: t })}
+                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Evening Return Arrival ETA */}
+                  <div className="space-y-1">
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening Arrival ETA (සවස ළඟාවීම)</label>
+                    <input
+                      type="text"
+                      value={formData.arrivalTimeEvening || ''}
+                      onChange={(e) => setFormData({ ...formData, arrivalTimeEvening: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                      placeholder="06:15 PM"
+                    />
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {['06:00 PM', '06:15 PM', '06:30 PM', '06:45 PM'].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, arrivalTimeEvening: t })}
+                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 5: Traffic & Delay Announcement */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-rose-600 dark:text-rose-400 font-black text-xs uppercase tracking-wider">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>5. Live Delay Notice & Announcements (ප්‍රමාද දැනුම්දීම්)</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, delayNotice: 'Normal Traffic. Operating smoothly on schedule.' })}
+                      className="px-2 py-0.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      ✅ On Schedule
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, delayNotice: 'Heavy traffic reported. Expected delay of approx 15 minutes.' })}
+                      className="px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      ⚠️ 15m Delay
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, delayNotice: 'Slow traffic due to adverse weather and heavy rain.' })}
+                      className="px-2 py-0.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      🌧️ Heavy Rain
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, delayNotice: 'Shuttle undergoing scheduled vehicle maintenance today.' })}
+                      className="px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      🔧 Maintenance
+                    </button>
+                  </div>
+                </div>
+
                 <input
                   type="text"
-                  value={formData.delayNotice}
+                  value={formData.delayNotice || ''}
                   onChange={(e) => setFormData({ ...formData, delayNotice: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
                   placeholder="e.g. Normal Traffic. Operating smoothly on schedule."
                 />
               </div>
 
-              {/* ============================================================== */}
-              {/* 🛣️ CUSTOM MANUAL ROUTE & ROAD WAYPOINTS EDITOR                 */}
-              {/* ============================================================== */}
-              <div className="pt-4 border-t-2 border-slate-200 dark:border-slate-800 space-y-4">
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <h4 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                      <Compass className="w-4 h-4 text-blue-500" />
-                      <span>Custom Route Waypoints & Road Sequence ({formData.stops?.length || 0} Halts)</span>
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      බස් රථය ගමන් කරන නියම පාරේ පිළිවෙළට නැවතුම් සහ හන්දි එක් කරන්න. සිතියම මත ක්ලික් කරද ලක්ෂ්‍ය එකතු කළ හැක.
-                    </p>
+              {/* Note about Route Map & Drawing Studio */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200/80 dark:border-blue-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="font-black text-xs text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                    <span>🛣️</span>
+                    <span>Route Waypoints & Road Path (නැවතුම් සහ ගමන් මාර්ගය)</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditModalOpen(false);
-                      handleOpenRouteStudio(selectedShuttle || formData);
-                    }}
-                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer self-start sm:self-auto"
-                  >
-                    <span>✏️ Launch Route Drawing Studio (සිතියම මත අඳින්න)</span>
-                  </button>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                    මෙම මාර්ගයේ දැනට නැවතුම් <b>{selectedShuttle?.stops?.length || formData.stops?.length || 0}</b> ක් ඇත. සිතියම මත නැවතුම් වෙනස් කිරීමට හෝ අලුතින් ඇඳීමට <b>'Draw on Map'</b> භාවිතා කරන්න.
+                  </p>
                 </div>
-
-                {/* Live Route Preview Map Inside Form */}
-                <div className="h-56 sm:h-64 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-700 shadow-md">
-                  <SliitCustomRouteMap
-                    shuttle={{ ...formData, stops: formData.stops }}
-                    mapLayerType="custom"
-                    onMapClick={handleMapAddWaypoint}
-                  />
-                </div>
-                <p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
-                  <span>💡 Tip: ඉහත සිතියමේ පාර මත ඕනෑම තැනක් ක්ලික් කළ විට, එම ස්ථානයේ Lat/Lng පහත Form එකට ස්වයංක්‍රීයව ලැබේ.</span>
-                </p>
-
-                {/* Add New Waypoint Form Card */}
-                <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/60 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-blue-900 dark:text-blue-300 flex items-center gap-1">
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add New Road Waypoint / Halt (නව නැවතුමක් එක් කරන්න)</span>
-                    </span>
-
-                    {/* Preset Picker Dropdown */}
-                    <div className="flex items-center space-x-1.5">
-                      <span className="text-[10px] font-bold text-slate-500">Quick Presets:</span>
-                      <select
-                        onChange={handleSelectPreset}
-                        className="px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 cursor-pointer"
-                        defaultValue=""
-                      >
-                        <option value="" disabled>-- Select Verified Sri Lankan Junction --</option>
-                        {SRI_LANKAN_WAYPOINT_PRESETS.map((p, idx) => (
-                          <option key={idx} value={p.name}>
-                            {p.town} - {p.name} ({p.nameSi})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
-                    <div className="col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 block">Waypoint Name (English)</label>
-                      <input
-                        type="text"
-                        value={newWaypoint.name}
-                        onChange={(e) => setNewWaypoint({ ...newWaypoint, name: e.target.value })}
-                        placeholder="e.g. William Junction"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 block">Sinhala Name (සිංහල)</label>
-                      <input
-                        type="text"
-                        value={newWaypoint.nameSi}
-                        onChange={(e) => setNewWaypoint({ ...newWaypoint, nameSi: e.target.value })}
-                        placeholder="e.g. විලියම් හන්දිය"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 block">Time Offset</label>
-                      <input
-                        type="text"
-                        value={newWaypoint.timeOffset}
-                        onChange={(e) => setNewWaypoint({ ...newWaypoint, timeOffset: e.target.value })}
-                        placeholder="+15m"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 block">Distance (km)</label>
-                      <input
-                        type="number"
-                        value={newWaypoint.km}
-                        onChange={(e) => setNewWaypoint({ ...newWaypoint, km: Number(e.target.value) })}
-                        placeholder="12"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      />
-                    </div>
-
-                    <div className="col-span-3">
-                      <label className="text-[10px] font-bold text-slate-500 block">Latitude (GPS)</label>
-                      <input
-                        type="number"
-                        step="0.0001"
-                        value={newWaypoint.lat}
-                        onChange={(e) => setNewWaypoint({ ...newWaypoint, lat: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 block">Longitude (GPS)</label>
-                      <input
-                        type="number"
-                        step="0.0001"
-                        value={newWaypoint.lng}
-                        onChange={(e) => setNewWaypoint({ ...newWaypoint, lng: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold"
-                      />
-                    </div>
-
-                    <div className="col-span-1 flex items-end">
-                      <button
-                        type="button"
-                        onClick={handleAddWaypoint}
-                        className="w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center space-x-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Add</span>
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* Ordered List of Sequential Waypoints */}
-                <div className="space-y-1.5 max-h-60 overflow-y-auto p-2 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                  {(formData.stops || []).map((stop, sIdx) => {
-                    const isFirst = sIdx === 0;
-                    const isLast = sIdx === formData.stops.length - 1;
-
-                    return (
-                      <div 
-                        key={sIdx} 
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs hover:border-blue-400 transition-colors"
-                      >
-                        <div className="flex items-center space-x-2.5">
-                          <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono font-black text-[10px] ${
-                            isFirst ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
-                            isLast ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' :
-                            'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                          }`}>
-                            #{sIdx + 1}
-                          </span>
-
-                          <div>
-                            <span className="font-extrabold text-slate-900 dark:text-white">
-                              {stop.name}
-                            </span>
-                            {stop.nameSi && (
-                              <span className="text-[10px] text-slate-400 ml-1.5">
-                                ({stop.nameSi})
-                              </span>
-                            )}
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                              {stop.timeOffset && <span className="text-blue-600 dark:text-blue-400 font-bold mr-2">⏱️ {stop.timeOffset}</span>}
-                              {stop.km !== undefined && <span className="mr-2">📏 {stop.km} km</span>}
-                              <span className="opacity-75">{Number(stop.lat || 0).toFixed(4)}, {Number(stop.lng || 0).toFixed(4)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Order Controls (Move Up, Move Down, Delete) */}
-                        <div className="flex items-center space-x-1">
-                          <button
-                            type="button"
-                            disabled={isFirst}
-                            onClick={() => handleMoveStopUp(sIdx)}
-                            className={`p-1 rounded-lg border transition-all cursor-pointer ${
-                              isFirst 
-                                ? 'opacity-30 border-slate-200 dark:border-slate-800 cursor-not-allowed' 
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'
-                            }`}
-                            title="Move Waypoint Earlier in Sequence"
-                          >
-                            <ChevronUp className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={isLast}
-                            onClick={() => handleMoveStopDown(sIdx)}
-                            className={`p-1 rounded-lg border transition-all cursor-pointer ${
-                              isLast 
-                                ? 'opacity-30 border-slate-200 dark:border-slate-800 cursor-not-allowed' 
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'
-                            }`}
-                            title="Move Waypoint Later in Sequence"
-                          >
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteStop(sIdx)}
-                            className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 ml-1 transition-all cursor-pointer"
-                            title="Remove Stop"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                      </div>
-                    );
-                  })}
-                </div>
-
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    handleOpenRouteStudio(selectedShuttle || formData);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
+                >
+                  ✏️ Open Draw on Map Studio
+                </button>
               </div>
 
               {/* Submit Buttons */}
@@ -1109,7 +1203,7 @@ export default function ManageSliitTransit() {
                   className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black shadow-lg shadow-blue-500/25 flex items-center space-x-1.5 transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save Shuttle Route (සුරකින්න)</span>
+                  <span>Save Shuttle Details (තොරතුරු සුරකින්න)</span>
                 </button>
               </div>
 

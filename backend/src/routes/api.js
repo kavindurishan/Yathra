@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db } = require('../config/db');
@@ -1412,6 +1415,28 @@ router.post('/campus/shuttles/seed', async (req, res) => {
   }
 });
 
+// Helper to find a campus shuttle by _id, routeId, or busNumber
+const findCampusShuttleDoc = async (idOrKey) => {
+  if (!idOrKey) return null;
+  let shuttle = null;
+  try {
+    shuttle = await db.findById('CampusShuttle', idOrKey);
+  } catch (e) {}
+
+  if (!shuttle) {
+    try {
+      shuttle = await db.findOne('CampusShuttle', { routeId: idOrKey });
+    } catch (e) {}
+  }
+
+  if (!shuttle) {
+    try {
+      shuttle = await db.findOne('CampusShuttle', { busNumber: idOrKey });
+    } catch (e) {}
+  }
+  return shuttle;
+};
+
 // 2. Get Single Campus Shuttle by ID
 router.get('/campus/shuttles/:id', async (req, res) => {
   try {
@@ -1419,11 +1444,7 @@ router.get('/campus/shuttles/:id', async (req, res) => {
     const timeInfo = getSlTimeDetails();
     const isAdmin = role === 'admin' || role === 'Admin' || forceWindow === 'true';
 
-    let shuttle = await db.findById('CampusShuttle', req.params.id);
-    if (!shuttle) {
-      shuttle = await db.findOne('CampusShuttle', { routeId: req.params.id });
-    }
-
+    const shuttle = await findCampusShuttleDoc(req.params.id);
     if (!shuttle) {
       return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
     }
@@ -1468,6 +1489,17 @@ router.post('/campus/shuttles', async (req, res) => {
     }
 
     const newShuttle = await db.create('CampusShuttle', payload);
+
+    // Keep data/campus_shuttle.json in sync
+    try {
+      const jsonPath = path.join(__dirname, '..', '..', 'data', 'campus_shuttle.json');
+      if (fs.existsSync(jsonPath)) {
+        const list = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        list.push(newShuttle);
+        fs.writeFileSync(jsonPath, JSON.stringify(list, null, 2));
+      }
+    } catch (jsonErr) {}
+
     res.status(201).json({ success: true, message: 'SLIIT Shuttle created successfully.', shuttle: newShuttle });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -1477,21 +1509,53 @@ router.post('/campus/shuttles', async (req, res) => {
 // 4. Update Campus Shuttle Route, Fare, Driver Contact, Schedule, Delay Notice (Admin)
 router.put('/campus/shuttles/:id', async (req, res) => {
   try {
-    const updateData = req.body;
-    let updated = await db.findByIdAndUpdate('CampusShuttle', req.params.id, updateData);
-    if (!updated) {
-      const existing = await db.findOne('CampusShuttle', { routeId: req.params.id });
-      if (existing) {
-        updated = await db.findByIdAndUpdate('CampusShuttle', existing._id, updateData);
+    const updateData = { ...req.body };
+    delete updateData._id; // Prevent overwriting immutable primary key
+
+    const target = await findCampusShuttleDoc(req.params.id);
+    if (!target) {
+      return res.status(404).json({ success: false, message: `Shuttle route '${req.params.id}' not found.` });
+    }
+
+    let updated = null;
+    if (target._id) {
+      try {
+        updated = await db.findByIdAndUpdate('CampusShuttle', target._id, updateData);
+      } catch (e) {}
+    }
+
+    if (!updated && target.routeId) {
+      try {
+        if (!db.isLocal()) {
+          const CampusShuttleModel = mongoose.model('CampusShuttle');
+          updated = await CampusShuttleModel.findOneAndUpdate(
+            { routeId: target.routeId },
+            updateData,
+            { new: true }
+          ).lean();
+        }
+      } catch (mongoErr) {}
+    }
+
+    // Keep data/campus_shuttle.json in sync so both JSON fallback and MongoDB stay 100% updated
+    try {
+      const jsonPath = path.join(__dirname, '..', '..', 'data', 'campus_shuttle.json');
+      if (fs.existsSync(jsonPath)) {
+        const list = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        const idx = list.findIndex(s => s._id === target._id || s.routeId === target.routeId || s.routeId === req.params.id);
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], ...updateData, updatedAt: new Date().toISOString() };
+          fs.writeFileSync(jsonPath, JSON.stringify(list, null, 2));
+        }
       }
+    } catch (jsonErr) {
+      console.warn('Sync to campus_shuttle.json warning:', jsonErr.message);
     }
 
-    if (!updated) {
-      return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
-    }
-
-    res.json({ success: true, message: 'SLIIT Shuttle updated successfully.', shuttle: updated });
+    const finalShuttle = updated || { ...target, ...updateData };
+    res.json({ success: true, message: 'SLIIT Shuttle updated successfully.', shuttle: finalShuttle });
   } catch (error) {
+    console.error('Update campus shuttle error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -1499,17 +1563,34 @@ router.put('/campus/shuttles/:id', async (req, res) => {
 // 5. Delete Campus Shuttle Route (Admin)
 router.delete('/campus/shuttles/:id', async (req, res) => {
   try {
-    let deleted = await db.findByIdAndDelete('CampusShuttle', req.params.id);
-    if (!deleted) {
-      const existing = await db.findOne('CampusShuttle', { routeId: req.params.id });
-      if (existing) {
-        deleted = await db.findByIdAndDelete('CampusShuttle', existing._id);
-      }
-    }
-
-    if (!deleted) {
+    const target = await findCampusShuttleDoc(req.params.id);
+    if (!target) {
       return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
     }
+
+    let deleted = null;
+    if (target._id) {
+      try {
+        deleted = await db.findByIdAndDelete('CampusShuttle', target._id);
+      } catch (e) {}
+    }
+
+    if (!deleted && target.routeId && !db.isLocal()) {
+      try {
+        const CampusShuttleModel = mongoose.model('CampusShuttle');
+        deleted = await CampusShuttleModel.findOneAndDelete({ routeId: target.routeId }).lean();
+      } catch (mongoErr) {}
+    }
+
+    // Remove from data/campus_shuttle.json
+    try {
+      const jsonPath = path.join(__dirname, '..', '..', 'data', 'campus_shuttle.json');
+      if (fs.existsSync(jsonPath)) {
+        let list = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        list = list.filter(s => s._id !== target._id && s.routeId !== target.routeId && s.routeId !== req.params.id);
+        fs.writeFileSync(jsonPath, JSON.stringify(list, null, 2));
+      }
+    } catch (jsonErr) {}
 
     res.json({ success: true, message: 'SLIIT Shuttle deleted successfully.' });
   } catch (error) {
@@ -1521,10 +1602,7 @@ router.delete('/campus/shuttles/:id', async (req, res) => {
 router.post('/campus/shuttles/:id/simulate', async (req, res) => {
   try {
     const { action, stepIndex } = req.body; // action: 'next' | 'reset' | 'set' | 'toggle'
-    let shuttle = await db.findById('CampusShuttle', req.params.id);
-    if (!shuttle) {
-      shuttle = await db.findOne('CampusShuttle', { routeId: req.params.id });
-    }
+    const shuttle = await findCampusShuttleDoc(req.params.id);
 
     if (!shuttle) {
       return res.status(404).json({ success: false, message: 'Shuttle route not found.' });

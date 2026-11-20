@@ -284,10 +284,14 @@ const db = {
 
   findById: async (modelName, id) => {
     if (!useLocalJsonDb) {
-      return await models[modelName].findById(id).lean();
+      try {
+        return await models[modelName].findById(id).lean();
+      } catch (err) {
+        return null;
+      }
     }
     const data = loadJsonData(modelName);
-    return data.find(item => item._id === id || item.id === id) || null;
+    return data.find(item => item._id === id || item.id === id || (item.routeId && item.routeId === id)) || null;
   },
 
   create: async (modelName, docData) => {
@@ -309,10 +313,14 @@ const db = {
 
   findByIdAndUpdate: async (modelName, id, updateData) => {
     if (!useLocalJsonDb) {
-      return await models[modelName].findByIdAndUpdate(id, updateData, { new: true }).lean();
+      try {
+        return await models[modelName].findByIdAndUpdate(id, updateData, { new: true }).lean();
+      } catch (err) {
+        return null;
+      }
     }
     const data = loadJsonData(modelName);
-    const index = data.findIndex(item => item._id === id);
+    const index = data.findIndex(item => item._id === id || item.id === id || (item.routeId && item.routeId === id));
     if (index === -1) return null;
     data[index] = {
       ...data[index],
@@ -325,10 +333,14 @@ const db = {
 
   findByIdAndDelete: async (modelName, id) => {
     if (!useLocalJsonDb) {
-      return await models[modelName].findByIdAndDelete(id).lean();
+      try {
+        return await models[modelName].findByIdAndDelete(id).lean();
+      } catch (err) {
+        return null;
+      }
     }
     const data = loadJsonData(modelName);
-    const index = data.findIndex(item => item._id === id);
+    const index = data.findIndex(item => item._id === id || item.id === id || (item.routeId && item.routeId === id));
     if (index === -1) return null;
     const removed = data.splice(index, 1);
     saveJsonData(modelName, data);

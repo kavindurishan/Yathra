@@ -392,10 +392,32 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Internal Server Error' });
 });
 
+// Seed SLIIT Campus Shuttles independently
+const seedCampusShuttles = async () => {
+  try {
+    const shuttleCount = await db.count('CampusShuttle');
+    if (shuttleCount === 0) {
+      console.log('🌱 Seeding default SLIIT Campus Shuttles from JSON...');
+      const defaultShuttles = require('../data/campus_shuttle.json');
+      for (const shuttle of defaultShuttles) {
+        try {
+          await db.create('CampusShuttle', shuttle);
+        } catch (e) {
+          console.warn(`Shuttle ${shuttle.routeId} insert warning:`, e.message);
+        }
+      }
+      console.log(`✅ Seeded ${defaultShuttles.length} SLIIT Campus Shuttles into database.`);
+    }
+  } catch (err) {
+    console.error('❌ Error seeding SLIIT campus shuttles:', err.message);
+  }
+};
+
 // Start Server
 const start = async () => {
   await connectDB();
   await seedDatabase();
+  await seedCampusShuttles();
   app.listen(PORT, () => {
     console.log(`🚀 Yathra REST API Server running on port ${PORT}`);
   });

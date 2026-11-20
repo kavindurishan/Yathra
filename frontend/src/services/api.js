@@ -213,5 +213,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ action, stepIndex })
     }),
+    seedDefaults: () => request('/campus/shuttles/seed', {
+      method: 'POST'
+    }),
   }
 };

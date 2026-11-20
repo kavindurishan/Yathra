@@ -1319,7 +1319,22 @@ router.get('/campus/shuttles', async (req, res) => {
       }
     }
 
-    const shuttles = await db.find('CampusShuttle', {});
+    let shuttles = await db.find('CampusShuttle', {});
+
+    // If database has 0 shuttles, auto-seed from campus_shuttle.json so the view is never empty
+    if (!shuttles || shuttles.length === 0) {
+      try {
+        const defaultShuttles = require('../../data/campus_shuttle.json');
+        for (const s of defaultShuttles) {
+          try {
+            await db.create('CampusShuttle', s);
+          } catch (createErr) {}
+        }
+        shuttles = await db.find('CampusShuttle', {});
+      } catch (seedErr) {
+        console.warn('Could not auto-seed campus shuttles on GET:', seedErr.message);
+      }
+    }
 
     // Apply Time-Lock window logic for students:
     // If not admin AND outside window AND forceWindow is not active, mask the live GPS coordinates
@@ -1356,6 +1371,28 @@ router.get('/campus/shuttles', async (req, res) => {
       },
       shuttles: processedShuttles
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Seed / Restore Default Campus Shuttle Corridors
+router.post('/campus/shuttles/seed', async (req, res) => {
+  try {
+    const defaultShuttles = require('../../data/campus_shuttle.json');
+    let seeded = 0;
+    for (const s of defaultShuttles) {
+      const existing = await db.findOne('CampusShuttle', { routeId: s.routeId });
+      if (!existing) {
+        await db.create('CampusShuttle', s);
+        seeded++;
+      } else {
+        await db.findByIdAndUpdate('CampusShuttle', existing._id, s);
+        seeded++;
+      }
+    }
+    const shuttles = await db.find('CampusShuttle', {});
+    res.json({ success: true, message: `Successfully synchronized ${seeded} SLIIT shuttles.`, shuttles });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

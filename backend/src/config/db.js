@@ -115,6 +115,7 @@ const notificationSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const campusShuttleSchema = new mongoose.Schema({
+  _id: { type: String },
   routeId: { type: String, required: true, unique: true },
   routeNumber: { type: String, default: 'SLIIT-SH' },
   routeName: { type: String, required: true },

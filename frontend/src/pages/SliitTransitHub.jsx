@@ -44,6 +44,7 @@ export default function SliitTransitHub() {
   const [inspectedStop, setInspectedStop] = useState(null);
   const [serverTimeInfo, setServerTimeInfo] = useState(null);
   const [focusBusKey, setFocusBusKey] = useState(0);
+  const [isLiveStreaming, setIsLiveStreaming] = useState(true);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -55,6 +56,15 @@ export default function SliitTransitHub() {
     }, 8000);
     return () => clearInterval(interval);
   }, [forceWindowActive]);
+
+  // Continuous Live GPS Simulation Stream (Advances bus along waypoints every 5s without interrupting user zoom)
+  useEffect(() => {
+    if (!isLiveStreaming) return;
+    const streamTimer = setInterval(() => {
+      handleAdvanceSimulation(false); // false = never hijack map zoom level!
+    }, 5000);
+    return () => clearInterval(streamTimer);
+  }, [isLiveStreaming, activeShuttle?.routeId, activeShuttle?._id]);
 
   const loadShuttles = async (showLoadingSpinner = false) => {
     if (showLoadingSpinner) setLoading(true);
@@ -78,13 +88,15 @@ export default function SliitTransitHub() {
   const activeShuttle = shuttles.find(s => (s.routeId === selectedShuttleId || s._id === selectedShuttleId)) || shuttles[0] || DEFAULT_SLIIT_SHUTTLES[0];
 
   // Handle Simulation Step (advances the virtual bus forward)
-  const handleAdvanceSimulation = async () => {
+  const handleAdvanceSimulation = async (shouldFocusMap = false) => {
     if (!activeShuttle) return;
     try {
       const res = await api.campus.simulateStep(activeShuttle._id || activeShuttle.routeId, 'next');
       if (res && res.success) {
         loadShuttles(false);
-        setFocusBusKey(prev => prev + 1);
+        if (shouldFocusMap) {
+          setFocusBusKey(prev => prev + 1);
+        }
       }
     } catch (e) {
       console.error('Error advancing simulation:', e);
@@ -112,6 +124,9 @@ export default function SliitTransitHub() {
           }
           return sh;
         }));
+        if (shouldFocusMap) {
+          setFocusBusKey(prev => prev + 1);
+        }
       }
     }
   };
@@ -487,6 +502,21 @@ export default function SliitTransitHub() {
                   </button>
                 )}
 
+                {/* Continuous Live Stream Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsLiveStreaming(prev => !prev)}
+                  className={`px-2.5 py-1 rounded-xl font-black text-[11px] shadow-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isLiveStreaming
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600'
+                  }`}
+                  title={isLiveStreaming ? 'Click to Pause live telemetry streaming' : 'Click to Resume live GPS streaming'}
+                >
+                  <span className={`w-2 h-2 rounded-full ${isLiveStreaming ? 'bg-emerald-300 animate-ping' : 'bg-slate-400'}`} />
+                  <span>{isLiveStreaming ? '🔴 LIVE GPS Active' : '⏸️ Stream Paused'}</span>
+                </button>
+
                 {/* Find Bus Quick Button */}
                 <button
                   type="button"
@@ -501,15 +531,15 @@ export default function SliitTransitHub() {
                   <span>🎯 Bus එක කොහෙද</span>
                 </button>
 
-                {/* Live Simulation Trigger (To step the bus along its custom route) */}
+                {/* Manual Step Button */}
                 <button
                   type="button"
-                  onClick={handleAdvanceSimulation}
-                  className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] shadow-lg flex items-center gap-1 transition-all cursor-pointer"
+                  onClick={() => handleAdvanceSimulation(false)}
+                  className="px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-[11px] shadow-lg flex items-center gap-1 transition-all cursor-pointer"
                   title="Simulate advancing bus forward along its route"
                 >
                   <Play className="w-3 h-3 fill-white" />
-                  <span>Step Bus</span>
+                  <span>Step</span>
                 </button>
               </div>
             </div>

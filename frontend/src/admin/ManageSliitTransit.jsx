@@ -736,7 +736,7 @@ export default function ManageSliitTransit() {
                     value={formData.busNumber}
                     onChange={(e) => setFormData({ ...formData, busNumber: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-mono font-bold"
-                    placeholder="e.g. WP ND-5842"
+                    placeholder="e.g. WP NB-5208"
                   />
                 </div>
 
@@ -773,7 +773,7 @@ export default function ManageSliitTransit() {
                     value={formData.driverName}
                     onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold"
-                    placeholder="e.g. Saman Kumara"
+                    placeholder="e.g. Chaminda Jayalath"
                   />
                 </div>
 

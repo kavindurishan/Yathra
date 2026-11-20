@@ -60,23 +60,25 @@ export const AuthProvider = ({ children }) => {
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('tripzo_user', JSON.stringify(data.user));
+      localStorage.setItem('yathra_user', JSON.stringify(data.user));
       return { success: true };
     } else {
       return { success: false, message: data.message };
     }
   };
 
-  const register = async (username, fullName, email, phone, password) => {
+  const register = async (username, fullName, email, phone, password, isSliitStudent = false, studentId = '') => {
     const res = await fetch('http://127.0.0.1:5000/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, fullName, email, phone, password })
+      body: JSON.stringify({ username, fullName, email, phone, password, isSliitStudent, studentId })
     });
     const data = await res.json();
     if (data.success) {
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('tripzo_user', JSON.stringify(data.user));
+      localStorage.setItem('yathra_user', JSON.stringify(data.user));
       return { success: true };
     } else {
       return { success: false, message: data.message };

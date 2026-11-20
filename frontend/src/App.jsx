@@ -15,9 +15,11 @@ import Ticket from './pages/Ticket';
 import Bookings from './pages/Bookings';
 import { Login, Register } from './pages/Auth';
 import { AboutUs, ContactUs } from './pages/AboutContact';
+import SliitTransitHub from './pages/SliitTransitHub';
 
 // Admin Pages
 import AdminDashboard from './admin/AdminDashboard';
+import ManageSliitTransit from './admin/ManageSliitTransit';
 import { 
   ManageUsers, ManageBuses, ManageRoutes, ManageSchedules, 
   ManageBookings, ManagePayments, ManageOffers, ManageReviews 
@@ -55,6 +57,7 @@ export default function App() {
           {/* Public customer routes */}
           <Route path="/" element={<Home />} />
           <Route path="/schedules" element={<BusList />} />
+          <Route path="/sliit-transit" element={<SliitTransitHub />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/login" element={<Login />} />
@@ -102,6 +105,7 @@ export default function App() {
                       <Route path="payments" element={<ManagePayments />} />
                       <Route path="offers" element={<ManageOffers />} />
                       <Route path="reviews" element={<ManageReviews />} />
+                      <Route path="sliit-transit" element={<ManageSliitTransit />} />
                     </Routes>
                   </div>
 

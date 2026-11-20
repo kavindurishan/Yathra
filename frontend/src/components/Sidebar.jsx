@@ -28,6 +28,7 @@ export default function Sidebar({ onClose, className = '' }) {
     { name: 'Manage Payments', icon: CreditCard, path: '/admin/payments' },
     { name: 'Manage Offers', icon: Tag, path: '/admin/offers' },
     { name: 'Reviews & Feedback', icon: Star, path: '/admin/reviews' },
+    { name: '🎓 SLIIT Transit Hub', icon: RouteIcon, path: '/admin/sliit-transit' },
     { name: 'Reports Engine', icon: Ticket, path: '/admin/reports' },
     { name: 'System Settings', icon: Settings, path: '/admin/settings' },
   ];

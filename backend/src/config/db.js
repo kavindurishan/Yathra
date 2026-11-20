@@ -114,6 +114,60 @@ const notificationSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+const campusShuttleSchema = new mongoose.Schema({
+  routeId: { type: String, required: true, unique: true },
+  routeNumber: { type: String, default: 'SLIIT-SH' },
+  routeName: { type: String, required: true },
+  routeNameSi: { type: String },
+  origin: { type: String, required: true },
+  destination: { type: String, default: 'SLIIT Malabe Campus' },
+  busNumber: { type: String, required: true },
+  busName: { type: String },
+  busType: { type: String, default: 'AC Luxury Coach' },
+  fare: { type: Number, default: 250 },
+  monthlyPassFare: { type: Number, default: 6500 },
+  driverName: { type: String, default: 'Staff Driver' },
+  driverPhone: { type: String, default: '+94 77 123 4567' },
+  driverWhatsapp: { type: String, default: '94771234567' },
+  conductorName: { type: String },
+  conductorPhone: { type: String },
+  seatCapacity: { type: Number, default: 45 },
+  availableSeats: { type: Number, default: 15 },
+  occupancyStatus: { type: String, enum: ['Seats Available', 'Standing Only', 'Bus Full'], default: 'Seats Available' },
+  departureTimeMorning: { type: String, default: '06:15 AM' },
+  arrivalTimeMorning: { type: String, default: '07:45 AM' },
+  departureTimeEvening: { type: String, default: '04:45 PM' },
+  arrivalTimeEvening: { type: String, default: '06:15 PM' },
+  operatingWindow: {
+    morningStart: { type: String, default: '06:00' },
+    morningEnd: { type: String, default: '08:00' },
+    eveningStart: { type: String, default: '16:00' },
+    eveningEnd: { type: String, default: '18:30' }
+  },
+  stops: [{
+    name: String,
+    nameSi: String,
+    timeOffset: String,
+    km: Number,
+    lat: Number,
+    lng: Number
+  }],
+  currentLocation: {
+    lat: Number,
+    lng: Number,
+    speed: { type: Number, default: 0 },
+    currentHalt: String,
+    nextHalt: String,
+    nextHaltEta: String,
+    isLive: { type: Boolean, default: true },
+    simulationActive: { type: Boolean, default: false },
+    simulationIndex: { type: Number, default: 0 },
+    lastUpdated: { type: Date, default: Date.now }
+  },
+  delayNotice: { type: String, default: 'Normal Traffic. Operating smoothly on schedule.' },
+  status: { type: String, enum: ['Active', 'Maintenance', 'Inactive'], default: 'Active' }
+}, { timestamps: true });
+
 // Define Mongoose Models
 let models = {};
 
@@ -127,13 +181,20 @@ try {
   models.Review = mongoose.model('Review', reviewSchema);
   models.Offer = mongoose.model('Offer', offerSchema);
   models.Notification = mongoose.model('Notification', notificationSchema);
+  models.CampusShuttle = mongoose.model('CampusShuttle', campusShuttleSchema);
 } catch (e) {
   // Model compilation failed, might be recompiled, which is fine
 }
 
 // JSON file storage helpers
+const getCollectionFileName = (collection) => {
+  const c = collection.toLowerCase();
+  if (c === 'campusshuttle' || c === 'campus_shuttle') return 'campus_shuttle.json';
+  return `${c}.json`;
+};
+
 const loadJsonData = (collection) => {
-  const filePath = path.join(JSON_DB_DIR, `${collection.toLowerCase()}.json`);
+  const filePath = path.join(JSON_DB_DIR, getCollectionFileName(collection));
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify([], null, 2));
     return [];
@@ -148,7 +209,7 @@ const loadJsonData = (collection) => {
 };
 
 const saveJsonData = (collection, data) => {
-  const filePath = path.join(JSON_DB_DIR, `${collection.toLowerCase()}.json`);
+  const filePath = path.join(JSON_DB_DIR, getCollectionFileName(collection));
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
 

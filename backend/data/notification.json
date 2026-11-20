@@ -8,5 +8,15 @@
     "read": true,
     "createdAt": "2026-11-09T08:40:23.372Z",
     "updatedAt": "2026-11-09T08:44:36.233Z"
+  },
+  {
+    "_id": "iso0m2hf01nrb7j4pm6ymg",
+    "user": "yfjngkp5eyzmxeipffb3b",
+    "title": "Welcome to Yathra!",
+    "message": "Hello Kasun Bandara, welcome to Yathra! Search and book your journey now.",
+    "type": "Info",
+    "read": false,
+    "createdAt": "2026-11-15T14:39:11.326Z",
+    "updatedAt": "2026-11-15T14:39:11.326Z"
   }
 ]

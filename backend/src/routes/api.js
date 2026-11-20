@@ -49,13 +49,23 @@ const populateBookingObj = async (booking) => {
 // Register Customer
 router.post('/auth/register', async (req, res) => {
   try {
-    const { username, fullName, email, phone, password } = req.reqBody || req.body;
+    const { username, fullName, email, phone, password, isSliitStudent, studentId } = req.reqBody || req.body;
     
     if (!username || !fullName || !email || !phone || !password) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
 
-    const existingEmail = await db.findOne('User', { email });
+    const emailLower = email.toLowerCase().trim();
+    const isSliitDomain = emailLower.endsWith('@my.sliit.lk') || emailLower.endsWith('@sliit.lk');
+
+    if (isSliitStudent && !isSliitDomain) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid Email' 
+      });
+    }
+
+    const existingEmail = await db.findOne('User', { email: emailLower });
     if (existingEmail) {
       return res.status(400).json({ success: false, message: 'Email already registered.' });
     }
@@ -71,10 +81,12 @@ router.post('/auth/register', async (req, res) => {
     const newUser = await db.create('User', {
       username,
       fullName,
-      email,
+      email: emailLower,
       phone,
       password: hashedPassword,
       role: 'Customer',
+      isSliitStudent: isSliitDomain || Boolean(isSliitStudent),
+      studentId: studentId || null,
       status: 'Active'
     });
 
@@ -92,7 +104,15 @@ router.post('/auth/register', async (req, res) => {
     res.status(201).json({
       success: true,
       token,
-      user: { _id: newUser._id, fullName, email, phone, role: 'Customer' }
+      user: { 
+        _id: newUser._id, 
+        fullName, 
+        email: emailLower, 
+        phone, 
+        role: 'Customer',
+        isSliitStudent: isSliitDomain || Boolean(isSliitStudent),
+        studentId: studentId || null
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -138,7 +158,9 @@ router.post('/auth/login', async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        isSliitStudent: Boolean(user.isSliitStudent || (user.email && (user.email.endsWith('@my.sliit.lk') || user.email.endsWith('@sliit.lk')))),
+        studentId: user.studentId || null
       }
     });
   } catch (error) {
@@ -1236,6 +1258,331 @@ router.get('/reports/dashboard', authenticate, authorize(['Admin', 'Operator']),
       charts: {
         revenueChart
       }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ====================================================
+// SLIIT TRANSIT HUB - CAMPUS SHUTTLE GPS TELEMETRY API
+// ====================================================
+
+// Helper: Calculate Sri Lanka (UTC+5:30) Operating Window
+const getSlTimeDetails = () => {
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const slDate = new Date(utc + (3600000 * 5.5));
+  const hours = slDate.getHours();
+  const minutes = slDate.getMinutes();
+  const currentMinutes = hours * 60 + minutes;
+
+  // Morning Window: 06:00 AM (360m) - 08:00 AM (480m)
+  const isMorningWindow = currentMinutes >= 360 && currentMinutes <= 480;
+  // Evening Window: 04:00 PM (960m) - 06:30 PM (1110m)
+  const isEveningWindow = currentMinutes >= 960 && currentMinutes <= 1110;
+
+  const formattedTime = slDate.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  return {
+    slDate,
+    currentMinutes,
+    formattedTime,
+    isWithinWindow: isMorningWindow || isEveningWindow,
+    isMorningWindow,
+    isEveningWindow
+  };
+};
+
+// 1. Get All Campus Shuttles (With Time-Gated Logic for Students vs 24/7 for Admin/Simulation)
+router.get('/campus/shuttles', async (req, res) => {
+  try {
+    const { forceWindow, role } = req.query;
+    const timeInfo = getSlTimeDetails();
+
+    // Check auth header if available for Admin role
+    let isAdmin = role === 'admin' || role === 'Admin' || forceWindow === 'true';
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tripzo_deep_mind_super_secure_jwt_secret_token_key_2026');
+        if (decoded && (decoded.role === 'Admin' || decoded.role === 'Operator')) {
+          isAdmin = true;
+        }
+      } catch (e) {
+        // Token invalid, fallback
+      }
+    }
+
+    const shuttles = await db.find('CampusShuttle', {});
+
+    // Apply Time-Lock window logic for students:
+    // If not admin AND outside window AND forceWindow is not active, mask the live GPS coordinates
+    const isLiveActive = isAdmin || timeInfo.isWithinWindow || forceWindow === 'true';
+
+    const processedShuttles = shuttles.map(shuttle => {
+      if (!isLiveActive) {
+        return {
+          ...shuttle,
+          isWithinOperatingWindow: false,
+          operatingStatus: 'Offline',
+          operatingStatusMessage: 'Morning Shuttle concluded. Next scheduled service is tomorrow at 06:00 AM.',
+          currentLocation: {
+            ...shuttle.currentLocation,
+            isLive: false,
+            speed: 0
+          }
+        };
+      }
+      return {
+        ...shuttle,
+        isWithinOperatingWindow: true,
+        operatingStatus: 'Live',
+        operatingStatusMessage: 'Active Live GPS Telemetry Stream'
+      };
+    });
+
+    res.json({
+      success: true,
+      timeInfo: {
+        slTime: timeInfo.formattedTime,
+        isWithinWindow: timeInfo.isWithinWindow,
+        isLiveActive
+      },
+      shuttles: processedShuttles
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 2. Get Single Campus Shuttle by ID
+router.get('/campus/shuttles/:id', async (req, res) => {
+  try {
+    const { forceWindow, role } = req.query;
+    const timeInfo = getSlTimeDetails();
+    const isAdmin = role === 'admin' || role === 'Admin' || forceWindow === 'true';
+
+    let shuttle = await db.findById('CampusShuttle', req.params.id);
+    if (!shuttle) {
+      shuttle = await db.findOne('CampusShuttle', { routeId: req.params.id });
+    }
+
+    if (!shuttle) {
+      return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
+    }
+
+    const isLiveActive = isAdmin || timeInfo.isWithinWindow || forceWindow === 'true';
+
+    res.json({
+      success: true,
+      timeInfo: {
+        slTime: timeInfo.formattedTime,
+        isWithinWindow: timeInfo.isWithinWindow,
+        isLiveActive
+      },
+      shuttle: {
+        ...shuttle,
+        isWithinOperatingWindow: isLiveActive
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3. Create New Campus Shuttle Route (Admin)
+router.post('/campus/shuttles', async (req, res) => {
+  try {
+    const payload = req.body;
+    if (!payload.routeName || !payload.busNumber || !payload.origin) {
+      return res.status(400).json({ success: false, message: 'Route Name, Origin, and Bus Number are required.' });
+    }
+
+    if (!payload.routeId) {
+      payload.routeId = 'sliit-' + payload.origin.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    }
+
+    // Default stops if not provided
+    if (!payload.stops || payload.stops.length === 0) {
+      payload.stops = [
+        { name: payload.origin, timeOffset: '00m', km: 0 },
+        { name: 'SLIIT Malabe Campus', timeOffset: '1h 15m', km: 35 }
+      ];
+    }
+
+    const newShuttle = await db.create('CampusShuttle', payload);
+    res.status(201).json({ success: true, message: 'SLIIT Shuttle created successfully.', shuttle: newShuttle });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 4. Update Campus Shuttle Route, Fare, Driver Contact, Schedule, Delay Notice (Admin)
+router.put('/campus/shuttles/:id', async (req, res) => {
+  try {
+    const updateData = req.body;
+    let updated = await db.findByIdAndUpdate('CampusShuttle', req.params.id, updateData);
+    if (!updated) {
+      const existing = await db.findOne('CampusShuttle', { routeId: req.params.id });
+      if (existing) {
+        updated = await db.findByIdAndUpdate('CampusShuttle', existing._id, updateData);
+      }
+    }
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
+    }
+
+    res.json({ success: true, message: 'SLIIT Shuttle updated successfully.', shuttle: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 5. Delete Campus Shuttle Route (Admin)
+router.delete('/campus/shuttles/:id', async (req, res) => {
+  try {
+    let deleted = await db.findByIdAndDelete('CampusShuttle', req.params.id);
+    if (!deleted) {
+      const existing = await db.findOne('CampusShuttle', { routeId: req.params.id });
+      if (existing) {
+        deleted = await db.findByIdAndDelete('CampusShuttle', existing._id);
+      }
+    }
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
+    }
+
+    res.json({ success: true, message: 'SLIIT Shuttle deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 6. Virtual GPS Simulation Step / Toggle (Admin & Testing Controller)
+router.post('/campus/shuttles/:id/simulate', async (req, res) => {
+  try {
+    const { action, stepIndex } = req.body; // action: 'next' | 'reset' | 'set' | 'toggle'
+    let shuttle = await db.findById('CampusShuttle', req.params.id);
+    if (!shuttle) {
+      shuttle = await db.findOne('CampusShuttle', { routeId: req.params.id });
+    }
+
+    if (!shuttle) {
+      return res.status(404).json({ success: false, message: 'Shuttle route not found.' });
+    }
+
+    const stops = shuttle.stops || [];
+    if (stops.length === 0) {
+      return res.status(400).json({ success: false, message: 'No waypoints defined for simulation.' });
+    }
+
+    let currentIndex = (shuttle.currentLocation && typeof shuttle.currentLocation.simulationIndex === 'number')
+      ? shuttle.currentLocation.simulationIndex
+      : 0;
+
+    if (action === 'reset') {
+      currentIndex = 0;
+    } else if (action === 'set' && typeof stepIndex === 'number') {
+      currentIndex = Math.max(0, Math.min(stepIndex, stops.length - 1));
+    } else if (action === 'next' || !action) {
+      currentIndex = (currentIndex + 1) % stops.length;
+    }
+
+    const activeStop = stops[currentIndex];
+    const nextStop = stops[(currentIndex + 1) % stops.length];
+
+    const updatedLocation = {
+      lat: activeStop.lat || shuttle.currentLocation?.lat || 6.9147,
+      lng: activeStop.lng || shuttle.currentLocation?.lng || 79.9729,
+      speed: currentIndex === stops.length - 1 ? 0 : Math.floor(Math.random() * 20) + 30, // 30-50 km/h
+      currentHalt: activeStop.name,
+      nextHalt: nextStop ? nextStop.name : 'SLIIT Malabe Campus',
+      nextHaltEta: currentIndex === stops.length - 1 ? 'Arrived' : `${Math.floor(Math.random() * 8) + 4} mins`,
+      isLive: true,
+      simulationActive: true,
+      simulationIndex: currentIndex,
+      lastUpdated: new Date().toISOString()
+    };
+
+    const updated = await db.findByIdAndUpdate('CampusShuttle', shuttle._id, {
+      currentLocation: updatedLocation
+    });
+
+    res.json({
+      success: true,
+      message: `Simulated GPS location advanced to ${activeStop.name}`,
+      currentLocation: updatedLocation,
+      shuttle: updated
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 7. Hardware GPS Tracker Webhook Receiver (Ingests real SinoTrack / Teltonika / Coban GPS pings)
+router.post('/campus/gps/webhook', async (req, res) => {
+  try {
+    const { deviceId, busId, lat, lng, speed, heading, altitude } = req.body || req.query;
+
+    const idToMatch = busId || deviceId;
+    if (!idToMatch || !lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing device telemetry parameters. Required: deviceId/busId, lat, lng.'
+      });
+    }
+
+    let shuttle = await db.findOne('CampusShuttle', {
+      $or: [
+        { routeId: idToMatch },
+        { busNumber: idToMatch },
+        { _id: idToMatch }
+      ]
+    });
+
+    if (!shuttle) {
+      // Fallback matching
+      const allShuttles = await db.find('CampusShuttle', {});
+      shuttle = allShuttles.find(s => 
+        (s.busNumber && s.busNumber.toLowerCase().replace(/[^a-z0-9]/g, '') === idToMatch.toLowerCase().replace(/[^a-z0-9]/g, '')) ||
+        (s.routeId && s.routeId.toLowerCase().includes(idToMatch.toLowerCase()))
+      );
+    }
+
+    if (!shuttle) {
+      return res.status(404).json({ success: false, message: `No shuttle registered for device identifier: ${idToMatch}` });
+    }
+
+    const updatedLocation = {
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+      speed: parseFloat(speed) || 0,
+      heading: parseFloat(heading) || 0,
+      altitude: parseFloat(altitude) || 0,
+      currentHalt: shuttle.currentLocation?.currentHalt || 'In Transit',
+      nextHalt: shuttle.currentLocation?.nextHalt || 'SLIIT Campus',
+      nextHaltEta: shuttle.currentLocation?.nextHaltEta || '--',
+      isLive: true,
+      lastUpdated: new Date().toISOString()
+    };
+
+    await db.findByIdAndUpdate('CampusShuttle', shuttle._id, {
+      currentLocation: updatedLocation
+    });
+
+    res.json({
+      success: true,
+      message: 'Hardware GPS Telemetry Packet Processed.',
+      matchedBus: shuttle.busNumber,
+      updatedLocation
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

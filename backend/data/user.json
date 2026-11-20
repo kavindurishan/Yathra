@@ -34,5 +34,49 @@
     "status": "Active",
     "createdAt": "2026-06-07T07:14:16.673Z",
     "updatedAt": "2026-06-07T07:14:16.673Z"
+  },
+  {
+    "_id": "sliit_student_01",
+    "username": "it21004567",
+    "fullName": "SLIIT Student (Kavindu Rishan)",
+    "email": "it21004567@my.sliit.lk",
+    "phone": "+94 77 444 8899",
+    "password": "$2a$10$heiOLyzfQSnA19qkMDbiBe9eQLPk8ctufk2.dzAqL6P8AH9swWHdK",
+    "role": "Customer",
+    "isSliitStudent": true,
+    "studentId": "IT21004567",
+    "campus": "SLIIT Malabe Campus",
+    "status": "Active",
+    "createdAt": "2026-11-15T14:30:00.000Z",
+    "updatedAt": "2026-11-15T14:30:00.000Z"
+  },
+  {
+    "_id": "sliit_staff_01",
+    "username": "sliit_staff",
+    "fullName": "SLIIT Academic Staff",
+    "email": "staff@sliit.lk",
+    "phone": "+94 71 888 2211",
+    "password": "$2a$10$heiOLyzfQSnA19qkMDbiBe9eQLPk8ctufk2.dzAqL6P8AH9swWHdK",
+    "role": "Customer",
+    "isSliitStudent": true,
+    "studentId": "STAFF-902",
+    "campus": "SLIIT Malabe Campus",
+    "status": "Active",
+    "createdAt": "2026-11-15T14:30:00.000Z",
+    "updatedAt": "2026-11-15T14:30:00.000Z"
+  },
+  {
+    "_id": "yfjngkp5eyzmxeipffb3b",
+    "username": "sliit_test_reg",
+    "fullName": "Kasun Bandara",
+    "email": "it22123456@my.sliit.lk",
+    "phone": "+94 77 111 2233",
+    "password": "$2a$10$fWXBM0/Bzy/tn2GAu35tgO1pNcVXg8p65Tqi3beafHe1aDKbohVxK",
+    "role": "Customer",
+    "isSliitStudent": true,
+    "studentId": "IT22123456",
+    "status": "Active",
+    "createdAt": "2026-11-15T14:39:11.320Z",
+    "updatedAt": "2026-11-15T14:39:11.320Z"
   }
 ]

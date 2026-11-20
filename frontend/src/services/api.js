@@ -180,5 +180,38 @@ export const api = {
   // Reports
   reports: {
     getDashboard: () => request('/reports/dashboard'),
+  },
+
+  // SLIIT Transit Hub (Campus Shuttles)
+  campus: {
+    getAll: (forceWindow = false, role = '') => {
+      const q = new URLSearchParams();
+      if (forceWindow) q.append('forceWindow', 'true');
+      if (role) q.append('role', role);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      return request(`/campus/shuttles${queryStr}`);
+    },
+    getById: (id, forceWindow = false, role = '') => {
+      const q = new URLSearchParams();
+      if (forceWindow) q.append('forceWindow', 'true');
+      if (role) q.append('role', role);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      return request(`/campus/shuttles/${id}${queryStr}`);
+    },
+    create: (data) => request('/campus/shuttles', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+    update: (id, data) => request(`/campus/shuttles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }),
+    delete: (id) => request(`/campus/shuttles/${id}`, {
+      method: 'DELETE'
+    }),
+    simulateStep: (id, action = 'next', stepIndex = null) => request(`/campus/shuttles/${id}/simulate`, {
+      method: 'POST',
+      body: JSON.stringify({ action, stepIndex })
+    }),
   }
 };

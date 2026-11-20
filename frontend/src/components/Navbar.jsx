@@ -125,6 +125,16 @@ export default function Navbar() {
               >
                 Find Buses
               </Link>
+              <Link 
+                to="/sliit-transit" 
+                className={`relative px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center space-x-1.5 ${location.pathname === '/sliit-transit' ? 'text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 shadow-xs' : 'text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400'}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span>SLIIT Transit Hub</span>
+                <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded font-black">
+                  GPS
+                </span>
+              </Link>
               {user && !isAdmin && (
                 <Link 
                   to="/bookings" 
@@ -248,6 +258,11 @@ export default function Navbar() {
                     <span className="hidden sm:inline text-sm font-semibold text-slate-700 dark:text-slate-300">
                       {user.fullName ? user.fullName.split(' ')[0] : 'User'}
                     </span>
+                    {Boolean(user?.isSliitStudent || (user?.email && (user.email.endsWith('@my.sliit.lk') || user.email.endsWith('@sliit.lk')))) && (
+                      <span className="hidden md:inline-flex px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-black">
+                        🎓 SLIIT
+                      </span>
+                    )}
                   </button>
 
                   {/* Profile Dropdown */}
@@ -256,7 +271,12 @@ export default function Navbar() {
                       <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/60">
                         <p className="text-xs font-semibold text-slate-400">Signed in as</p>
                         <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{user.email}</p>
-                        <p className="text-[10px] text-primary-500 font-bold bg-primary-50 dark:bg-primary-950/30 px-1.5 py-0.5 rounded w-max mt-1 uppercase tracking-wider">{user.role}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <p className="text-[10px] text-primary-500 font-bold bg-primary-50 dark:bg-primary-950/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{user.role}</p>
+                          {Boolean(user?.isSliitStudent || (user?.email && (user.email.endsWith('@my.sliit.lk') || user.email.endsWith('@sliit.lk')))) && (
+                            <p className="text-[10px] text-blue-600 dark:text-blue-400 font-black bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded">🎓 SLIIT</p>
+                          )}
+                        </div>
                       </div>
                       <Link 
                         to={isAdmin ? "/admin/settings" : "/bookings"} 
@@ -329,6 +349,19 @@ export default function Navbar() {
             className="block px-3 py-2 rounded-lg text-base font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
           >
             Find Buses
+          </Link>
+          <Link 
+            to="/sliit-transit" 
+            onClick={() => setMobileMenuOpen(false)}
+            className={`flex items-center justify-between px-3 py-2 rounded-lg text-base font-bold ${location.pathname === '/sliit-transit' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+          >
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span>🎓 SLIIT Transit Hub</span>
+            </div>
+            <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-full font-extrabold">
+              Live GPS
+            </span>
           </Link>
           {user && !isAdmin && (
             <Link 

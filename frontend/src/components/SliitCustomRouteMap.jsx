@@ -22,6 +22,9 @@ export default function SliitCustomRouteMap({
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const userInteractedRef = useRef(false);
+  const lastFittedRouteRef = useRef(null);
+  const lastInspectedStopRef = useRef(null);
   const layersRef = useRef({
     tileLayer: null,
     polyline: null,
@@ -31,8 +34,21 @@ export default function SliitCustomRouteMap({
     busLng: null
   });
 
+  // Fit Whole Route helper (on user demand)
+  const fitWholeRoute = () => {
+    const map = mapInstanceRef.current;
+    if (!map || !shuttle || !shuttle.stops) return;
+    const validStops = shuttle.stops.filter(s => typeof s.lat === 'number' && typeof s.lng === 'number');
+    if (validStops.length > 0) {
+      userInteractedRef.current = false;
+      const bounds = L.latLngBounds(validStops.map(s => [s.lat, s.lng]));
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    }
+  };
+
   // Center & Fly to Bus helper
   const flyToBus = () => {
+    userInteractedRef.current = true;
     const map = mapInstanceRef.current;
     const { busLat, busLng, busMarker } = layersRef.current;
     if (map && typeof busLat === 'number' && typeof busLng === 'number') {
@@ -45,6 +61,16 @@ export default function SliitCustomRouteMap({
     }
   };
 
+  // Clean up Leaflet map instance on unmount
+  useEffect(() => {
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -55,6 +81,18 @@ export default function SliitCustomRouteMap({
         zoom: 13,
         zoomControl: true,
         attributionControl: false
+      });
+
+      // Track manual user panning and zooming so background updates never override user's view
+      map.on('movestart', (e) => {
+        if (e && e.originalEvent) {
+          userInteractedRef.current = true;
+        }
+      });
+      map.on('zoomstart', (e) => {
+        if (e && e.originalEvent) {
+          userInteractedRef.current = true;
+        }
       });
 
       mapInstanceRef.current = map;
@@ -70,23 +108,26 @@ export default function SliitCustomRouteMap({
     const map = mapInstanceRef.current;
     const layers = layersRef.current;
 
-    // 1. Tile Layer Management based on layerType
-    if (layers.tileLayer) {
-      map.removeLayer(layers.tileLayer);
-    }
+    // 1. Tile Layer Management based on layerType (only switch when layer type changes)
+    if (!layers.tileLayer || layers.currentLayerType !== mapLayerType) {
+      if (layers.tileLayer) {
+        map.removeLayer(layers.tileLayer);
+      }
 
-    if (mapLayerType === 'satellite') {
-      // High-res Esri World Imagery Satellite
-      layers.tileLayer = L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        { maxZoom: 19 }
-      ).addTo(map);
-    } else {
-      // Crisp OpenStreetMap Road Tiles
-      layers.tileLayer = L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { maxZoom: 19 }
-      ).addTo(map);
+      if (mapLayerType === 'satellite') {
+        // High-res Esri World Imagery Satellite
+        layers.tileLayer = L.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          { maxZoom: 19 }
+        ).addTo(map);
+      } else {
+        // Crisp OpenStreetMap Road Tiles
+        layers.tileLayer = L.tileLayer(
+          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          { maxZoom: 19 }
+        ).addTo(map);
+      }
+      layers.currentLayerType = mapLayerType;
     }
 
     // 2. Clear Existing Polyline and Markers
@@ -278,17 +319,32 @@ export default function SliitCustomRouteMap({
       `);
     }
 
-    // 6. Viewport fitting: If inspectedStop is set, zoom to that stop, otherwise fit whole route
-    if (inspectedStop) {
+    // 6. Viewport fitting:
+    const routeIdentifier = shuttle?.routeId || shuttle?._id || 'default-route';
+    const isNewRoute = routeIdentifier !== lastFittedRouteRef.current;
+    if (isNewRoute) {
+      lastFittedRouteRef.current = routeIdentifier;
+      userInteractedRef.current = false; // Reset interaction flag for brand new route corridor
+    }
+
+    // Explicit stop inspection
+    if (inspectedStop && inspectedStop !== lastInspectedStopRef.current) {
+      lastInspectedStopRef.current = inspectedStop;
       const targetStop = validStops.find(s => s.name === inspectedStop);
       if (targetStop) {
+        userInteractedRef.current = true;
         map.flyTo([targetStop.lat, targetStop.lng], 15, { animate: true, duration: 0.8 });
         return;
       }
+    } else if (!inspectedStop) {
+      lastInspectedStopRef.current = null;
     }
 
-    // Fit whole bounds of the manual route
-    if (latLngs.length > 0) {
+    // ONLY fit bounds when:
+    // 1. It is a completely new corridor / first time loading this route
+    // 2. AND the user has NOT manually interacted / zoomed / panned the map
+    // NEVER zoom out automatically during live telemetry updates or when user is looking at the map!
+    if (isNewRoute && !userInteractedRef.current && latLngs.length > 0) {
       const bounds = L.latLngBounds(latLngs);
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
     }
@@ -310,16 +366,30 @@ export default function SliitCustomRouteMap({
         style={{ minHeight: '360px' }}
       />
 
-      {/* Floating "🎯 Focus Live Bus (දැන් බස් එක කොහෙද)" Quick Button directly on Map */}
-      <button
-        type="button"
-        onClick={flyToBus}
-        className="absolute bottom-16 right-3 z-[400] px-3.5 py-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-2xl flex items-center space-x-1.5 transition-all transform hover:scale-105 border-2 border-white cursor-pointer"
-        title="Map එක කෙලින්ම බස් රථය දැන් තිබෙන තැනට Zoom කරන්න"
-      >
-        <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
-        <span>🎯 Focus Bus (දැන් බස් එක මෙතන)</span>
-      </button>
+      {/* Floating Map Controls (Focus Bus & Fit Route) */}
+      <div className="absolute bottom-14 sm:bottom-16 right-3 z-[400] flex flex-col items-end space-y-2">
+        {/* Reset / Fit Whole Route Button */}
+        <button
+          type="button"
+          onClick={fitWholeRoute}
+          className="px-3 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-white font-bold text-[11px] shadow-xl flex items-center space-x-1.5 transition-all border border-slate-700/80 cursor-pointer backdrop-blur-md"
+          title="මුළු බස් මාර්ගයම එකවර බලාගන්න (Fit Whole Route)"
+        >
+          <span>🗺️</span>
+          <span>Fit Route (මුළු මාර්ගය)</span>
+        </button>
+
+        {/* Focus Live Bus Button */}
+        <button
+          type="button"
+          onClick={flyToBus}
+          className="px-3.5 py-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-2xl flex items-center space-x-1.5 transition-all transform hover:scale-105 border-2 border-white cursor-pointer"
+          title="Map එක කෙලින්ම බස් රථය දැන් තිබෙන තැනට Focus කරන්න"
+        >
+          <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
+          <span>🎯 Focus Bus (දැන් බස් එක මෙතන)</span>
+        </button>
+      </div>
     </div>
   );
 }

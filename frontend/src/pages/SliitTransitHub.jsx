@@ -400,7 +400,7 @@ export default function SliitTransitHub() {
               />
             ) : (
               <SliitCustomRouteMap
-                key={`${activeShuttle.routeId}-${mapEngine}-${inspectedStop || 'full'}-${loc.simulationIndex || 0}`}
+                key={`${activeShuttle.routeId}-${mapEngine}`}
                 shuttle={activeShuttle}
                 inspectedStop={inspectedStop}
                 mapLayerType={mapEngine}

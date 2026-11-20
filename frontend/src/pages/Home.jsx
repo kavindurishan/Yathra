@@ -133,18 +133,6 @@ export default function Home() {
               <Navigation className="w-4 h-4 text-cyan-400" />
               <span>Explore Live Map (සිතියම)</span>
             </a>
-
-            <button
-              type="button"
-              onClick={() => {
-                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                navigate('/sliit-transit');
-              }}
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 border border-blue-400/40 text-white font-bold text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <span className="w-2 h-2 rounded-full bg-cyan-300 animate-ping" />
-              <span>🎓 SLIIT Transit Hub (Live GPS)</span>
-            </button>
           </div>
 
           {/* Feature Trust Highlights */}
@@ -297,38 +285,6 @@ export default function Home() {
 
           </form>
 
-        </div>
-      </section>
-
-      {/* ============================================================== */}
-      {/* SLIIT TRANSIT HUB FEATURE SPOTLIGHT                            */}
-      {/* ============================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border border-blue-800/50 p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-              <span>🎓 SLIIT Malabe Campus Feature</span>
-            </div>
-            <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              SLIIT Transit Hub & Live Shuttle Radar
-            </h3>
-            <p className="text-xs sm:text-sm text-blue-200/90 font-medium">
-              Panadura, Negombo, Minuwangoda, Ganemulla සිට SLIIT මාලඹේ වෙත ධාවනය වන ශිෂ්‍ය බස් රථවල සජීවී GPS පිහිටීම, ගාස්තු සහ රියදුරු දුරකථන අංක.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-              navigate('/sliit-transit');
-            }}
-            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-black text-sm shadow-xl shadow-blue-500/30 hover:scale-[1.02] transition-all flex items-center justify-center space-x-2 shrink-0 cursor-pointer"
-          >
-            <span>Open SLIIT Radar (බස් සිතියම)</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
         </div>
       </section>
 

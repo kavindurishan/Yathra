@@ -129,20 +129,20 @@
       }
     ],
     "currentLocation": {
-      "lat": 6.877,
-      "lng": 79.932,
-      "speed": 43,
-      "currentHalt": "Thalawathugoda",
-      "nextHalt": "Hokandara",
-      "nextHaltEta": "4 mins",
+      "lat": 6.873,
+      "lng": 79.954,
+      "speed": 38,
+      "currentHalt": "Hokandara",
+      "nextHalt": "Arangala Junction",
+      "nextHaltEta": "9 mins",
       "isLive": true,
       "simulationActive": true,
-      "simulationIndex": 7,
-      "lastUpdated": "2026-11-15T13:46:45.544Z"
+      "simulationIndex": 8,
+      "lastUpdated": "2026-11-20T06:35:49.939Z"
     },
     "delayNotice": "Normal Traffic. Operating smoothly on schedule.",
     "status": "Active",
-    "updatedAt": "2026-11-15T13:46:45.546Z"
+    "updatedAt": "2026-11-20T06:35:49.940Z"
   },
   {
     "_id": "sliit-negombo",

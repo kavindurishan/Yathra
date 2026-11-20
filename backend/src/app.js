@@ -395,10 +395,10 @@ app.use((err, req, res, next) => {
 // Seed SLIIT Campus Shuttles independently
 const seedCampusShuttles = async () => {
   try {
+    const defaultShuttles = require('../data/campus_shuttle.json');
     const shuttleCount = await db.count('CampusShuttle');
     if (shuttleCount === 0) {
       console.log('🌱 Seeding default SLIIT Campus Shuttles from JSON...');
-      const defaultShuttles = require('../data/campus_shuttle.json');
       for (const shuttle of defaultShuttles) {
         try {
           await db.create('CampusShuttle', shuttle);
@@ -407,6 +407,21 @@ const seedCampusShuttles = async () => {
         }
       }
       console.log(`✅ Seeded ${defaultShuttles.length} SLIIT Campus Shuttles into database.`);
+    } else {
+      // Synchronize driver and stops data with latest defaults
+      for (const shuttle of defaultShuttles) {
+        const existing = await db.findOne('CampusShuttle', { routeId: shuttle.routeId });
+        if (existing && (existing.busNumber === 'WP ND-5842' || !existing.stops || !existing.stops[0]?.lat)) {
+          await db.findByIdAndUpdate('CampusShuttle', existing._id, {
+            busNumber: shuttle.busNumber,
+            driverName: shuttle.driverName,
+            driverPhone: shuttle.driverPhone,
+            driverWhatsapp: shuttle.driverWhatsapp,
+            stops: shuttle.stops,
+            currentLocation: shuttle.currentLocation
+          });
+        }
+      }
     }
   } catch (err) {
     console.error('❌ Error seeding SLIIT campus shuttles:', err.message);

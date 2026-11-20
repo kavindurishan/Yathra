@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { DEFAULT_SLIIT_SHUTTLES } from '../data/sliitTransitData';
 
 // Fix Leaflet's default marker icon issue with bundlers (Vite)
 delete L.Icon.Default.prototype._getIconUrl;
@@ -39,8 +40,11 @@ export default function SliitCustomRouteMap({
   // Fit Whole Route helper (on user demand)
   const fitWholeRoute = () => {
     const map = mapInstanceRef.current;
-    if (!map || !shuttle || !shuttle.stops) return;
-    const validStops = shuttle.stops.filter(s => typeof s.lat === 'number' && typeof s.lng === 'number');
+    if (!map) return;
+    const rawStops = (shuttle?.stops && shuttle.stops.length > 0)
+      ? shuttle.stops
+      : (DEFAULT_SLIIT_SHUTTLES.find(d => d.routeId === shuttle?.routeId)?.stops || DEFAULT_SLIIT_SHUTTLES[0].stops);
+    const validStops = rawStops.filter(s => typeof s.lat === 'number' && typeof s.lng === 'number');
     if (validStops.length > 0) {
       userInteractedRef.current = false;
       const bounds = L.latLngBounds(validStops.map(s => [s.lat, s.lng]));
@@ -67,9 +71,24 @@ export default function SliitCustomRouteMap({
   useEffect(() => {
     return () => {
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch (e) {}
         mapInstanceRef.current = null;
       }
+      layersRef.current = {
+        tileLayer: null,
+        currentLayerType: null,
+        polyline: null,
+        markers: [],
+        busMarker: null,
+        busLat: null,
+        busLng: null,
+        drawnRouteId: null,
+        hasFittedInitialBounds: false
+      };
+      lastFittedRouteRef.current = null;
+      lastInspectedStopRef.current = null;
     };
   }, []);
 
@@ -78,12 +97,31 @@ export default function SliitCustomRouteMap({
 
     // Initialize Leaflet Map if not already initialized
     if (!mapInstanceRef.current) {
+      if (mapContainerRef.current._leaflet_id) {
+        delete mapContainerRef.current._leaflet_id;
+      }
+
       const map = L.map(mapContainerRef.current, {
         center: [6.9147, 79.9729], // Default SLIIT Malabe Campus
         zoom: 13,
         zoomControl: true,
         attributionControl: false
       });
+
+      // Reset layers reference for fresh new map instance
+      layersRef.current = {
+        tileLayer: null,
+        currentLayerType: null,
+        polyline: null,
+        markers: [],
+        busMarker: null,
+        busLat: null,
+        busLng: null,
+        drawnRouteId: null,
+        hasFittedInitialBounds: false
+      };
+      lastFittedRouteRef.current = null;
+      lastInspectedStopRef.current = null;
 
       // Track manual user panning and zooming so background updates never override user's view
       map.on('movestart', (e) => {
@@ -123,31 +161,46 @@ export default function SliitCustomRouteMap({
     const layers = layersRef.current;
 
     // 1. Tile Layer Management based on layerType (only switch when layer type changes)
-    if (!layers.tileLayer || layers.currentLayerType !== mapLayerType) {
+    if (!layers.tileLayer || layers.currentLayerType !== mapLayerType || !map.hasLayer(layers.tileLayer)) {
       if (layers.tileLayer) {
         map.removeLayer(layers.tileLayer);
       }
 
       if (mapLayerType === 'satellite') {
-        // High-res Esri World Imagery Satellite
+        // High-res Google Hybrid Satellite (Google imagery + street names & city labels)
         layers.tileLayer = L.tileLayer(
-          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          { maxZoom: 19 }
+          'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+          { maxZoom: 20, attribution: '© Google Maps' }
         ).addTo(map);
       } else {
-        // Crisp OpenStreetMap Road Tiles
+        // Official Google Maps Standard Road Map (Clean roads, towns, highways, Sri Lanka landmarks)
         layers.tileLayer = L.tileLayer(
-          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          { maxZoom: 19 }
+          'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+          { maxZoom: 20, attribution: '© Google Maps' }
         ).addTo(map);
       }
       layers.currentLayerType = mapLayerType;
     }
 
-    if (!shuttle || !shuttle.stops || shuttle.stops.length === 0) return;
+    // Force Leaflet to calculate container size and load tiles immediately
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 100);
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 400);
+
+    // Get stops from shuttle, or fallback to DEFAULT_SLIIT_SHUTTLES if missing
+    const rawStops = (shuttle?.stops && shuttle.stops.length > 0)
+      ? shuttle.stops
+      : (DEFAULT_SLIIT_SHUTTLES.find(d => d.routeId === shuttle?.routeId)?.stops || DEFAULT_SLIIT_SHUTTLES[0].stops);
 
     // Filter valid coordinates
-    const validStops = shuttle.stops.filter(s => typeof s.lat === 'number' && typeof s.lng === 'number');
+    const validStops = rawStops.filter(s => typeof s.lat === 'number' && typeof s.lng === 'number');
     if (validStops.length === 0) return;
 
     const latLngs = validStops.map(s => [s.lat, s.lng]);
@@ -160,7 +213,7 @@ export default function SliitCustomRouteMap({
       userInteractedRef.current = false;
     }
 
-    const shouldRedrawRoute = isNewRoute || layers.drawnRouteId !== routeIdentifier;
+    const shouldRedrawRoute = isNewRoute || layers.drawnRouteId !== routeIdentifier || !layers.polyline;
 
     if (shouldRedrawRoute) {
       // Clear Existing Polyline and Markers
@@ -181,14 +234,33 @@ export default function SliitCustomRouteMap({
       }).addTo(map);
 
       // Glowing underlay line
-      const glowPolyline = L.polyline(latLngs, {
+      layers.glowPolyline = L.polyline(latLngs, {
         color: '#38bdf8',
         weight: 11,
         opacity: 0.35,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(map);
-      layers.markers.push(glowPolyline);
+      layers.markers.push(layers.glowPolyline);
+
+      // Fetch authentic road curves from OSRM so the route follows real streets on Google Maps
+      if (latLngs.length >= 2) {
+        const sampleRate = Math.max(1, Math.ceil(latLngs.length / 25));
+        const sampled = latLngs.filter((_, idx) => idx % sampleRate === 0 || idx === latLngs.length - 1);
+        const coordsStr = sampled.map(([lat, lng]) => `${lng},${lat}`).join(';');
+        fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.code === 'Ok' && data.routes && data.routes[0]) {
+              const roadLatLngs = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+              if (layers.polyline) layers.polyline.setLatLngs(roadLatLngs);
+              if (layers.glowPolyline) layers.glowPolyline.setLatLngs(roadLatLngs);
+            }
+          })
+          .catch(() => {
+            // Keep straight-line fallback if OSRM is unreachable
+          });
+      }
 
       // 4. Create Custom Numbered Stop Markers along the route
       validStops.forEach((stop, index) => {
@@ -338,7 +410,7 @@ export default function SliitCustomRouteMap({
         </div>
       `;
 
-      if (layers.busMarker) {
+      if (layers.busMarker && map.hasLayer(layers.busMarker)) {
         // Smoothly update location without rebuilding or flickering!
         layers.busMarker.setLatLng([busLat, busLng]);
         layers.busMarker.setIcon(busIcon);
@@ -351,12 +423,7 @@ export default function SliitCustomRouteMap({
     }
 
     // 6. Viewport fitting:
-    const routeIdentifier = shuttle?.routeId || shuttle?._id || 'default-route';
-    const isNewRoute = routeIdentifier !== lastFittedRouteRef.current;
-    if (isNewRoute) {
-      lastFittedRouteRef.current = routeIdentifier;
-      userInteractedRef.current = false; // Reset interaction flag for brand new route corridor
-    }
+    // (routeIdentifier and isNewRoute were already determined at the start of this effect)
 
     // Explicit stop inspection
     if (inspectedStop && inspectedStop !== lastInspectedStopRef.current) {
@@ -372,10 +439,11 @@ export default function SliitCustomRouteMap({
     }
 
     // ONLY fit bounds when:
-    // 1. It is a completely new corridor / first time loading this route
+    // 1. It is a completely new corridor or map instance just initialized
     // 2. AND the user has NOT manually interacted / zoomed / panned the map
     // NEVER zoom out automatically during live telemetry updates or when user is looking at the map!
-    if (isNewRoute && !userInteractedRef.current && latLngs.length > 0) {
+    if ((isNewRoute || !layers.hasFittedInitialBounds) && !userInteractedRef.current && latLngs.length > 0) {
+      layers.hasFittedInitialBounds = true;
       const bounds = L.latLngBounds(latLngs);
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
     }
@@ -390,20 +458,27 @@ export default function SliitCustomRouteMap({
   }, [focusBusKey]);
 
   return (
-    <div className="relative w-full h-full select-none">
+    <div className="absolute inset-0 w-full h-full select-none">
       <style>{`
+        .leaflet-top.leaflet-left {
+          top: 56px !important;
+          left: 14px !important;
+        }
         .map-zoomed-far .custom-stop-point .halt-label {
           display: none !important;
         }
         .prominent-bus-live-marker {
           z-index: 99999 !important;
         }
+        .leaflet-container {
+          background-color: #0f172a !important;
+        }
       `}</style>
 
       <div 
         ref={mapContainerRef} 
-        className="w-full h-full z-0 bg-slate-900"
-        style={{ minHeight: '360px' }}
+        className="w-full h-full z-0"
+        style={{ minHeight: '360px', height: '100%' }}
       />
 
       {/* Floating Map Controls (Focus Bus & Fit Route) */}

@@ -117,23 +117,53 @@ export default function Navbar() {
               <YathraBrandLogo className="h-12 sm:h-14 md:h-16 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" />
             </Link>
 
-            {/* Desktop Links */}
-            <div className="hidden md:flex ml-10 space-x-1">
+            {/* Premium Mode Switcher: Public Intercity vs Campus Transit */}
+            <div className="hidden sm:inline-flex items-center p-1 bg-slate-100 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs ml-4 lg:ml-6">
+              <button
+                type="button"
+                onClick={() => {
+                  if (location.pathname !== '/') {
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                    navigate('/');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${
+                  location.pathname !== '/sliit-transit'
+                    ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm font-black'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🚌</span>
+                <span>Public Travel</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (location.pathname !== '/sliit-transit') {
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                    navigate('/sliit-transit');
+                  }
+                }}
+                className={`relative px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${
+                  location.pathname === '/sliit-transit'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 font-black'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
+                }`}
+              >
+                <span>🎓</span>
+                <span>Campus Mode</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+              </button>
+            </div>
+
+            {/* Desktop Navigation Links */}
+            <div className="hidden md:flex ml-4 lg:ml-6 space-x-1">
               <Link 
                 to="/" 
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === '/' ? 'text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-950/20' : 'text-slate-600 hover:text-primary-600 dark:text-slate-300 dark:hover:text-primary-400'}`}
               >
                 Find Buses
-              </Link>
-              <Link 
-                to="/sliit-transit" 
-                className={`relative px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center space-x-1.5 ${location.pathname === '/sliit-transit' ? 'text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 shadow-xs' : 'text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400'}`}
-              >
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span>SLIIT Transit Hub</span>
-                <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded font-black">
-                  GPS
-                </span>
               </Link>
               {user && !isAdmin && (
                 <Link 
@@ -343,25 +373,53 @@ export default function Navbar() {
               <span>Go Back (ආපසු යන්න)</span>
             </button>
           )}
+          {/* Mobile Mode Switcher (Public vs Campus Mode) */}
+          <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 mb-3 shadow-inner">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (location.pathname !== '/') {
+                  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                  navigate('/');
+                }
+              }}
+              className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
+                location.pathname !== '/sliit-transit'
+                  ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm font-black'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <span>🚌</span>
+              <span>Public Travel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (location.pathname !== '/sliit-transit') {
+                  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                  navigate('/sliit-transit');
+                }
+              }}
+              className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
+                location.pathname === '/sliit-transit'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm font-black'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <span>🎓</span>
+              <span>Campus Mode</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+          </div>
+
           <Link 
             to="/" 
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-base font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
           >
             Find Buses
-          </Link>
-          <Link 
-            to="/sliit-transit" 
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center justify-between px-3 py-2 rounded-lg text-base font-bold ${location.pathname === '/sliit-transit' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
-          >
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              <span>🎓 SLIIT Transit Hub</span>
-            </div>
-            <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-full font-extrabold">
-              Live GPS
-            </span>
           </Link>
           {user && !isAdmin && (
             <Link 

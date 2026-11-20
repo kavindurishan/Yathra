@@ -1320,11 +1320,11 @@ router.get('/campus/shuttles', async (req, res) => {
     }
 
     let shuttles = await db.find('CampusShuttle', {});
+    const defaultShuttles = require('../../data/campus_shuttle.json');
 
     // If database has 0 shuttles, auto-seed from campus_shuttle.json so the view is never empty
     if (!shuttles || shuttles.length === 0) {
       try {
-        const defaultShuttles = require('../../data/campus_shuttle.json');
         for (const s of defaultShuttles) {
           try {
             await db.create('CampusShuttle', s);
@@ -1334,6 +1334,20 @@ router.get('/campus/shuttles', async (req, res) => {
       } catch (seedErr) {
         console.warn('Could not auto-seed campus shuttles on GET:', seedErr.message);
       }
+    } else {
+      // Ensure existing records have all valid stop waypoints & updated driver info from campus_shuttle.json
+      for (const def of defaultShuttles) {
+        const found = shuttles.find(s => s.routeId === def.routeId);
+        if (found && (!found.stops || found.stops.length === 0)) {
+          try {
+            await db.findByIdAndUpdate('CampusShuttle', found._id, {
+              stops: def.stops,
+              currentLocation: def.currentLocation
+            });
+          } catch (updateErr) {}
+        }
+      }
+      shuttles = await db.find('CampusShuttle', {});
     }
 
     // Apply Time-Lock window logic for students:

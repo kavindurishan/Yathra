@@ -46,25 +46,8 @@ export default function SliitTransitHub() {
   const [focusBusKey, setFocusBusKey] = useState(0);
   const [isLiveStreaming, setIsLiveStreaming] = useState(true);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    loadShuttles(false);
-    
-    // Auto-poll live coordinates every 8 seconds
-    const interval = setInterval(() => {
-      loadShuttles(false);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [forceWindowActive]);
-
-  // Continuous Live GPS Simulation Stream (Advances bus along waypoints every 5s without interrupting user zoom)
-  useEffect(() => {
-    if (!isLiveStreaming) return;
-    const streamTimer = setInterval(() => {
-      handleAdvanceSimulation(false); // false = never hijack map zoom level!
-    }, 5000);
-    return () => clearInterval(streamTimer);
-  }, [isLiveStreaming, activeShuttle?.routeId, activeShuttle?._id]);
+  // Active Shuttle (declared before useEffects and handlers)
+  const activeShuttle = shuttles.find(s => (s.routeId === selectedShuttleId || s._id === selectedShuttleId)) || shuttles[0] || DEFAULT_SLIIT_SHUTTLES[0];
 
   const loadShuttles = async (showLoadingSpinner = false) => {
     if (showLoadingSpinner) setLoading(true);
@@ -72,7 +55,20 @@ export default function SliitTransitHub() {
     try {
       const res = await api.campus.getAll(forceWindowActive);
       if (res && res.success && res.shuttles && res.shuttles.length > 0) {
-        setShuttles(res.shuttles);
+        // Ensure all shuttles have valid coordinates & latest stops from defaults if missing
+        const enhanced = res.shuttles.map(s => {
+          const def = DEFAULT_SLIIT_SHUTTLES.find(d => d.routeId === s.routeId);
+          if (def && (!s.stops || s.stops.length === 0 || typeof s.stops[0]?.lat !== 'number')) {
+            return {
+              ...def,
+              ...s,
+              stops: def.stops,
+              currentLocation: s.currentLocation || def.currentLocation
+            };
+          }
+          return s;
+        });
+        setShuttles(enhanced);
         if (res.timeInfo) {
           setServerTimeInfo(res.timeInfo);
         }
@@ -84,8 +80,6 @@ export default function SliitTransitHub() {
       if (showLoadingSpinner) setLoading(false);
     }
   };
-
-  const activeShuttle = shuttles.find(s => (s.routeId === selectedShuttleId || s._id === selectedShuttleId)) || shuttles[0] || DEFAULT_SLIIT_SHUTTLES[0];
 
   // Handle Simulation Step (advances the virtual bus forward)
   const handleAdvanceSimulation = async (shouldFocusMap = false) => {
@@ -130,6 +124,26 @@ export default function SliitTransitHub() {
       }
     }
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    loadShuttles(false);
+    
+    // Auto-poll live coordinates every 8 seconds
+    const interval = setInterval(() => {
+      loadShuttles(false);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [forceWindowActive]);
+
+  // Continuous Live GPS Simulation Stream (Advances bus along waypoints every 5s without interrupting user zoom)
+  useEffect(() => {
+    if (!isLiveStreaming) return;
+    const streamTimer = setInterval(() => {
+      handleAdvanceSimulation(false); // false = never hijack map zoom level!
+    }, 5000);
+    return () => clearInterval(streamTimer);
+  }, [isLiveStreaming, activeShuttle?.routeId, activeShuttle?._id]);
 
   const handleStopClick = (stopName) => {
     if (inspectedStop === stopName) {
@@ -401,7 +415,7 @@ export default function SliitTransitHub() {
           {/* ============================================================== */}
           {/* LIVE GPS RADAR MAP CANVAS WITH CUSTOM ROAD POLYLINE            */}
           {/* ============================================================== */}
-          <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-2xl h-[440px] sm:h-[520px] w-full bg-slate-950 flex flex-col">
+          <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-2xl h-[440px] sm:h-[520px] w-full bg-slate-950">
             
             {/* Map Engine Render */}
             {mapEngine === 'google' ? (
@@ -455,10 +469,10 @@ export default function SliitTransitHub() {
                         ? 'bg-blue-600 text-white font-black shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     }`}
-                    title="Exact Custom Shuttle Road Path (නියම බස් පාර)"
+                    title="Authentic Google Maps Road View with Real Road-Snapped Bus Route"
                   >
                     <span>🛣️</span>
-                    <span className="text-[11px]">Exact Path (නියම පාර)</span>
+                    <span className="text-[11px]">Google Roads (නියම පාර)</span>
                   </button>
 
                   <button
@@ -469,10 +483,10 @@ export default function SliitTransitHub() {
                         ? 'bg-blue-600 text-white font-black shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     }`}
-                    title="Real Satellite Aerial View (චන්ද්‍රිකා සිතියම)"
+                    title="Real Google Satellite Aerial View (චන්ද්‍රිකා සිතියම)"
                   >
                     <span>🛰️</span>
-                    <span className="text-[11px]">Satellite</span>
+                    <span className="text-[11px]">Google Satellite</span>
                   </button>
 
                   <button
@@ -483,10 +497,10 @@ export default function SliitTransitHub() {
                         ? 'bg-blue-600 text-white font-black shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     }`}
-                    title="Google Directions with enforced waypoints"
+                    title="Google Maps Driving Directions Navigation"
                   >
                     <span>🗺️</span>
-                    <span className="text-[11px]">Google</span>
+                    <span className="text-[11px]">Google Directions</span>
                   </button>
                 </div>
 

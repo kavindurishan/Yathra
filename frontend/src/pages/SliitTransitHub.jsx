@@ -5,7 +5,7 @@ import {
   Clock, Shield, AlertTriangle, CheckCircle2, RefreshCw, 
   Layers, ExternalLink, Sparkles, ChevronRight, Play, Eye, EyeOff,
   CreditCard, ArrowLeft, Radio, GraduationCap, LogIn, ShieldCheck,
-  Tag, Bookmark, Check
+  Tag, Bookmark, Check, Wrench, BellRing, AlertOctagon, ShieldAlert
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -325,76 +325,43 @@ export default function SliitTransitHub() {
       {/* ============================================================== */}
       {/* HERO SECTION: SLIIT Official Brand Aesthetics & Shuttle Radar   */}
       {/* ============================================================== */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 border border-blue-900/40 p-6 sm:p-8 shadow-2xl text-white">
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 border border-blue-900/40 p-7 sm:p-10 shadow-2xl text-white text-center">
         
         {/* Glow Orb Overlays */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center space-y-4">
           
-          <div className="space-y-3 max-w-2xl">
-            {/* Top Pill Badges */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
-                <span>SLIIT Malabe Campus Transit Hub</span>
-              </span>
-              <span className="text-[11px] font-bold text-amber-300 bg-amber-950/60 border border-amber-800/40 px-2.5 py-0.5 rounded-full">
-                🎓 Exclusive Student Fleet
-              </span>
-            </div>
+          {/* Top Pill Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-wider shadow-inner">
+              <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
+              <span>SLIIT Malabe Campus Transit Hub</span>
+            </span>
 
-            {/* Main Headline */}
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-              SLIIT Shuttle <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300">Live GPS Radar</span>
-            </h1>
+            <span className="inline-flex items-center space-x-1.5 text-xs font-bold text-amber-300 bg-amber-950/60 border border-amber-800/40 px-3 py-1 rounded-full shadow-inner">
+              <span>🎓</span>
+              <span>Exclusive Student Fleet</span>
+            </span>
 
-            <p className="text-xs sm:text-sm text-blue-200/90 font-medium leading-relaxed">
-              SLIIT මාලඹේ වෙත ධාවනය වන නිල බස් සේවාවේ සැබෑ මාර්ගය (Custom Road Path), සජීවී GPS පිහිටීම, ගමන් ගාස්තු, රියදුරු දුරකථන අංක සහ සියලු නැවතුම් තොරතුරු.
-            </p>
+            <span className="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/40 px-3 py-1 rounded-full shadow-inner">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Live GPS Telemetry Active</span>
+            </span>
           </div>
 
-          {/* Time Window & Telemetry Mode Pill */}
-          <div className="bg-slate-900/90 border border-blue-900/60 rounded-2xl p-4 backdrop-blur-md shadow-xl space-y-2.5 shrink-0 sm:min-w-[280px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Operating Window:</span>
-              <span className="text-[10px] font-mono font-black text-blue-400">
-                06:00 AM - 08:00 AM
-              </span>
-            </div>
+          {/* Main Headline */}
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+            SLIIT Shuttle <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300">Live GPS Radar</span>
+          </h1>
 
-            <div className="flex items-center space-x-2">
-              <span className={`w-3 h-3 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-              <span className="text-xs font-black">
-                {isLive ? '🟢 Live GPS Telemetry Active' : '🟡 Scheduled Service Window'}
-              </span>
-            </div>
-
-            {/* Simulator Toggle for Testing */}
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
-                <Radio className="w-3 h-3 text-cyan-400" />
-                <span>🧪 Test Window Switch</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setForceWindowActive(!forceWindowActive)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                  forceWindowActive 
-                    ? 'bg-blue-600 text-white shadow-sm' 
-                    : 'bg-slate-800 text-slate-400 hover:text-white'
-                }`}
-                title="Toggle between Live (06:00-08:00 AM) and Scheduled View"
-              >
-                {forceWindowActive ? 'Live Mode Active' : 'Enable Live Test'}
-              </button>
-            </div>
-          </div>
+          {/* Description */}
+          <p className="text-xs sm:text-sm text-blue-200/90 font-medium leading-relaxed max-w-2xl mx-auto">
+            SLIIT මාලඹේ වෙත ධාවනය වන නිල බස් සේවාවේ සැබෑ මාර්ගය (Custom Road Path), සජීවී GPS පිහිටීම, ගමන් ගාස්තු, රියදුරු දුරකථන අංක සහ සියලු නැවතුම් තොරතුරු.
+          </p>
 
         </div>
-
-
 
       </div>
 
@@ -443,6 +410,7 @@ export default function SliitTransitHub() {
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5">
                     <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
                       isSelected
                         ? 'bg-blue-600 text-white'
@@ -450,6 +418,18 @@ export default function SliitTransitHub() {
                     }`}>
                       {shuttle.routeId?.replace('sliit-', '').toUpperCase()}
                     </span>
+                    {shuttle.status === 'Maintenance' && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-rose-600 text-white text-[9px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1 shadow-xs">
+                        <span>🔧</span>
+                        <span>Maintenance</span>
+                      </span>
+                    )}
+                    {shuttle.status === 'Inactive' && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-slate-700 text-white text-[9px] font-black uppercase tracking-wider">
+                        <span>🔴 Suspended</span>
+                      </span>
+                    )}
+                  </div>
 
                     {isSelected && (
                       <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
@@ -573,8 +553,103 @@ export default function SliitTransitHub() {
         </div>
       </div>
 
-      {activeShuttle && (
-        <div className="space-y-6">
+      {activeShuttle && (() => {
+        const isMaintenance = activeShuttle.status === 'Maintenance';
+        const isInactive = activeShuttle.status === 'Inactive';
+        const isMaintenanceOrInactive = isMaintenance || isInactive;
+        const noticeLower = (activeShuttle.delayNotice || '').toLowerCase();
+        const hasUrgentNotice = Boolean(
+          activeShuttle.delayNotice &&
+          !noticeLower.includes('normal traffic') &&
+          !noticeLower.includes('operating smoothly')
+        );
+        const isEveningNotice = noticeLower.includes('හවස') || noticeLower.includes('evening') || noticeLower.includes('සවස');
+        const isTomorrowNotice = noticeLower.includes('හෙට') || noticeLower.includes('tomorrow');
+        const isCancellation = noticeLower.includes('නැත') || noticeLower.includes('නොවේ') || noticeLower.includes('cancel') || noticeLower.includes('නවතා');
+
+        const showAlertBanner = isMaintenanceOrInactive || hasUrgentNotice;
+
+        return (
+          <div className="space-y-6">
+
+            {/* ============================================================== */}
+            {/* PROMINENT ANIMATED RED OPERATIONAL ALERT BANNER (HIGH PRIORITY)  */}
+            {/* ============================================================== */}
+            {showAlertBanner && (
+              <div className={`rounded-3xl border-2 p-5 sm:p-6 shadow-2xl transition-all relative overflow-hidden ${
+                isMaintenanceOrInactive || isCancellation
+                  ? 'bg-gradient-to-r from-red-600 via-rose-600 to-red-700 border-red-300 dark:border-red-500 shadow-red-600/30 ring-4 ring-red-500/25'
+                  : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 border-amber-300 shadow-amber-500/30'
+              }`}>
+                
+                {/* Background animated caution stripes */}
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+                
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white">
+                  
+                  <div className="flex items-start space-x-4">
+                    {/* Pulsing Animated Icon */}
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shrink-0 shadow-lg relative">
+                      <span className="w-4 h-4 rounded-full bg-white animate-ping absolute -top-1 -right-1" />
+                      {isMaintenanceOrInactive ? (
+                        <Wrench className="w-7 h-7 text-white animate-pulse" />
+                      ) : (
+                        <AlertTriangle className="w-7 h-7 text-white animate-bounce" />
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-white text-red-700 text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
+                          <span>{isMaintenanceOrInactive ? 'Vehicle Under Maintenance' : 'Urgent Operational Notice'}</span>
+                        </span>
+
+                        {isEveningNotice && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-black/40 text-amber-200 text-[10px] font-extrabold border border-amber-300/40">
+                            🌙 අද සවස සේවාව (Evening Shuttle)
+                          </span>
+                        )}
+
+                        {isTomorrowNotice && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-black/40 text-sky-200 text-[10px] font-extrabold border border-sky-300/40">
+                            📅 හෙට දිනට අදාළයි (Tomorrow Notice)
+                          </span>
+                        )}
+
+                        {isCancellation && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-black/40 text-white text-[10px] font-extrabold border border-white/30">
+                            🚫 ධාවනය නොවේ (No Service)
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
+                        {activeShuttle.delayNotice || (isMaintenance ? 'බස් රථය නඩත්තු කටයුතු (Maintenance) සඳහා නවතා ඇත.' : 'බස් සේවාවේ විශේෂ දැනුම්දීමක් පවතී.')}
+                      </h3>
+
+                      <p className="text-xs text-white/90 font-medium">
+                        {isMaintenanceOrInactive
+                          ? 'මෙම බස් රථය නඩත්තු කටයුතු සඳහා යොමු කර ඇති බැවින් සජීවී සිතියම තාවකාලිකව අක්‍රිය කර ඇත. වැඩිදුර තොරතුරු සඳහා රියදුරු අමතන්න.'
+                          : 'සිසුන්ගේ අවධානය පිණිසයි: ඉහත දැක්වෙන විශේෂ නිවේදනය අනුව ඔබගේ ගමන් සැලසුම් සකස් කරගන්න.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Immediate Action Buttons */}
+                  <div className="flex items-center space-x-2 shrink-0 self-stretch sm:self-auto justify-end">
+                    <a
+                      href={`tel:${activeShuttle.driverPhone}`}
+                      className="px-4 py-2.5 rounded-2xl bg-white text-red-700 hover:bg-red-50 font-black text-xs transition-all shadow-md flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-red-600" />
+                      <span>Call Driver ({activeShuttle.driverPhone})</span>
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            )}
           
                     {/* ============================================================== */}
           {/* KEY DETAILS GRID: Fare, Driver Contact, Times, Occupancy       */}
@@ -730,23 +805,76 @@ export default function SliitTransitHub() {
 
           </div>
 
-          {/* Active Traffic / Delay Announcement */}
-          {activeShuttle.delayNotice && (
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 rounded-2xl flex items-start space-x-3 text-amber-800 dark:text-amber-300">
-              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-              <div>
-                <h5 className="font-black text-xs uppercase tracking-wider">Live Route Announcement</h5>
-                <p className="text-xs font-semibold mt-0.5">
-                  {activeShuttle.delayNotice}
-                </p>
-              </div>
-            </div>
-          )}
+{/* Operational notice moved to high-visibility top red banner */}
 
           {/* ============================================================== */}
-          {/* LIVE GPS RADAR MAP CANVAS WITH CUSTOM ROAD POLYLINE            */}
+          {/* LIVE GPS RADAR MAP CANVAS OR MAINTENANCE LOCKOUT DISPLAY       */}
           {/* ============================================================== */}
-          <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-2xl h-[440px] sm:h-[520px] w-full bg-slate-950">
+          {isMaintenanceOrInactive ? (
+            /* Maintenance Lockout Notice replacing the interactive map */
+            <div className="relative rounded-3xl overflow-hidden border-2 border-rose-500/80 dark:border-rose-600 shadow-2xl h-[440px] sm:h-[500px] w-full bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+              
+              {/* Radial gradient background */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-950/40 via-slate-950 to-slate-950 pointer-events-none" />
+              <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#f43f5e_1px,transparent_1px),linear-gradient(to_bottom,#f43f5e_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+
+              <div className="relative z-10 max-w-lg space-y-4">
+                
+                {/* Big Animated Icon */}
+                <div className="relative mx-auto w-20 h-20 rounded-3xl bg-rose-600/20 border-2 border-rose-500 flex items-center justify-center text-rose-400 shadow-2xl shadow-rose-600/40">
+                  <span className="absolute -inset-1 rounded-3xl bg-rose-500/30 animate-ping opacity-75" />
+                  <Wrench className="w-10 h-10 text-rose-500 animate-pulse relative z-10" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-black uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                    <span>{isMaintenance ? '🔧 Vehicle Under Scheduled Maintenance' : '🚫 Shuttle Service Suspended'}</span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    සජීවී සිතියම තාවකාලිකව අක්‍රියයි (Live GPS Radar Offline)
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-rose-200 font-semibold leading-relaxed">
+                    {activeShuttle.delayNotice || 'මෙම බස් රථය නඩත්තු කටයුතු සඳහා යොමු කර ඇති බැවින් සිතියම සහ සජීවී GPS පිහිටීම නොපෙන්වයි.'}
+                  </p>
+                </div>
+
+                {/* Helpful Contact Box */}
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 space-y-2 backdrop-blur-md text-left">
+                  <div className="flex items-center justify-between text-[11px] font-bold border-b border-slate-800 pb-2">
+                    <span>Corridor: <strong className="text-white">{activeShuttle.routeName}</strong></span>
+                    <span className="font-mono text-rose-400 font-bold">{activeShuttle.busNumber}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    නැවත ධාවනය ආරම්භ කරන වේලාව හෝ විකල්ප ප්‍රවාහන පහසුකම් පිළිබඳ තොරතුරු සඳහා රියදුරු අමතන්න.
+                  </p>
+                  <div className="flex items-center justify-center space-x-2 pt-1">
+                    <a
+                      href={`tel:${activeShuttle.driverPhone}`}
+                      className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs transition-all shadow-md flex items-center justify-center space-x-1.5 cursor-pointer"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>Call Driver ({activeShuttle.driverPhone})</span>
+                    </a>
+                    <a
+                      href={`https://wa.me/${activeShuttle.driverWhatsapp || '94771234567'}?text=Hello%20Driver,%20is%20the%20SLIIT%20Shuttle%20operating%20today?`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer"
+                      title="WhatsApp Driver"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          ) : (
+            /* Normal Interactive GPS Radar Map Canvas */
+            <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-2xl h-[440px] sm:h-[520px] w-full bg-slate-950">
             
             {/* Map Engine Render */}
             {mapEngine === 'google' ? (
@@ -930,6 +1058,7 @@ export default function SliitTransitHub() {
             </div>
 
           </div>
+          )}
 
           {/* ============================================================== */}
           {/* STUDENT STAGE-BASED FARE CATEGORIES & BOARDING CALCULATOR      */}
@@ -1205,8 +1334,9 @@ export default function SliitTransitHub() {
 
           </div>
 
-        </div>
-      )}
+          </div>
+        );
+      })()}
 
     </div>
   );

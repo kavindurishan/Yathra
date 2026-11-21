@@ -72,6 +72,48 @@ export default function ManageSliitTransit() {
   const [isEditingCategory, setIsEditingCategory] = useState(false);
   const [newIntermediateStopInput, setNewIntermediateStopInput] = useState('');
 
+  // Quick Service Status & Disruption Notice Modal state
+  const [isQuickNoticeModalOpen, setIsQuickNoticeModalOpen] = useState(false);
+  const [quickNoticeTarget, setQuickNoticeTarget] = useState(null);
+  const [quickStatus, setQuickStatus] = useState('Active');
+  const [quickNotice, setQuickNotice] = useState('');
+  const [quickSaving, setQuickSaving] = useState(false);
+
+  const handleOpenQuickNotice = (shuttle) => {
+    setQuickNoticeTarget(shuttle);
+    setQuickStatus(shuttle.status || 'Active');
+    setQuickNotice(shuttle.delayNotice || '');
+    setIsQuickNoticeModalOpen(true);
+  };
+
+  const handleSaveQuickNotice = async () => {
+    if (!quickNoticeTarget) return;
+    setQuickSaving(true);
+    try {
+      const targetId = quickNoticeTarget._id || quickNoticeTarget.routeId;
+      const updatedData = {
+        status: quickStatus,
+        delayNotice: quickNotice.trim() || (quickStatus === 'Active' ? 'සාමාන්‍ය පරිදි ධාවනය වේ (Operating smoothly on schedule).' : 'සේවාව තාවකාලිකව අත්හිටුවා ඇත.')
+      };
+
+      // Optimistic update
+      setShuttles(prev => prev.map(s => {
+        if (s._id === targetId || s.routeId === targetId) {
+          return { ...s, ...updatedData };
+        }
+        return s;
+      }));
+
+      await api.campus.update(targetId, updatedData);
+      showNotification(`Updated service status & notice for ${quickNoticeTarget.routeName}`);
+      setIsQuickNoticeModalOpen(false);
+    } catch (err) {
+      alert('Failed to update status: ' + (err.message || 'Error occurred'));
+    } finally {
+      setQuickSaving(false);
+    }
+  };
+
   // New Waypoint Form State for manual route editing
   const [newWaypoint, setNewWaypoint] = useState({
     name: '',
@@ -661,13 +703,20 @@ export default function ManageSliitTransit() {
                     </h3>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 border ${
-                    shuttle.status === 'Active'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
-                      : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800'
-                  }`}>
-                    {shuttle.status}
-                  </span>
+                  <div className="flex items-center space-x-1.5 shrink-0">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border flex items-center gap-1 ${
+                      shuttle.status === 'Active'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                        : shuttle.status === 'Maintenance'
+                        ? 'bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 animate-pulse'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300'
+                    }`}>
+                      {shuttle.status === 'Maintenance' && <span>🔧</span>}
+                      {shuttle.status === 'Active' && <span>🟢</span>}
+                      {shuttle.status === 'Inactive' && <span>🔴</span>}
+                      <span>{shuttle.status === 'Maintenance' ? 'Maintenance (Map Hidden)' : shuttle.status}</span>
+                    </span>
+                  </div>
                 </div>
 
                 {/* Subtitle / Sinhala */}
@@ -788,17 +837,48 @@ export default function ManageSliitTransit() {
 
               </div>
 
+              {/* Active Service Notice Banner on Card */}
+              {shuttle.delayNotice && (
+                <div className={`p-2.5 rounded-2xl border text-xs flex items-start space-x-2.5 ${
+                  shuttle.status === 'Maintenance'
+                    ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800/80 text-rose-800 dark:text-rose-300'
+                    : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/80 text-amber-800 dark:text-amber-300'
+                }`}>
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+                  <div className="flex-1 space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-[10px] uppercase tracking-wider">
+                        {shuttle.status === 'Maintenance' ? '🔧 Maintenance Alert' : '📢 Active Service Notice'}
+                      </span>
+                    </div>
+                    <p className="font-bold text-xs leading-snug">{shuttle.delayNotice}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Action Toolbar */}
               <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(shuttle)}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer"
-                  title="Edit Route, Driver, Bus, Fare, Times, and Waypoints"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                  <span>Edit Details (තොරතුරු වෙනස් කරන්න)</span>
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(shuttle)}
+                    className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer"
+                    title="Edit Route, Driver, Bus, Fare, Times, and Waypoints"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenQuickNotice(shuttle)}
+                    className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer"
+                    title="Quickly change Service Status (Active/Maintenance) or broadcast emergency notice"
+                  >
+                    <BellRing className="w-3.5 h-3.5" />
+                    <span>Status / Notice</span>
+                  </button>
+                </div>
 
                 <div className="flex items-center space-x-1.5">
                   <button
@@ -846,6 +926,142 @@ export default function ManageSliitTransit() {
           );
         })}
       </div>
+
+      {/* ============================================================== */}
+      {/* QUICK SERVICE STATUS & OPERATIONAL NOTICE MODAL (URGENT ALERT)  */}
+      {/* ============================================================== */}
+      {isQuickNoticeModalOpen && quickNoticeTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black">
+                  <BellRing className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    Service Status & Alert Broadcast
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {quickNoticeTarget.routeName} ({quickNoticeTarget.busNumber})
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsQuickNoticeModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Service Status Radio Buttons */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                1. Service Operational Status (ක්‍රියාකාරී තත්ත්වය):
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'Active', label: '🟢 Active', desc: 'සාමාන්‍ය ධාවනය (Live Map ON)' },
+                  { value: 'Maintenance', label: '🔧 Maintenance', desc: 'නඩත්තු (Map Hidden & Alert)' },
+                  { value: 'Inactive', label: '🔴 Suspended', desc: 'සේවය අත්හිටුවා ඇත' }
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      setQuickStatus(opt.value);
+                      if (opt.value === 'Maintenance' && (!quickNotice || quickNotice.includes('සාමාන්‍ය'))) {
+                        setQuickNotice('ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Maintenance) සඳහා යොමු කර ඇති බැවින් අද දින ධාවනය නොවේ.');
+                      } else if (opt.value === 'Active' && quickNotice.includes('නඩත්තු')) {
+                        setQuickNotice('සාමාන්‍ය පරිදි ධාවනය වේ (Operating smoothly on schedule).');
+                      }
+                    }}
+                    className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      quickStatus === opt.value
+                        ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 ring-2 ring-rose-500/30'
+                        : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-400'
+                    }`}
+                  >
+                    <span className="font-black text-xs text-slate-900 dark:text-white">{opt.label}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Preset Buttons for Real-world Student Notifications */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                2. Quick Notice Presets (ක්ලික් කර ක්ෂණිකව තෝරන්න):
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {[
+                  { label: '🚫 අද සවස බස් රථය ධාවනය නොවේ', text: 'අද සවස SLIIT මාලඹේ සිට ආපසු ගමන් ගන්නා බස් රථය ධාවනය නොවේ.' },
+                  { label: '⚠️ හෙට දින බස් රථය ධාවනය නොවේ', text: 'හෙට දින මෙම මාර්ගයේ SLIIT බස් රථය ධාවනය නොවේ. විකල්ප ප්‍රවාහන සලසා ගන්න.' },
+                  { label: '🔧 නඩත්තු කටයුතු සඳහා රථය නවතා ඇත', text: 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇත.' },
+                  { label: '🚨 අද දින සම්පූර්ණ සේවාව අවලංගුයි', text: 'අද දින උදෑසන සහ සවස දෙකෙහිම බස් සේවාව ක්‍රියාත්මක නොවේ.' },
+                  { label: '⏰ අද සවස 05:30 ට මාලඹෙන් පිටත් වේ', text: 'අද සවස බස් රථය නියමිත වේලාවට වඩා විනාඩි 30ක් ප්‍රමාදව සවස 05:30 ට පිටත් වේ.' },
+                  { label: '🌧️ අයහපත් කාලගුණය / මාර්ග තදබදය', text: 'අයහපත් කාලගුණය සහ අධික මාර්ග තදබදය හේතුවෙන් විනාඩි 15-20 ක ප්‍රමාදයක් සිදුවිය හැක.' },
+                  { label: '✅ සාමාන්‍ය පරිදි ධාවනය වේ (Clear)', text: 'Normal Traffic. Operating smoothly on schedule.' }
+                ].map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setQuickNotice(p.text);
+                      if (p.label.includes('නඩත්තු')) {
+                        setQuickStatus('Maintenance');
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-rose-400 text-left text-[11px] font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Notice Input */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Notice Message Text (සිසුන්ට පෙන්වන පණිවිඩය):
+              </label>
+              <textarea
+                rows={2}
+                value={quickNotice}
+                onChange={(e) => setQuickNotice(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-xs"
+                placeholder="e.g. අද සවස බස් රථය ධාවනය නොවේ."
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsQuickNoticeModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveQuickNotice}
+                disabled={quickSaving}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-black text-xs shadow-md shadow-rose-600/20 flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{quickSaving ? 'Broadcasting...' : 'Save & Broadcast to Students (වහාම ප්‍රචාරය කරන්න)'}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* EDIT / CREATE MODAL WITH COMPREHENSIVE MANUAL ROUTE BUILDER    */}

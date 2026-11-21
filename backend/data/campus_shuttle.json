@@ -265,20 +265,20 @@
       }
     ],
     "currentLocation": {
-      "lat": 6.81494,
-      "lng": 79.87834,
-      "speed": 41,
-      "currentHalt": "Belekka Junction",
-      "nextHalt": "Ratmalana Maliban Junction",
-      "nextHaltEta": "5 mins",
+      "lat": 6.88049,
+      "lng": 79.95948,
+      "speed": 33,
+      "currentHalt": "Hokandara Junction",
+      "nextHalt": "Arangala Junction",
+      "nextHaltEta": "8 mins",
       "isLive": true,
       "simulationActive": true,
-      "simulationIndex": 10,
-      "lastUpdated": "2026-11-21T08:47:46.222Z"
+      "simulationIndex": 25,
+      "lastUpdated": "2026-11-21T09:14:27.054Z"
     },
     "delayNotice": "Shuttle undergoing scheduled vehicle maintenance today.",
     "status": "Active",
-    "updatedAt": "2026-11-21T08:47:46.223Z",
+    "updatedAt": "2026-11-21T09:14:27.061Z",
     "fareCategories": [
       {
         "id": "fc-pana-1",
@@ -816,16 +816,16 @@
       }
     ],
     "currentLocation": {
-      "lat": 7.0016,
-      "lng": 79.954,
-      "speed": 50,
-      "currentHalt": "Kadawatha Highway Entrance",
-      "nextHalt": "Kaduwela Highway Exit",
-      "nextHaltEta": "20 mins",
+      "lat": 6.9147,
+      "lng": 79.9729,
+      "speed": 0,
+      "currentHalt": "SLIIT Malabe Campus",
+      "nextHalt": "Ganemulla",
+      "nextHaltEta": "Arrived",
       "isLive": true,
-      "simulationActive": false,
-      "simulationIndex": 3,
-      "lastUpdated": "2026-11-15T07:05:00.000Z"
+      "simulationActive": true,
+      "simulationIndex": 5,
+      "lastUpdated": "2026-11-21T09:14:40.552Z"
     },
     "delayNotice": "Approaching Kadawatha highway gate. Running exactly on time.",
     "status": "Active",
@@ -872,6 +872,7 @@
         ],
         "description": "Kaduwela town & Malabe junction connection"
       }
-    ]
+    ],
+    "updatedAt": "2026-11-21T09:14:40.558Z"
   }
 ]

@@ -93,7 +93,7 @@ export default function ManageSliitTransit() {
       const targetId = quickNoticeTarget._id || quickNoticeTarget.routeId;
       const updatedData = {
         status: quickStatus,
-        delayNotice: quickNotice.trim() || (quickStatus === 'Active' ? 'සාමාන්‍ය පරිදි ධාවනය වේ (Operating smoothly on schedule).' : 'සේවාව තාවකාලිකව අත්හිටුවා ඇත.')
+        delayNotice: quickStatus === 'Active' ? quickNotice.trim() : (quickNotice.trim() || 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.')
       };
 
       // Optimistic update
@@ -974,10 +974,12 @@ export default function ManageSliitTransit() {
                     type="button"
                     onClick={() => {
                       setQuickStatus(opt.value);
-                      if (opt.value === 'Maintenance' && (!quickNotice || quickNotice.includes('සාමාන්‍ය'))) {
-                        setQuickNotice('ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Maintenance) සඳහා යොමු කර ඇති බැවින් අද දින ධාවනය නොවේ.');
-                      } else if (opt.value === 'Active' && quickNotice.includes('නඩත්තු')) {
-                        setQuickNotice('සාමාන්‍ය පරිදි ධාවනය වේ (Operating smoothly on schedule).');
+                      if (opt.value === 'Maintenance') {
+                        setQuickNotice('ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.');
+                      } else if (opt.value === 'Active') {
+                        setQuickNotice('');
+                      } else if (opt.value === 'Inactive') {
+                        setQuickNotice('මෙම මාර්ගයේ බස් සේවාව තාවකාලිකව අත්හිටුවා ඇත (Service Temporarily Suspended).');
                       }
                     }}
                     className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
@@ -1162,7 +1164,22 @@ export default function ManageSliitTransit() {
                     <label className="font-extrabold text-slate-700 dark:text-slate-300">Service Status (ක්‍රියාකාරීත්වය)</label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      onChange={(e) => {
+                        const newStatus = e.target.value;
+                        let newDelayNotice = formData.delayNotice || '';
+                        if (newStatus === 'Maintenance') {
+                          newDelayNotice = 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.';
+                        } else if (newStatus === 'Inactive') {
+                          newDelayNotice = 'මෙම මාර්ගයේ බස් සේවාව තාවකාලිකව අත්හිටුවා ඇත (Service Temporarily Suspended).';
+                        } else if (newStatus === 'Active') {
+                          newDelayNotice = '';
+                        }
+                        setFormData({
+                          ...formData,
+                          status: newStatus,
+                          delayNotice: newDelayNotice
+                        });
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold cursor-pointer"
                     >
                       <option value="Active">🟢 Active (ධාවනයේ පවතී)</option>
@@ -1782,7 +1799,7 @@ export default function ManageSliitTransit() {
                   <div className="flex flex-wrap gap-1">
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, delayNotice: 'Normal Traffic. Operating smoothly on schedule.' })}
+                      onClick={() => setFormData({ ...formData, delayNotice: '', status: 'Active' })}
                       className="px-2 py-0.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold cursor-pointer transition-colors"
                     >
                       ✅ On Schedule
@@ -1803,7 +1820,7 @@ export default function ManageSliitTransit() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, delayNotice: 'Shuttle undergoing scheduled vehicle maintenance today.' })}
+                      onClick={() => setFormData({ ...formData, delayNotice: 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.', status: 'Maintenance' })}
                       className="px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 text-[10px] font-bold cursor-pointer transition-colors"
                     >
                       🔧 Maintenance

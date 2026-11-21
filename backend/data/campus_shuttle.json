@@ -265,20 +265,20 @@
       }
     ],
     "currentLocation": {
-      "lat": 6.88049,
-      "lng": 79.95948,
-      "speed": 33,
-      "currentHalt": "Hokandara Junction",
-      "nextHalt": "Arangala Junction",
-      "nextHaltEta": "8 mins",
+      "lat": 6.87597,
+      "lng": 79.93479,
+      "speed": 39,
+      "currentHalt": "Thalawathugoda Junction",
+      "nextHalt": "Hokandara Junction",
+      "nextHaltEta": "9 mins",
       "isLive": true,
       "simulationActive": true,
-      "simulationIndex": 25,
-      "lastUpdated": "2026-11-21T09:14:27.054Z"
+      "simulationIndex": 24,
+      "lastUpdated": "2026-11-21T11:39:56.443Z"
     },
-    "delayNotice": "Shuttle undergoing scheduled vehicle maintenance today.",
+    "delayNotice": "අයහපත් කාලගුණය සහ අධික මාර්ග තදබදය හේතුවෙන් විනාඩි 15-20 ක ප්‍රමාදයක් සිදුවිය හැක.",
     "status": "Active",
-    "updatedAt": "2026-11-21T09:14:27.061Z",
+    "updatedAt": "2026-11-21T11:45:09.736Z",
     "fareCategories": [
       {
         "id": "fc-pana-1",

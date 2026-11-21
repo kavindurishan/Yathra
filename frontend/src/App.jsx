@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import Home from './pages/Home';
@@ -53,8 +54,9 @@ export default function App() {
 
       {/* Main Page Content Body */}
       <main className={`flex-grow ${isAdmin ? 'h-[calc(100vh-4rem)] overflow-hidden' : ''}`}>
-        <Routes>
-          {/* Public customer routes */}
+        <ErrorBoundary>
+          <Routes>
+            {/* Public customer routes */}
           <Route path="/" element={<Home />} />
           <Route path="/schedules" element={<BusList />} />
           <Route path="/sliit-transit" element={<SliitTransitHub />} />
@@ -121,7 +123,8 @@ export default function App() {
           {/* Fallback wildcard */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </main>
+      </ErrorBoundary>
+    </main>
 
       {/* Customer Footer banner (Only shown when not on Admin console) */}
       {!isAdmin && <Footer />}

@@ -24,28 +24,6 @@ export default function SliitTransitHub() {
     return 'sliit-panadura';
   });
 
-  // Handler to switch corridor & sync with URL
-  const handleSelectShuttle = (routeId) => {
-    setSelectedShuttleId(routeId);
-    setInspectedStop(null);
-    setSelectedBoardingStop('');
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('route', routeId);
-      window.history.replaceState({}, '', url.toString());
-    }
-  };
-
-  // Listen to popstate (back/forward in browser)
-  useEffect(() => {
-    const onPop = () => {
-      const params = new URLSearchParams(window.location.search);
-      const r = params.get('route');
-      if (r) setSelectedShuttleId(r);
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -83,13 +61,36 @@ export default function SliitTransitHub() {
   // Selected Boarding Stop for Stage Fare Calculator
   const [selectedBoardingStop, setSelectedBoardingStop] = useState('');
 
+  // Handler to switch corridor & sync with URL
+  const handleSelectShuttle = (routeId) => {
+    setSelectedShuttleId(routeId);
+    setInspectedStop(null);
+    setSelectedBoardingStop('');
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('route', routeId);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  // Listen to popstate (back/forward in browser)
+  useEffect(() => {
+    const onPop = () => {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get('route');
+      if (r) setSelectedShuttleId(r);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   // Helper: Find category and exact fare for any given stop or halt
   const getStopFareInfo = (stopName, shuttle = activeShuttle) => {
     if (!shuttle) return { fare: 180, categoryName: 'Stage Fare', categoryNameSi: '', monthlyPassFare: 4500 };
-    const cleanName = (stopName || '').toLowerCase().trim();
+    const cleanName = String(stopName || '').toLowerCase().trim();
 
     // 1. Direct match on stop's own fare property
-    const stopObj = shuttle.stops?.find(s => s.name?.toLowerCase().trim() === cleanName);
+    const stopObj = shuttle.stops?.find(s => s && s.name && String(s.name).toLowerCase().trim() === cleanName);
     if (stopObj && typeof stopObj.fare === 'number' && stopObj.fare > 0) {
       return {
         fare: stopObj.fare,
@@ -102,8 +103,8 @@ export default function SliitTransitHub() {
     // 2. Match against category intermediateStops or fromStop
     if (shuttle.fareCategories && shuttle.fareCategories.length > 0) {
       const match = shuttle.fareCategories.find(c => 
-        (c.fromStop && c.fromStop.toLowerCase().trim() === cleanName) ||
-        (c.intermediateStops && c.intermediateStops.some(is => is.toLowerCase().trim() === cleanName))
+        (c.fromStop && String(c.fromStop).toLowerCase().trim() === cleanName) ||
+        (Array.isArray(c.intermediateStops) && c.intermediateStops.some(is => is && String(is).toLowerCase().trim() === cleanName))
       );
       if (match) {
         return {
@@ -115,13 +116,16 @@ export default function SliitTransitHub() {
         };
       }
       // Fallback to first category
-      return {
-        fare: shuttle.fareCategories[0].fare,
-        categoryName: shuttle.fareCategories[0].categoryName,
-        categoryNameSi: shuttle.fareCategories[0].categoryNameSi || '',
-        monthlyPassFare: shuttle.fareCategories[0].monthlyPassFare || Math.round(shuttle.fareCategories[0].fare * 25),
-        category: shuttle.fareCategories[0]
-      };
+      const firstCat = shuttle.fareCategories[0];
+      if (firstCat) {
+        return {
+          fare: firstCat.fare || 180,
+          categoryName: firstCat.categoryName || 'Stage Fare',
+          categoryNameSi: firstCat.categoryNameSi || '',
+          monthlyPassFare: firstCat.monthlyPassFare || Math.round((firstCat.fare || 180) * 25),
+          category: firstCat
+        };
+      }
     }
 
     return {
@@ -137,18 +141,20 @@ export default function SliitTransitHub() {
     if (!activeShuttle) return [];
     const set = new Set();
     (activeShuttle.stops || []).forEach(s => {
-      if (s.name && !s.name.includes('SLIIT')) set.add(s.name);
+      if (s && s.name && !String(s.name).includes('SLIIT')) set.add(String(s.name));
     });
     (activeShuttle.fareCategories || []).forEach(c => {
-      if (c.fromStop && !c.fromStop.includes('SLIIT')) set.add(c.fromStop);
-      (c.intermediateStops || []).forEach(is => {
-        if (is && !is.includes('SLIIT')) set.add(is);
-      });
+      if (c && c.fromStop && !String(c.fromStop).includes('SLIIT')) set.add(String(c.fromStop));
+      if (Array.isArray(c?.intermediateStops)) {
+        c.intermediateStops.forEach(is => {
+          if (is && !String(is).includes('SLIIT')) set.add(String(is));
+        });
+      }
     });
     return Array.from(set);
   }, [activeShuttle]);
 
-  const currentBoarding = selectedBoardingStop || allBoardingStops[0] || activeShuttle.origin || 'Panadura';
+  const currentBoarding = selectedBoardingStop || allBoardingStops[0] || activeShuttle?.origin || 'Panadura';
   const currentFareInfo = getStopFareInfo(currentBoarding, activeShuttle);
 
   const loadShuttles = async (showLoadingSpinner = false) => {
@@ -293,6 +299,21 @@ export default function SliitTransitHub() {
 
   const isLive = Boolean(forceWindowActive || activeShuttle?.isWithinOperatingWindow);
   const loc = activeShuttle?.currentLocation || {};
+
+  const isMaintenance = activeShuttle?.status === 'Maintenance';
+  const isInactive = activeShuttle?.status === 'Inactive';
+  const isMaintenanceOrInactive = Boolean(isMaintenance || isInactive);
+  const noticeLower = String(activeShuttle?.delayNotice || '').toLowerCase();
+  const hasUrgentNotice = Boolean(
+    activeShuttle?.delayNotice &&
+    !noticeLower.includes('normal traffic') &&
+    !noticeLower.includes('operating smoothly')
+  );
+  const isEveningNotice = noticeLower.includes('හවස') || noticeLower.includes('evening') || noticeLower.includes('සවස');
+  const isTomorrowNotice = noticeLower.includes('හෙට') || noticeLower.includes('tomorrow');
+  const isCancellation = noticeLower.includes('නැත') || noticeLower.includes('නොවේ') || noticeLower.includes('cancel') || noticeLower.includes('නවතා');
+
+  const showAlertBanner = Boolean(isMaintenanceOrInactive || hasUrgentNotice);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
@@ -500,7 +521,7 @@ export default function SliitTransitHub() {
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 {isSliitStudent ? (
                   <span>
-                    සාදරයෙන් පිළිගනිමු, <strong>{user.fullName || 'SLIIT Student'}</strong> ({user.email}). ඔබගේ SLIIT Student ID: <strong className="font-mono text-blue-600 dark:text-blue-400">{user.studentId || 'IT21004567'}</strong>. ඔබ සඳහා සජීවී GPS සහ Shuttle සේවාවන් විවෘතව ඇත.
+                    සාදරයෙන් පිළිගනිමු, <strong>{user?.fullName || 'SLIIT Student'}</strong> ({user?.email || 'Student'}). ඔබගේ SLIIT Student ID: <strong className="font-mono text-blue-600 dark:text-blue-400">{user?.studentId || 'IT21004567'}</strong>. ඔබ සඳහා සජීවී GPS සහ Shuttle සේවාවන් විවෘතව ඇත.
                   </span>
                 ) : (
                   <span>
@@ -553,24 +574,8 @@ export default function SliitTransitHub() {
         </div>
       </div>
 
-      {activeShuttle && (() => {
-        const isMaintenance = activeShuttle.status === 'Maintenance';
-        const isInactive = activeShuttle.status === 'Inactive';
-        const isMaintenanceOrInactive = isMaintenance || isInactive;
-        const noticeLower = (activeShuttle.delayNotice || '').toLowerCase();
-        const hasUrgentNotice = Boolean(
-          activeShuttle.delayNotice &&
-          !noticeLower.includes('normal traffic') &&
-          !noticeLower.includes('operating smoothly')
-        );
-        const isEveningNotice = noticeLower.includes('හවස') || noticeLower.includes('evening') || noticeLower.includes('සවස');
-        const isTomorrowNotice = noticeLower.includes('හෙට') || noticeLower.includes('tomorrow');
-        const isCancellation = noticeLower.includes('නැත') || noticeLower.includes('නොවේ') || noticeLower.includes('cancel') || noticeLower.includes('නවතා');
-
-        const showAlertBanner = isMaintenanceOrInactive || hasUrgentNotice;
-
-        return (
-          <div className="space-y-6">
+      {activeShuttle && (
+        <div className="space-y-6">
 
             {/* ============================================================== */}
             {/* PROMINENT ANIMATED RED OPERATIONAL ALERT BANNER (HIGH PRIORITY)  */}
@@ -1334,9 +1339,8 @@ export default function SliitTransitHub() {
 
           </div>
 
-          </div>
-        );
-      })()}
+        </div>
+      )}
 
     </div>
   );

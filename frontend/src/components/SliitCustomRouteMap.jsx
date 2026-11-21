@@ -366,33 +366,27 @@ export default function SliitCustomRouteMap({
 
     if (typeof busLat === 'number' && typeof busLng === 'number') {
       const busHtml = `
-        <div style="position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;">
+        <div style="position: relative; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;">
           
-          <!-- Outer Pulsing Radar Waves (Ultra-prominent even when zoomed out) -->
-          <div style="position: absolute; width: 88px; height: 88px; border-radius: 50%; background: rgba(245, 158, 11, 0.4); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; pointer-events: none;"></div>
-          <div style="position: absolute; width: 62px; height: 62px; border-radius: 50%; background: rgba(245, 158, 11, 0.3); pointer-events: none;"></div>
-          
-          <!-- Top Floating Live Badge -->
-          <div style="position: absolute; top: -2px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #0f172a; color: #fbbf24; border: 2px solid #f59e0b; padding: 2px 9px; border-radius: 9999px; font-size: 10px; font-weight: 900; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px; z-index: 50;">
-            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: pulse 1s infinite;"></span>
-            <span>🚍 LIVE: ${shuttle.busNumber || 'WP NB-5208'}</span>
-          </div>
+          <!-- Outer Pulsing Radar Waves -->
+          <div style="position: absolute; width: 54px; height: 54px; border-radius: 50%; background: rgba(245, 158, 11, 0.35); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; pointer-events: none;"></div>
+          <div style="position: absolute; width: 42px; height: 42px; border-radius: 50%; background: rgba(245, 158, 11, 0.25); pointer-events: none;"></div>
 
-          <!-- Main 3D Glowing Amber Bus Sphere -->
-          <div style="position: relative; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); border: 3px solid #ffffff; box-shadow: 0 6px 20px rgba(217, 119, 6, 0.85); display: flex; align-items: center; justify-content: center; z-index: 40;">
-            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Main Amber Bus Sphere (Original Icon, Compact Size) -->
+          <div style="position: relative; width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); border: 2.5px solid #ffffff; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.7); display: flex; align-items: center; justify-content: center; z-index: 40;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
               <path d="M8 6v6"></path>
               <path d="M15 6v6"></path>
               <path d="M2 12h19.6"></path>
               <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4c-1.1 0-2.1.8-2.4 1.8l-1.4 5C0 13.2 0 13.6 0 14c0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3"></path>
-              <circle cx="6.5" cy="17.5" r="2.5" fill="#1e293b"></circle>
-              <circle cx="16.5" cy="17.5" r="2.5" fill="#1e293b"></circle>
+              <circle cx="6.5" cy="17.5" r="2.2" fill="#1e293b"></circle>
+              <circle cx="16.5" cy="17.5" r="2.2" fill="#1e293b"></circle>
             </svg>
           </div>
 
           <!-- Bottom Location Indicator Pill -->
-          <div style="position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #0f172a; color: #ffffff; border: 1.5px solid #38bdf8; padding: 2px 8px; border-radius: 7px; font-size: 9px; font-weight: 800; box-shadow: 0 3px 8px rgba(0,0,0,0.4); z-index: 50;">
-            📍 ${loc.currentHalt || shuttle.origin} (${loc.speed || 38} km/h)
+          <div style="position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #0f172a; color: #ffffff; border: 1px solid #38bdf8; padding: 1.5px 7px; border-radius: 6px; font-size: 8.5px; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,0.4); z-index: 50;">
+            📍 ${loc.currentHalt || shuttle.origin}
           </div>
 
         </div>
@@ -401,8 +395,8 @@ export default function SliitCustomRouteMap({
       const busIcon = L.divIcon({
         className: 'prominent-bus-live-marker',
         html: busHtml,
-        iconSize: [100, 100],
-        iconAnchor: [50, 50]
+        iconSize: [72, 72],
+        iconAnchor: [36, 36]
       });
 
       const popupHtml = `

@@ -127,6 +127,17 @@ const campusShuttleSchema = new mongoose.Schema({
   busType: { type: String, default: 'AC Luxury Coach' },
   fare: { type: Number, default: 250 },
   monthlyPassFare: { type: Number, default: 6500 },
+  fareCategories: [{
+    id: { type: String },
+    categoryName: { type: String, required: true },
+    categoryNameSi: { type: String },
+    fromStop: { type: String },
+    toStop: { type: String, default: 'SLIIT Malabe Campus' },
+    fare: { type: Number, required: true },
+    monthlyPassFare: { type: Number },
+    intermediateStops: [{ type: String }],
+    description: { type: String }
+  }],
   driverName: { type: String, default: 'Staff Driver' },
   driverPhone: { type: String, default: '+94 77 123 4567' },
   driverWhatsapp: { type: String, default: '94771234567' },
@@ -151,7 +162,9 @@ const campusShuttleSchema = new mongoose.Schema({
     timeOffset: String,
     km: Number,
     lat: Number,
-    lng: Number
+    lng: Number,
+    fare: Number,
+    fareCategory: String
   }],
   currentLocation: {
     lat: Number,

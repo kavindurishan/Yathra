@@ -1,235 +1,873 @@
-// Default seeded SLIIT Malabe Campus Shuttle Routes & Telemetry
 export const DEFAULT_SLIIT_SHUTTLES = [
   {
-    _id: "sliit-panadura",
-    routeId: "sliit-panadura",
-    routeNumber: "SLIIT-SH-01",
-    routeName: "Panadura ⇄ SLIIT Malabe Express Shuttle",
-    routeNameSi: "පානදුර ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
-    origin: "Panadura Bus Stand",
-    destination: "SLIIT Malabe Campus",
-    busNumber: "WP NB-5208",
-    busName: "SLIIT Panadura Luxury Coach",
-    busType: "AC Luxury Coach",
-    fare: 250,
-    monthlyPassFare: 6500,
-    driverName: "Chaminda Jayalath",
-    driverPhone: "+94 76 688 8078",
-    driverWhatsapp: "94766888078",
-    conductorName: "Sunil Shantha",
-    conductorPhone: "+94 71 456 7890",
-    seatCapacity: 45,
-    availableSeats: 12,
-    occupancyStatus: "Seats Available",
-    departureTimeMorning: "06:15 AM",
-    arrivalTimeMorning: "07:45 AM",
-    departureTimeEvening: "04:45 PM",
-    arrivalTimeEvening: "06:15 PM",
-    operatingWindow: {
-      morningStart: "06:00",
-      morningEnd: "08:00",
-      eveningStart: "16:00",
-      eveningEnd: "18:30"
+    "_id": "sliit-panadura",
+    "routeId": "sliit-panadura",
+    "routeNumber": "SLIIT-SH-01",
+    "routeName": "Panadura ⇄ SLIIT Malabe Shuttle",
+    "routeNameSi": "පානදුර ⇄ SLIIT මාලඹේ ශිෂ්‍ය බස් සේවාව",
+    "origin": "Panadura Rankoth Viharaya Temple",
+    "destination": "SLIIT Malabe Campus",
+    "busNumber": "WP NB-5208",
+    "busName": "Lanka Ashok Leyland",
+    "busType": "AC Luxury Coach",
+    "fare": 180,
+    "monthlyPassFare": 4500,
+    "driverName": "Chaminda Jayalath",
+    "driverPhone": "+94 76 688 8078",
+    "driverWhatsapp": "+94 77 827 7802",
+    "conductorName": "",
+    "conductorPhone": "",
+    "seatCapacity": 54,
+    "availableSeats": 54,
+    "occupancyStatus": "Seats Available",
+    "departureTimeMorning": "06:10 AM",
+    "arrivalTimeMorning": "07:45 AM",
+    "departureTimeEvening": "05:40 PM",
+    "arrivalTimeEvening": "08:00 PM",
+    "operatingWindow": {
+      "morningStart": "06:00",
+      "morningEnd": "08:00",
+      "eveningStart": "16:00",
+      "eveningEnd": "18:30"
     },
-    isWithinOperatingWindow: true,
-    stops: [
-      { name: "Panadura", nameSi: "පානදුර", timeOffset: "00m", km: 0, lat: 6.7132, lng: 79.9074 },
-      { name: "Moratuwa", nameSi: "මොරටුව", timeOffset: "12m", km: 7, lat: 6.7730, lng: 79.8816 },
-      { name: "Katubedda", nameSi: "කටුබැද්ද", timeOffset: "18m", km: 10, lat: 6.7978, lng: 79.8892 },
-      { name: "Dehiwala (William Junction)", nameSi: "දෙහිවල (විලියම් හන්දිය)", timeOffset: "28m", km: 16, lat: 6.8511, lng: 79.8659 },
-      { name: "Kohuwala", nameSi: "කොහුවල", timeOffset: "34m", km: 19, lat: 6.8600, lng: 79.8860 },
-      { name: "Nugegoda", nameSi: "නුගේගොඩ", timeOffset: "40m", km: 21, lat: 6.8649, lng: 79.8997 },
-      { name: "Pitakotte", nameSi: "පිටකෝට්ටේ", timeOffset: "48m", km: 24, lat: 6.8900, lng: 79.9120 },
-      { name: "Thalawathugoda", nameSi: "තලවතුගොඩ", timeOffset: "56m", km: 28, lat: 6.8770, lng: 79.9320 },
-      { name: "Hokandara", nameSi: "හෝකන්දර", timeOffset: "1h 05m", km: 32, lat: 6.8730, lng: 79.9540 },
-      { name: "Arangala Junction", nameSi: "අරංගල හන්දිය", timeOffset: "1h 12m", km: 35, lat: 6.8870, lng: 79.9680 },
-      { name: "Malabe Junction", nameSi: "මාලඹේ හන්දිය", timeOffset: "1h 20m", km: 38, lat: 6.9042, lng: 79.9547 },
-      { name: "SLIIT Malabe Campus", nameSi: "SLIIT මාලඹේ ප්‍රධාන පිවිසුම", timeOffset: "1h 30m", km: 42, lat: 6.9147, lng: 79.9729 }
+    "stops": [
+      {
+        "name": "Panadura Bus Stand",
+        "nameSi": "පානදුර බස් නැවතුම",
+        "timeOffset": "00m",
+        "km": 0,
+        "lat": 6.71177,
+        "lng": 79.90675
+      },
+      {
+        "name": "Panadura Bus Stand",
+        "nameSi": "පානදුර බස් නැවතුම",
+        "timeOffset": "00m",
+        "km": 3.5,
+        "lat": 6.72677,
+        "lng": 79.90487
+      },
+      {
+        "name": "Egodauyana",
+        "nameSi": "ආරම්භක නැවතුම",
+        "timeOffset": "00m",
+        "km": 7,
+        "lat": 6.74224,
+        "lng": 79.89237
+      },
+      {
+        "name": "Koralawella",
+        "nameSi": "මොරටුව හන්දිය",
+        "timeOffset": "00m",
+        "km": 10.5,
+        "lat": 6.75848,
+        "lng": 79.88624
+      },
+      {
+        "name": "Moratuwa ",
+        "nameSi": "මොරටුව හන්දිය",
+        "timeOffset": "00m",
+        "km": 14,
+        "lat": 6.77486,
+        "lng": 79.88245
+      },
+      {
+        "name": "Moratuwa Mendis Lane ",
+        "nameSi": "මොරටුව හන්දිය",
+        "timeOffset": "00m",
+        "km": 17.5,
+        "lat": 6.78351,
+        "lng": 79.88424
+      },
+      {
+        "name": "Katubedda Junction",
+        "nameSi": "කටුබැද්ද හන්දිය",
+        "timeOffset": "00m",
+        "km": 21,
+        "lat": 6.787,
+        "lng": 79.88466
+      },
+      {
+        "name": "Katubedda K Zone",
+        "nameSi": "කටුබැද්ද හන්දිය",
+        "timeOffset": "00m",
+        "km": 24.5,
+        "lat": 6.79573,
+        "lng": 79.888
+      },
+      {
+        "name": "Soysa Flat",
+        "nameSi": "කටුබැද්ද හන්දිය",
+        "timeOffset": "00m",
+        "km": 28,
+        "lat": 6.8053,
+        "lng": 79.88588
+      },
+      {
+        "name": "Golumadama",
+        "nameSi": "ගොලුමඩම",
+        "timeOffset": "00m",
+        "km": 31.5,
+        "lat": 6.80968,
+        "lng": 79.883
+      },
+      {
+        "name": "Belekka Junction",
+        "nameSi": "බෙලෙක්ක හන්දිය",
+        "timeOffset": "00m",
+        "km": 35,
+        "lat": 6.81494,
+        "lng": 79.87834
+      },
+      {
+        "name": "Ratmalana Maliban Junction",
+        "nameSi": "රත්මලාන මැලිබන් හන්දිය",
+        "timeOffset": "00m",
+        "km": 38.5,
+        "lat": 6.81945,
+        "lng": 79.87361
+      },
+      {
+        "name": "Mount Lavinia",
+        "nameSi": "ගල්කිස්ස",
+        "timeOffset": "00m",
+        "km": 42,
+        "lat": 6.83299,
+        "lng": 79.86729
+      },
+      {
+        "name": "Dehiwala Junction",
+        "nameSi": "දෙහිවල හන්දිය",
+        "timeOffset": "00m",
+        "km": 45.5,
+        "lat": 6.85183,
+        "lng": 79.86587
+      },
+      {
+        "name": "Dehiwala (William Junction)",
+        "nameSi": "දෙහිවල (විලියම් හන්දිය)",
+        "timeOffset": "00m",
+        "km": 49,
+        "lat": 6.86269,
+        "lng": 79.86458
+      },
+      {
+        "name": "Kalubowila Hospital",
+        "nameSi": "කළුබෝවිල රෝහල",
+        "timeOffset": "00m",
+        "km": 52.5,
+        "lat": 6.86659,
+        "lng": 79.87613
+      },
+      {
+        "name": "Kohuwala Junction",
+        "nameSi": "කොහුවල හන්දිය",
+        "timeOffset": "00m",
+        "km": 56,
+        "lat": 6.86738,
+        "lng": 79.88488
+      },
+      {
+        "name": "Nugegoda Flyover",
+        "nameSi": "නුගේගොඩ ගුවන් පාලම",
+        "timeOffset": "00m",
+        "km": 59.5,
+        "lat": 6.8703,
+        "lng": 79.8885
+      },
+      {
+        "name": "Nugegoda Junction",
+        "nameSi": "නුගේගොඩ හන්දිය ",
+        "timeOffset": "00m",
+        "km": 63,
+        "lat": 6.8743,
+        "lng": 79.89159
+      },
+      {
+        "name": "Jubilee Post",
+        "nameSi": "ජුබිලි කණුව",
+        "timeOffset": "00m",
+        "km": 66.5,
+        "lat": 6.87652,
+        "lng": 79.90052
+      },
+      {
+        "name": "Pitakotte Junction",
+        "nameSi": "පිටකෝට්ටේ හන්දිය",
+        "timeOffset": "00m",
+        "km": 70,
+        "lat": 6.88422,
+        "lng": 79.90292
+      },
+      {
+        "name": "Beddagana ",
+        "nameSi": "බැද්දගාන",
+        "timeOffset": "00m",
+        "km": 73.5,
+        "lat": 6.88467,
+        "lng": 79.90779
+      },
+      {
+        "name": "Madiwela",
+        "nameSi": "මාදිවෙල",
+        "timeOffset": "00m",
+        "km": 77,
+        "lat": 6.87904,
+        "lng": 79.92171
+      },
+      {
+        "name": "Kibulawala",
+        "nameSi": "කිඹුලාවල",
+        "timeOffset": "00m",
+        "km": 80.5,
+        "lat": 6.87693,
+        "lng": 79.9277
+      },
+      {
+        "name": "Thalawathugoda Junction",
+        "nameSi": "තලවතුගොඩ හන්දිය",
+        "timeOffset": "00m",
+        "km": 84,
+        "lat": 6.87597,
+        "lng": 79.93479
+      },
+      {
+        "name": "Hokandara Junction",
+        "nameSi": "හෝකන්දර හන්දිය",
+        "timeOffset": "00m",
+        "km": 87.5,
+        "lat": 6.88049,
+        "lng": 79.95948
+      },
+      {
+        "name": "Arangala Junction",
+        "nameSi": "අරංගල හන්දිය",
+        "timeOffset": "00m",
+        "km": 91,
+        "lat": 6.89106,
+        "lng": 79.96435
+      },
+      {
+        "name": "Malabe Junction",
+        "nameSi": "මාලඹේ හන්දිය",
+        "timeOffset": "00m",
+        "km": 94.5,
+        "lat": 6.90396,
+        "lng": 79.95627
+      },
+      {
+        "name": "SLIIT Malabe ",
+        "nameSi": "SLIIT මාලඹේ ",
+        "timeOffset": "00m",
+        "km": 98,
+        "lat": 6.91407,
+        "lng": 79.97207
+      }
     ],
-    currentLocation: {
-      lat: 6.8649,
-      lng: 79.8997,
-      speed: 38,
-      currentHalt: "Nugegoda",
-      nextHalt: "Pitakotte",
-      nextHaltEta: "8 mins",
-      isLive: true,
-      simulationActive: false,
-      simulationIndex: 5,
-      lastUpdated: new Date().toISOString()
+    "currentLocation": {
+      "lat": 6.8511,
+      "lng": 79.8659,
+      "speed": 48,
+      "currentHalt": "Dehiwala (William Junction)",
+      "nextHalt": "Kohuwala",
+      "nextHaltEta": "5 mins",
+      "isLive": true,
+      "simulationActive": true,
+      "simulationIndex": 3,
+      "lastUpdated": "2026-11-21T07:30:53.277Z"
     },
-    delayNotice: "Normal Traffic. Operating smoothly on schedule.",
-    status: "Active"
+    "delayNotice": "Shuttle undergoing scheduled vehicle maintenance today.",
+    "status": "Maintenance",
+    "updatedAt": "2026-11-21T07:30:53.282Z",
+    "fareCategories": [
+      {
+        "id": "fc-pana-1",
+        "categoryName": "Panadura to SLIIT",
+        "categoryNameSi": "පානදුර සිට SLIIT දක්වා",
+        "fromStop": "Panadura",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 180,
+        "monthlyPassFare": 4500,
+        "intermediateStops": [
+          "Panadura",
+          "Panadura Bus Stand",
+          "Egodauyana",
+          "Koralawella"
+        ],
+        "description": "Panadura, Moratuwa junction & Katubedda boarding section"
+      },
+      {
+        "id": "fc-pana-2",
+        "categoryName": "Moratuwa to SLIIT",
+        "categoryNameSi": "මොරටුව සිට SLIIT දක්වා",
+        "fromStop": "Moratuwa",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 150,
+        "monthlyPassFare": 3800,
+        "intermediateStops": [
+          "Moratuwa",
+          "Katubedda",
+          "Moratuwa ",
+          "Moratuwa Mendis Lane ",
+          "Katubedda Junction",
+          "Katubedda K Zone",
+          "Soysa Flat",
+          "Golumadama",
+          "Belekka Junction",
+          "Ratmalana Maliban Junction",
+          "Mount Lavinia"
+        ],
+        "description": "Moratuwa, Katubedda University junction & Ratmalana corridor"
+      },
+      {
+        "id": "fc-pana-3",
+        "categoryName": "Dehiwala to SLIIT",
+        "categoryNameSi": "දෙහිවල සිට SLIIT දක්වා",
+        "fromStop": "Dehiwala (William Junction)",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 120,
+        "monthlyPassFare": 3200,
+        "intermediateStops": [
+          "Dehiwala Junction",
+          "Dehiwala (William Junction)",
+          "Kalubowila Hospital",
+          "Kohuwala Junction",
+          "Nugegoda Flyover",
+          "Nugegoda Junction",
+          "Jubilee Post",
+          "Pitakotte Junction",
+          "Beddagana ",
+          "Madiwela",
+          "Kibulawala",
+          "Thalawathugoda Junction",
+          "Hokandara Junction",
+          "Arangala Junction",
+          "Malabe Junction",
+          "SLIIT Malabe "
+        ],
+        "description": "Dehiwala William junction, Kohuwala, Nugegoda & Kotte zone"
+      }
+    ]
   },
   {
-    _id: "sliit-negombo",
-    routeId: "sliit-negombo",
-    routeNumber: "SLIIT-SH-02",
-    routeName: "Negombo ⇄ SLIIT Malabe Highway Shuttle",
-    routeNameSi: "මීගමුව ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
-    origin: "Negombo Bus Stand",
-    destination: "SLIIT Malabe Campus",
-    busNumber: "WP NC-4129",
-    busName: "SLIIT Negombo Express Coach",
-    busType: "AC Luxury Coach",
-    fare: 300,
-    monthlyPassFare: 7500,
-    driverName: "Prasanna Bandara",
-    driverPhone: "+94 71 632 8901",
-    driverWhatsapp: "94716328901",
-    conductorName: "Kusal Perera",
-    conductorPhone: "+94 76 998 1234",
-    seatCapacity: 45,
-    availableSeats: 8,
-    occupancyStatus: "Seats Available",
-    departureTimeMorning: "06:10 AM",
-    arrivalTimeMorning: "07:40 AM",
-    departureTimeEvening: "04:45 PM",
-    arrivalTimeEvening: "06:20 PM",
-    operatingWindow: {
-      morningStart: "06:00",
-      morningEnd: "08:00",
-      eveningStart: "16:00",
-      eveningEnd: "18:30"
+    "_id": "sliit-negombo",
+    "routeId": "sliit-negombo",
+    "routeNumber": "SLIIT-SH-02",
+    "routeName": "Negombo ⇄ SLIIT Malabe Highway Shuttle",
+    "routeNameSi": "මීගමුව ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
+    "origin": "Negombo Bus Stand",
+    "destination": "SLIIT Malabe Campus",
+    "busNumber": "WP NA-9124",
+    "busName": "SLIIT Negombo Highway Cruiser",
+    "busType": "AC Luxury Coach",
+    "fare": 280,
+    "monthlyPassFare": 7000,
+    "driverName": "Prasanna Bandara",
+    "driverPhone": "+94 71 632 8901",
+    "driverWhatsapp": "94716328901",
+    "conductorName": "Dhammika Fernando",
+    "conductorPhone": "+94 77 234 5678",
+    "seatCapacity": 45,
+    "availableSeats": 6,
+    "occupancyStatus": "Seats Available",
+    "departureTimeMorning": "06:00 AM",
+    "arrivalTimeMorning": "07:35 AM",
+    "departureTimeEvening": "04:45 PM",
+    "arrivalTimeEvening": "06:20 PM",
+    "operatingWindow": {
+      "morningStart": "06:00",
+      "morningEnd": "08:00",
+      "eveningStart": "16:00",
+      "eveningEnd": "18:30"
     },
-    isWithinOperatingWindow: true,
-    stops: [
-      { name: "Negombo Bus Stand", nameSi: "මීගමුව බස් නැවතුම", timeOffset: "00m", km: 0, lat: 7.2083, lng: 79.8358 },
-      { name: "Koppara Junction", nameSi: "කොප්පරා හන්දිය", timeOffset: "08m", km: 3, lat: 7.1950, lng: 79.8480 },
-      { name: "Katunayake 18th Mile Post", nameSi: "කටුනායක 18 කණුව", timeOffset: "18m", km: 11, lat: 7.1680, lng: 79.8760 },
-      { name: "Highway Entrance", nameSi: "කටුනායක අධිවේගී පිවිසුම", timeOffset: "25m", km: 15, lat: 7.1550, lng: 79.8850 },
-      { name: "Thorana Junction", nameSi: "තොරණ හන්දිය", timeOffset: "45m", km: 38, lat: 6.9630, lng: 79.8890 },
-      { name: "Kelaniya Temple", nameSi: "කැලණිය පන්සල අසල", timeOffset: "52m", km: 41, lat: 6.9530, lng: 79.9160 },
-      { name: "Bandarawaththa", nameSi: "බණ්ඩාරවත්ත", timeOffset: "1h 00m", km: 45, lat: 6.9420, lng: 79.9320 },
-      { name: "Kaduwela Junction", nameSi: "කඩුවෙල හන්දිය", timeOffset: "1h 15m", km: 52, lat: 6.9333, lng: 79.9833 },
-      { name: "SLIIT Malabe Campus", nameSi: "SLIIT මාලඹේ ප්‍රධාන පිවිසුම", timeOffset: "1h 30m", km: 58, lat: 6.9147, lng: 79.9729 }
+    "stops": [
+      {
+        "name": "Negombo Bus Stand",
+        "nameSi": "මීගමුව බස් නැවතුම්පොළ",
+        "timeOffset": "00m",
+        "km": 0,
+        "lat": 7.2084,
+        "lng": 79.8378,
+        "fare": 280,
+        "fareCategory": "Negombo to SLIIT"
+      },
+      {
+        "name": "Koppara Junction",
+        "nameSi": "කොප්පරා හන්දිය",
+        "timeOffset": "08m",
+        "km": 4,
+        "lat": 7.195,
+        "lng": 79.855,
+        "fare": 280,
+        "fareCategory": "Negombo to SLIIT"
+      },
+      {
+        "name": "Katunayake 18th Mile Post",
+        "nameSi": "කටුනායක 18 කණුව",
+        "timeOffset": "16m",
+        "km": 10,
+        "lat": 7.165,
+        "lng": 79.882,
+        "fare": 220,
+        "fareCategory": "Katunayake to SLIIT"
+      },
+      {
+        "name": "Highway (E03 Expressway)",
+        "nameSi": "කටුනායක අධිවේගී මාර්ග පිවිසුම",
+        "timeOffset": "25m",
+        "km": 18,
+        "lat": 7.12,
+        "lng": 79.895,
+        "fare": 200,
+        "fareCategory": "Katunayake to SLIIT"
+      },
+      {
+        "name": "Thorana Junction",
+        "nameSi": "තොරණ හන්දිය",
+        "timeOffset": "45m",
+        "km": 34,
+        "lat": 6.963,
+        "lng": 79.895,
+        "fare": 160,
+        "fareCategory": "Katunayake to SLIIT"
+      },
+      {
+        "name": "Kelaniya Temple",
+        "nameSi": "කැලණිය රජමහා විහාරය",
+        "timeOffset": "52m",
+        "km": 37,
+        "lat": 6.953,
+        "lng": 79.918,
+        "fare": 140,
+        "fareCategory": "Kelaniya / Kaduwela to SLIIT"
+      },
+      {
+        "name": "Bandarawaththa",
+        "nameSi": "බණ්ඩාරවත්ත",
+        "timeOffset": "1h 05m",
+        "km": 41,
+        "lat": 6.948,
+        "lng": 79.945,
+        "fare": 120,
+        "fareCategory": "Kelaniya / Kaduwela to SLIIT"
+      },
+      {
+        "name": "Kaduwela Junction",
+        "nameSi": "කඩුවෙල හන්දිය",
+        "timeOffset": "1h 18m",
+        "km": 46,
+        "lat": 6.9344,
+        "lng": 79.9839,
+        "fare": 100,
+        "fareCategory": "Kelaniya / Kaduwela to SLIIT"
+      },
+      {
+        "name": "SLIIT Malabe Campus",
+        "nameSi": "SLIIT මාලඹේ ප්‍රධාන පිවිසුම",
+        "timeOffset": "1h 35m",
+        "km": 50,
+        "lat": 6.9147,
+        "lng": 79.9729,
+        "fare": 0,
+        "fareCategory": "SLIIT Malabe Campus"
+      }
     ],
-    currentLocation: {
-      lat: 6.9630,
-      lng: 79.8890,
-      speed: 42,
-      currentHalt: "Thorana Junction",
-      nextHalt: "Kelaniya Temple",
-      nextHaltEta: "7 mins",
-      isLive: true,
-      simulationActive: false,
-      simulationIndex: 4,
-      lastUpdated: new Date().toISOString()
+    "currentLocation": {
+      "lat": 6.953,
+      "lng": 79.918,
+      "speed": 42,
+      "currentHalt": "Kelaniya Temple",
+      "nextHalt": "Bandarawaththa",
+      "nextHaltEta": "12 mins",
+      "isLive": true,
+      "simulationActive": false,
+      "simulationIndex": 5,
+      "lastUpdated": "2026-11-15T06:52:00.000Z"
     },
-    delayNotice: "",
-    status: "Active"
+    "delayNotice": "Minor traffic delay near Kelaniya Bridge (~5 mins).",
+    "status": "Active",
+    "fareCategories": [
+      {
+        "id": "fc-neg-1",
+        "categoryName": "Negombo to SLIIT",
+        "categoryNameSi": "මීගමුව සිට SLIIT දක්වා",
+        "fromStop": "Negombo Bus Stand",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 280,
+        "monthlyPassFare": 7000,
+        "intermediateStops": [
+          "Negombo Bus Stand",
+          "Koppara Junction",
+          "Katunayake 18th Mile Post"
+        ],
+        "description": "Negombo town, Koppara & Katunayake FTZ zone"
+      },
+      {
+        "id": "fc-neg-2",
+        "categoryName": "Katunayake to SLIIT",
+        "categoryNameSi": "කටුනායක සිට SLIIT දක්වා",
+        "fromStop": "Katunayake 18th Mile Post",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 220,
+        "monthlyPassFare": 5500,
+        "intermediateStops": [
+          "Katunayake 18th Mile Post",
+          "Highway (E03 Expressway)",
+          "Thorana Junction"
+        ],
+        "description": "Expressway highway stretch & Thorana junction"
+      },
+      {
+        "id": "fc-neg-3",
+        "categoryName": "Kelaniya / Kaduwela to SLIIT",
+        "categoryNameSi": "කැලණිය / කඩුවෙල සිට SLIIT දක්වා",
+        "fromStop": "Kelaniya Temple",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 140,
+        "monthlyPassFare": 3500,
+        "intermediateStops": [
+          "Kelaniya Temple",
+          "Bandarawaththa",
+          "Kaduwela Junction"
+        ],
+        "description": "Kelaniya, Bandarawatta & Kaduwela expressway link"
+      }
+    ]
   },
   {
-    _id: "sliit-minuwangoda",
-    routeId: "sliit-minuwangoda",
-    routeNumber: "SLIIT-SH-03",
-    routeName: "Minuwangoda ⇄ SLIIT Malabe Highway Shuttle",
-    routeNameSi: "මිනුවන්ගොඩ ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
-    origin: "Minuwangoda Town",
-    destination: "SLIIT Malabe Campus",
-    busNumber: "WP NB-8750",
-    busName: "SLIIT Minuwangoda Highway Coach",
-    busType: "AC Luxury Coach",
-    fare: 280,
-    monthlyPassFare: 7000,
-    driverName: "Gamini Jayasinghe",
-    driverPhone: "+94 77 554 3210",
-    driverWhatsapp: "94775543210",
-    conductorName: "Manoja Silva",
-    conductorPhone: "+94 72 334 9876",
-    seatCapacity: 45,
-    availableSeats: 5,
-    occupancyStatus: "Few Seats Left",
-    departureTimeMorning: "06:15 AM",
-    arrivalTimeMorning: "07:45 AM",
-    departureTimeEvening: "04:45 PM",
-    arrivalTimeEvening: "06:15 PM",
-    operatingWindow: {
-      morningStart: "06:00",
-      morningEnd: "08:00",
-      eveningStart: "16:00",
-      eveningEnd: "18:30"
+    "_id": "sliit-minuwangoda",
+    "routeId": "sliit-minuwangoda",
+    "routeNumber": "SLIIT-SH-03",
+    "routeName": "Minuwangoda ⇄ SLIIT Malabe Highway Shuttle",
+    "routeNameSi": "මිණුවන්ගොඩ ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
+    "origin": "Minuwangoda Bus Stand",
+    "destination": "SLIIT Malabe Campus",
+    "busNumber": "WP NB-4410",
+    "busName": "SLIIT Minuwangoda Express",
+    "busType": "AC Luxury Coach",
+    "fare": 250,
+    "monthlyPassFare": 6200,
+    "driverName": "Gamini Jayasinghe",
+    "driverPhone": "+94 77 554 3210",
+    "driverWhatsapp": "94775543210",
+    "conductorName": "Sarath Wickrama",
+    "conductorPhone": "+94 76 998 8776",
+    "seatCapacity": 45,
+    "availableSeats": 18,
+    "occupancyStatus": "Seats Available",
+    "departureTimeMorning": "06:10 AM",
+    "arrivalTimeMorning": "07:40 AM",
+    "departureTimeEvening": "04:45 PM",
+    "arrivalTimeEvening": "06:15 PM",
+    "operatingWindow": {
+      "morningStart": "06:00",
+      "morningEnd": "08:00",
+      "eveningStart": "16:00",
+      "eveningEnd": "18:30"
     },
-    isWithinOperatingWindow: true,
-    stops: [
-      { name: "Minuwangoda", nameSi: "මිනුවන්ගොඩ", timeOffset: "00m", km: 0, lat: 7.1667, lng: 79.9500 },
-      { name: "Katugoda", nameSi: "කටුගොඩ", timeOffset: "07m", km: 4, lat: 7.1510, lng: 79.9320 },
-      { name: "Ekala", nameSi: "ඒකල", timeOffset: "16m", km: 9, lat: 7.1120, lng: 79.9120 },
-      { name: "Ja-Ela", nameSi: "ජා-ඇල", timeOffset: "24m", km: 14, lat: 7.0750, lng: 79.8920 },
-      { name: "Kandana", nameSi: "කඳාන", timeOffset: "32m", km: 18, lat: 7.0460, lng: 79.8980 },
-      { name: "Mahabage", nameSi: "මහාබාගේ", timeOffset: "40m", km: 22, lat: 7.0180, lng: 79.8950 },
-      { name: "Kerawalapitiya Interchange to E02", nameSi: "කෙරවලපිටිය E02 අධිවේගී පිවිසුම", timeOffset: "50m", km: 28, lat: 7.0010, lng: 79.8910 },
-      { name: "Exit from Kaduwela Highway", nameSi: "කඩුවෙල අධිවේගී පිටවීම", timeOffset: "1h 10m", km: 46, lat: 6.9333, lng: 79.9833 },
-      { name: "SLIIT Malabe Campus", nameSi: "SLIIT මාලඹේ ප්‍රධාන පිවිසුම", timeOffset: "1h 30m", km: 52, lat: 6.9147, lng: 79.9729 }
+    "stops": [
+      {
+        "name": "Minuwangoda",
+        "nameSi": "මිණුවන්ගොඩ",
+        "timeOffset": "00m",
+        "km": 0,
+        "lat": 7.1658,
+        "lng": 79.9525,
+        "fare": 250,
+        "fareCategory": "Minuwangoda to SLIIT"
+      },
+      {
+        "name": "Katugoda",
+        "nameSi": "කටුගොඩ",
+        "timeOffset": "08m",
+        "km": 5,
+        "lat": 7.142,
+        "lng": 79.935,
+        "fare": 250,
+        "fareCategory": "Minuwangoda to SLIIT"
+      },
+      {
+        "name": "Ekala",
+        "nameSi": "ඒකල",
+        "timeOffset": "16m",
+        "km": 11,
+        "lat": 7.108,
+        "lng": 79.912,
+        "fare": 220,
+        "fareCategory": "Minuwangoda to SLIIT"
+      },
+      {
+        "name": "Ja-Ela",
+        "nameSi": "ජා-ඇල",
+        "timeOffset": "24m",
+        "km": 16,
+        "lat": 7.075,
+        "lng": 79.892,
+        "fare": 180,
+        "fareCategory": "Ja-Ela / Kandana to SLIIT"
+      },
+      {
+        "name": "Kandana",
+        "nameSi": "කඳාන",
+        "timeOffset": "30m",
+        "km": 20,
+        "lat": 7.048,
+        "lng": 79.898,
+        "fare": 180,
+        "fareCategory": "Ja-Ela / Kandana to SLIIT"
+      },
+      {
+        "name": "Mahabage",
+        "nameSi": "මහබාගේ",
+        "timeOffset": "38m",
+        "km": 25,
+        "lat": 7.012,
+        "lng": 79.894,
+        "fare": 160,
+        "fareCategory": "Ja-Ela / Kandana to SLIIT"
+      },
+      {
+        "name": "Kerawalapitiya Interchange to E02 Highway",
+        "nameSi": "කෙරවලපිටිය E02 අධිවේගී පිවිසුම",
+        "timeOffset": "48m",
+        "km": 30,
+        "lat": 6.995,
+        "lng": 79.891,
+        "fare": 140,
+        "fareCategory": "Highway Exit / Kaduwela to SLIIT"
+      },
+      {
+        "name": "Exit from Kaduwela Highway",
+        "nameSi": "කඩුවෙල අධිවේගී පිටවීම",
+        "timeOffset": "1h 12m",
+        "km": 42,
+        "lat": 6.9344,
+        "lng": 79.9839,
+        "fare": 100,
+        "fareCategory": "Highway Exit / Kaduwela to SLIIT"
+      },
+      {
+        "name": "SLIIT Malabe Campus",
+        "nameSi": "SLIIT මාලඹේ ප්‍රධාන පිවිසුම",
+        "timeOffset": "1h 30m",
+        "km": 46,
+        "lat": 6.9147,
+        "lng": 79.9729,
+        "fare": 0,
+        "fareCategory": "SLIIT Malabe Campus"
+      }
     ],
-    currentLocation: {
-      lat: 7.0750,
-      lng: 79.8920,
-      speed: 46,
-      currentHalt: "Ja-Ela",
-      nextHalt: "Kandana",
-      nextHaltEta: "8 mins",
-      isLive: true,
-      simulationActive: false,
-      simulationIndex: 3,
-      lastUpdated: new Date().toISOString()
+    "currentLocation": {
+      "lat": 7.048,
+      "lng": 79.898,
+      "speed": 45,
+      "currentHalt": "Kandana",
+      "nextHalt": "Mahabage",
+      "nextHaltEta": "8 mins",
+      "isLive": true,
+      "simulationActive": false,
+      "simulationIndex": 4,
+      "lastUpdated": "2026-11-15T06:40:00.000Z"
     },
-    delayNotice: "Slight traffic near Ja-Ela. Expected SLIIT arrival remains on time.",
-    status: "Active"
+    "delayNotice": "Clear highway stretch ahead. On time.",
+    "status": "Active",
+    "fareCategories": [
+      {
+        "id": "fc-min-1",
+        "categoryName": "Minuwangoda to SLIIT",
+        "categoryNameSi": "මිණුවන්ගොඩ සිට SLIIT දක්වා",
+        "fromStop": "Minuwangoda",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 250,
+        "monthlyPassFare": 6200,
+        "intermediateStops": [
+          "Minuwangoda",
+          "Katugoda",
+          "Ekala"
+        ],
+        "description": "Minuwangoda stand, Katugoda & Ekala industrial zone"
+      },
+      {
+        "id": "fc-min-2",
+        "categoryName": "Ja-Ela / Kandana to SLIIT",
+        "categoryNameSi": "ජා-ඇල / කඳාන සිට SLIIT දක්වා",
+        "fromStop": "Ja-Ela",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 180,
+        "monthlyPassFare": 4500,
+        "intermediateStops": [
+          "Ja-Ela",
+          "Kandana",
+          "Mahabage"
+        ],
+        "description": "Ja-Ela town, Kandana & Mahabage highway junction"
+      },
+      {
+        "id": "fc-min-3",
+        "categoryName": "Highway Exit / Kaduwela to SLIIT",
+        "categoryNameSi": "අධිවේගී පිටවීම / කඩුවෙල සිට SLIIT දක්වා",
+        "fromStop": "Kerawalapitiya Interchange to E02 Highway",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 120,
+        "monthlyPassFare": 3000,
+        "intermediateStops": [
+          "Kerawalapitiya Interchange to E02 Highway",
+          "Exit from Kaduwela Highway"
+        ],
+        "description": "Expressway outer circular interchange & Kaduwela ramp"
+      }
+    ]
   },
   {
-    _id: "sliit-ganemulla",
-    routeId: "sliit-ganemulla",
-    routeNumber: "SLIIT-SH-04",
-    routeName: "Ganemulla ⇄ SLIIT Malabe Highway Shuttle",
-    routeNameSi: "ගණේමුල්ල ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
-    origin: "Ganemulla Station",
-    destination: "SLIIT Malabe Campus",
-    busNumber: "WP NA-9903",
-    busName: "SLIIT Ganemulla Expressway Coach",
-    busType: "AC Luxury Coach",
-    fare: 250,
-    monthlyPassFare: 6500,
-    driverName: "Ruwan Weerasinghe",
-    driverPhone: "+94 78 123 9876",
-    driverWhatsapp: "94781239876",
-    conductorName: "Chaminda Silva",
-    conductorPhone: "+94 70 876 5432",
-    seatCapacity: 45,
-    availableSeats: 18,
-    occupancyStatus: "Seats Available",
-    departureTimeMorning: "06:20 AM",
-    arrivalTimeMorning: "07:40 AM",
-    departureTimeEvening: "04:45 PM",
-    arrivalTimeEvening: "06:10 PM",
-    operatingWindow: {
-      morningStart: "06:00",
-      morningEnd: "08:00",
-      eveningStart: "16:00",
-      eveningEnd: "18:30"
+    "_id": "sliit-ganemulla",
+    "routeId": "sliit-ganemulla",
+    "routeNumber": "SLIIT-SH-04",
+    "routeName": "Ganemulla ⇄ SLIIT Malabe Highway Shuttle",
+    "routeNameSi": "ගණේමුල්ල ⇄ SLIIT මාලඹේ අධිවේගී ශිෂ්‍ය බස් සේවාව",
+    "origin": "Ganemulla Bus Stand",
+    "destination": "SLIIT Malabe Campus",
+    "busNumber": "WP NC-8831",
+    "busName": "SLIIT Ganemulla Expressway Line",
+    "busType": "AC Luxury Coach",
+    "fare": 220,
+    "monthlyPassFare": 5500,
+    "driverName": "Ruwan Weerasinghe",
+    "driverPhone": "+94 78 123 9876",
+    "driverWhatsapp": "94781239876",
+    "conductorName": "Indika Senanayake",
+    "conductorPhone": "+94 70 334 4556",
+    "seatCapacity": 45,
+    "availableSeats": 5,
+    "occupancyStatus": "Seats Available",
+    "departureTimeMorning": "06:30 AM",
+    "arrivalTimeMorning": "07:45 AM",
+    "departureTimeEvening": "05:00 PM",
+    "arrivalTimeEvening": "06:15 PM",
+    "operatingWindow": {
+      "morningStart": "06:00",
+      "morningEnd": "08:00",
+      "eveningStart": "16:00",
+      "eveningEnd": "18:30"
     },
-    isWithinOperatingWindow: true,
-    stops: [
-      { name: "Ganemulla", nameSi: "ගණේමුල්ල දුම්රියපල අසල", timeOffset: "00m", km: 0, lat: 7.0650, lng: 79.9600 },
-      { name: "Batuwatta", nameSi: "බටුවත්ත", timeOffset: "10m", km: 4, lat: 7.0420, lng: 79.9450 },
-      { name: "Ragama", nameSi: "රාගම", timeOffset: "20m", km: 8, lat: 7.0270, lng: 79.9210 },
-      { name: "Kadawatha Highway Entrance", nameSi: "කඩවත අධිවේගී පිවිසුම", timeOffset: "35m", km: 14, lat: 7.0017, lng: 79.9536 },
-      { name: "Kaduwela Highway Exit", nameSi: "කඩුවෙල අධිවේගී පිටවීම", timeOffset: "55m", km: 28, lat: 6.9333, lng: 79.9833 },
-      { name: "SLIIT Malabe Campus", nameSi: "SLIIT මාලඹේ ප්‍රධාන පිවිසුම", timeOffset: "1h 20m", km: 34, lat: 6.9147, lng: 79.9729 }
+    "stops": [
+      {
+        "name": "Ganemulla",
+        "nameSi": "ගණේමුල්ල",
+        "timeOffset": "00m",
+        "km": 0,
+        "lat": 7.065,
+        "lng": 79.965,
+        "fare": 220,
+        "fareCategory": "Ganemulla to SLIIT"
+      },
+      {
+        "name": "Batuwatta",
+        "nameSi": "බටුවත්ත",
+        "timeOffset": "10m",
+        "km": 5,
+        "lat": 7.042,
+        "lng": 79.951,
+        "fare": 200,
+        "fareCategory": "Ganemulla to SLIIT"
+      },
+      {
+        "name": "Ragama",
+        "nameSi": "රාගම",
+        "timeOffset": "20m",
+        "km": 11,
+        "lat": 7.028,
+        "lng": 79.922,
+        "fare": 180,
+        "fareCategory": "Ganemulla to SLIIT"
+      },
+      {
+        "name": "Kadawatha Highway Entrance",
+        "nameSi": "කඩවත අධිවේගී මාර්ග පිවිසුම",
+        "timeOffset": "35m",
+        "km": 18,
+        "lat": 7.0016,
+        "lng": 79.954,
+        "fare": 160,
+        "fareCategory": "Kadawatha to SLIIT"
+      },
+      {
+        "name": "Kaduwela Highway Exit",
+        "nameSi": "කඩුවෙල අධිවේගී පිටවීම",
+        "timeOffset": "55m",
+        "km": 30,
+        "lat": 6.9344,
+        "lng": 79.9839,
+        "fare": 90,
+        "fareCategory": "Kaduwela to SLIIT"
+      },
+      {
+        "name": "SLIIT Malabe Campus",
+        "nameSi": "SLIIT මාලඹේ ප්‍රධාන පිවිසුම",
+        "timeOffset": "1h 15m",
+        "km": 36,
+        "lat": 6.9147,
+        "lng": 79.9729,
+        "fare": 0,
+        "fareCategory": "SLIIT Malabe Campus"
+      }
     ],
-    currentLocation: {
-      lat: 7.0017,
-      lng: 79.9536,
-      speed: 55,
-      currentHalt: "Kadawatha Highway Entrance",
-      nextHalt: "Kaduwela Highway Exit",
-      nextHaltEta: "15 mins (Expressway)",
-      isLive: true,
-      simulationActive: false,
-      simulationIndex: 3,
-      lastUpdated: new Date().toISOString()
+    "currentLocation": {
+      "lat": 7.0016,
+      "lng": 79.954,
+      "speed": 50,
+      "currentHalt": "Kadawatha Highway Entrance",
+      "nextHalt": "Kaduwela Highway Exit",
+      "nextHaltEta": "20 mins",
+      "isLive": true,
+      "simulationActive": false,
+      "simulationIndex": 3,
+      "lastUpdated": "2026-11-15T07:05:00.000Z"
     },
-    delayNotice: "",
-    status: "Active"
+    "delayNotice": "Approaching Kadawatha highway gate. Running exactly on time.",
+    "status": "Active",
+    "fareCategories": [
+      {
+        "id": "fc-gan-1",
+        "categoryName": "Ganemulla to SLIIT",
+        "categoryNameSi": "ගණේමුල්ල සිට SLIIT දක්වා",
+        "fromStop": "Ganemulla",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 220,
+        "monthlyPassFare": 5500,
+        "intermediateStops": [
+          "Ganemulla",
+          "Batuwatta",
+          "Ragama"
+        ],
+        "description": "Ganemulla station, Batuwatta & Ragama medical faculty zone"
+      },
+      {
+        "id": "fc-gan-2",
+        "categoryName": "Kadawatha to SLIIT",
+        "categoryNameSi": "කඩවත සිට SLIIT දක්වා",
+        "fromStop": "Kadawatha Highway Entrance",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 160,
+        "monthlyPassFare": 4000,
+        "intermediateStops": [
+          "Kadawatha Highway Entrance",
+          "Kaduwela Highway Exit"
+        ],
+        "description": "Kadawatha interchange & E02 expressway fast transit"
+      },
+      {
+        "id": "fc-gan-3",
+        "categoryName": "Kaduwela to SLIIT",
+        "categoryNameSi": "කඩුවෙල සිට SLIIT දක්වා",
+        "fromStop": "Kaduwela Highway Exit",
+        "toStop": "SLIIT Malabe Campus",
+        "fare": 90,
+        "monthlyPassFare": 2200,
+        "intermediateStops": [
+          "Kaduwela Highway Exit"
+        ],
+        "description": "Kaduwela town & Malabe junction connection"
+      }
+    ]
   }
 ];

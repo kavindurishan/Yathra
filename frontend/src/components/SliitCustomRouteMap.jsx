@@ -244,22 +244,54 @@ export default function SliitCustomRouteMap({
       layers.markers.push(layers.glowPolyline);
 
       // Fetch authentic road curves from OSRM so the route follows real streets on Google Maps
+      // IMPORTANT: Never skip or subsample intermediate stops, otherwise halts like Stop 20 Jubilee Post
+      // get bypassed by OSRM shortcutting straight between Stop 19 and Stop 21!
       if (latLngs.length >= 2) {
-        const sampleRate = Math.max(1, Math.ceil(latLngs.length / 25));
-        const sampled = latLngs.filter((_, idx) => idx % sampleRate === 0 || idx === latLngs.length - 1);
-        const coordsStr = sampled.map(([lat, lng]) => `${lng},${lat}`).join(';');
-        fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`)
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.code === 'Ok' && data.routes && data.routes[0]) {
-              const roadLatLngs = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-              if (layers.polyline) layers.polyline.setLatLngs(roadLatLngs);
-              if (layers.glowPolyline) layers.glowPolyline.setLatLngs(roadLatLngs);
+        const fetchRoadRoute = async () => {
+          try {
+            // For standard routes (up to 70 stops), send ALL coordinates sequentially so every stop is connected
+            if (latLngs.length <= 70) {
+              const coordsStr = latLngs.map(([lat, lng]) => `${lng},${lat}`).join(';');
+              const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`);
+              const data = await res.json();
+              if (data && data.code === 'Ok' && data.routes && data.routes[0]) {
+                const roadLatLngs = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+                if (layers.polyline) layers.polyline.setLatLngs(roadLatLngs);
+                if (layers.glowPolyline) layers.glowPolyline.setLatLngs(roadLatLngs);
+                return;
+              }
+            } else {
+              // For routes with >70 points, chunk sequentially with 1 overlapping point so NO stops are dropped
+              const chunkSize = 50;
+              let fullRoadCoords = [];
+              for (let i = 0; i < latLngs.length - 1; i += (chunkSize - 1)) {
+                const chunk = latLngs.slice(i, Math.min(latLngs.length, i + chunkSize));
+                if (chunk.length < 2) break;
+                const coordsStr = chunk.map(([lat, lng]) => `${lng},${lat}`).join(';');
+                const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`);
+                const data = await res.json();
+                if (data && data.code === 'Ok' && data.routes && data.routes[0]) {
+                  const seg = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+                  if (fullRoadCoords.length > 0) {
+                    fullRoadCoords = fullRoadCoords.concat(seg.slice(1));
+                  } else {
+                    fullRoadCoords = fullRoadCoords.concat(seg);
+                  }
+                } else {
+                  fullRoadCoords = fullRoadCoords.concat(chunk);
+                }
+              }
+              if (fullRoadCoords.length > 0) {
+                if (layers.polyline) layers.polyline.setLatLngs(fullRoadCoords);
+                if (layers.glowPolyline) layers.glowPolyline.setLatLngs(fullRoadCoords);
+              }
             }
-          })
-          .catch(() => {
+          } catch {
             // Keep straight-line fallback if OSRM is unreachable
-          });
+          }
+        };
+
+        fetchRoadRoute();
       }
 
       // 4. Create Custom Numbered Stop Markers along the route

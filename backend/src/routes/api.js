@@ -1341,11 +1341,14 @@ router.get('/campus/shuttles', async (req, res) => {
       // Ensure existing records have all valid stop waypoints & updated driver info from campus_shuttle.json
       for (const def of defaultShuttles) {
         const found = shuttles.find(s => s.routeId === def.routeId);
-        if (found && (!found.stops || found.stops.length === 0)) {
+        if (found && (!found.stops || found.stops.length === 0 || !found.fareCategories || found.fareCategories.length === 0)) {
           try {
             await db.findByIdAndUpdate('CampusShuttle', found._id, {
               stops: def.stops,
-              currentLocation: def.currentLocation
+              fare: def.fare || found.fare,
+              monthlyPassFare: def.monthlyPassFare || found.monthlyPassFare,
+              fareCategories: def.fareCategories || [],
+              currentLocation: def.currentLocation || found.currentLocation
             });
           } catch (updateErr) {}
         }

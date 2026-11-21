@@ -408,18 +408,24 @@ const seedCampusShuttles = async () => {
       }
       console.log(`✅ Seeded ${defaultShuttles.length} SLIIT Campus Shuttles into database.`);
     } else {
-      // Synchronize driver and stops data with latest defaults
+      // Synchronize driver, stops, and fare categories with latest defaults
       for (const shuttle of defaultShuttles) {
         const existing = await db.findOne('CampusShuttle', { routeId: shuttle.routeId });
-        if (existing && (existing.busNumber === 'WP ND-5842' || !existing.stops || !existing.stops[0]?.lat)) {
-          await db.findByIdAndUpdate('CampusShuttle', existing._id, {
-            busNumber: shuttle.busNumber,
-            driverName: shuttle.driverName,
-            driverPhone: shuttle.driverPhone,
-            driverWhatsapp: shuttle.driverWhatsapp,
-            stops: shuttle.stops,
-            currentLocation: shuttle.currentLocation
-          });
+        if (existing) {
+          const needsSync = !existing.fareCategories || existing.fareCategories.length === 0 || existing.busNumber === 'WP ND-5842' || !existing.stops || !existing.stops[0]?.lat;
+          if (needsSync) {
+            await db.findByIdAndUpdate('CampusShuttle', existing._id, {
+              busNumber: shuttle.busNumber,
+              fare: shuttle.fare,
+              monthlyPassFare: shuttle.monthlyPassFare,
+              fareCategories: shuttle.fareCategories,
+              driverName: shuttle.driverName,
+              driverPhone: shuttle.driverPhone,
+              driverWhatsapp: shuttle.driverWhatsapp,
+              stops: shuttle.stops,
+              currentLocation: shuttle.currentLocation
+            });
+          }
         }
       }
     }

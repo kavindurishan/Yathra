@@ -200,22 +200,46 @@ export default function RouteDrawingStudio({
     const fetchOsrmSnappedRoute = async () => {
       setLoadingRoadSnap(true);
       try {
-        // Limit to 25 coordinates max per OSRM request to avoid URL length issues
-        const sampleRate = Math.max(1, Math.ceil(waypoints.length / 25));
-        const sampled = waypoints.filter((_, idx) => idx % sampleRate === 0 || idx === waypoints.length - 1);
+        // Include all waypoints so no intermediate stops are skipped
+        let latLngs = [];
+        let dist = 0;
 
-        const coordsStr = sampled.map(w => `${w.lng},${w.lat}`).join(';');
-        const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+        if (waypoints.length <= 70) {
+          const coordsStr = waypoints.map(w => `${w.lng},${w.lat}`).join(';');
+          const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.code === 'Ok' && data.routes && data.routes[0]) {
+            latLngs = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+            dist = data.routes[0].distance || 0;
+          }
+        } else {
+          const chunkSize = 50;
+          for (let i = 0; i < waypoints.length - 1; i += (chunkSize - 1)) {
+            const chunk = waypoints.slice(i, Math.min(waypoints.length, i + chunkSize));
+            if (chunk.length < 2) break;
+            const coordsStr = chunk.map(w => `${w.lng},${w.lat}`).join(';');
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.code === 'Ok' && data.routes && data.routes[0]) {
+              const seg = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+              dist += (data.routes[0].distance || 0);
+              if (latLngs.length > 0) {
+                latLngs = latLngs.concat(seg.slice(1));
+              } else {
+                latLngs = latLngs.concat(seg);
+              }
+            } else {
+              latLngs = latLngs.concat(chunk.map(w => [w.lat, w.lng]));
+            }
+          }
+        }
 
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.code === 'Ok' && data.routes && data.routes[0]) {
-          const route = data.routes[0];
-          const latLngs = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+        if (latLngs.length > 0) {
           setSnappedPolylineCoords(latLngs);
-          if (route.distance) {
-            setTotalDistance(Number((route.distance / 1000).toFixed(1)));
+          if (dist) {
+            setTotalDistance(Number((dist / 1000).toFixed(1)));
           }
         } else {
           setSnappedPolylineCoords([]);

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   Bus, MapPin, Phone, MessageSquare, Clock, CreditCard, 
   Plus, Edit, Trash2, RefreshCw, Play, CheckCircle2, 
   AlertTriangle, Navigation, Shield, Compass, Sparkles, X, Save, Layers,
-  ChevronUp, ChevronDown, ArrowUpDown
+  ChevronUp, ChevronDown, ArrowUpDown, Tag, Check, ListPlus, Bookmark
 } from 'lucide-react';
 import { api } from '../services/api';
 import SliitCustomRouteMap from '../components/SliitCustomRouteMap';
@@ -53,8 +53,24 @@ export default function ManageSliitTransit() {
     arrivalTimeEvening: '06:15 PM',
     delayNotice: '',
     status: 'Active',
+    fareCategories: [],
     stops: []
   });
+
+  // State for Category-Based Stage Pricing Form
+  const [categoryForm, setCategoryForm] = useState({
+    id: '',
+    categoryName: '',
+    categoryNameSi: '',
+    fromStop: '',
+    toStop: 'SLIIT Malabe Campus',
+    fare: '',
+    monthlyPassFare: '',
+    intermediateStops: [],
+    description: ''
+  });
+  const [isEditingCategory, setIsEditingCategory] = useState(false);
+  const [newIntermediateStopInput, setNewIntermediateStopInput] = useState('');
 
   // New Waypoint Form State for manual route editing
   const [newWaypoint, setNewWaypoint] = useState({
@@ -157,11 +173,37 @@ export default function ManageSliitTransit() {
       arrivalTimeEvening: '06:15 PM',
       delayNotice: 'Operating smoothly on schedule.',
       status: 'Active',
+      fareCategories: [
+        {
+          id: 'fc-' + Date.now().toString().slice(-4) + '-1',
+          categoryName: 'Start Town to SLIIT',
+          categoryNameSi: 'ආරම්භක නැවතුමේ සිට SLIIT දක්වා',
+          fromStop: 'Start Town',
+          toStop: 'SLIIT Malabe Campus',
+          fare: 250,
+          monthlyPassFare: 6500,
+          intermediateStops: ['Start Town'],
+          description: 'Full corridor stage'
+        }
+      ],
       stops: [
         { name: 'Start Town', nameSi: 'ආරම්භක නැවතුම', timeOffset: '00m', km: 0, lat: 6.9000, lng: 79.9000 },
         { name: 'SLIIT Malabe Campus', nameSi: 'SLIIT මාලඹේ ප්‍රධාන පිවිසුම', timeOffset: '1h 15m', km: 35, lat: 6.9147, lng: 79.9729 }
       ]
     });
+    setCategoryForm({
+      id: '',
+      categoryName: '',
+      categoryNameSi: '',
+      fromStop: '',
+      toStop: 'SLIIT Malabe Campus',
+      fare: '',
+      monthlyPassFare: '',
+      intermediateStops: [],
+      description: ''
+    });
+    setIsEditingCategory(false);
+    setNewIntermediateStopInput('');
     setNewWaypoint({
       name: '',
       nameSi: '',
@@ -202,8 +244,36 @@ export default function ManageSliitTransit() {
       arrivalTimeEvening: shuttle.arrivalTimeEvening || '06:15 PM',
       delayNotice: shuttle.delayNotice || 'Operating smoothly on schedule.',
       status: shuttle.status || 'Active',
+      fareCategories: (shuttle.fareCategories && shuttle.fareCategories.length > 0)
+        ? JSON.parse(JSON.stringify(shuttle.fareCategories))
+        : [
+            {
+              id: 'fc-' + Date.now().toString().slice(-4) + '-1',
+              categoryName: `${shuttle.origin || 'Main Town'} to SLIIT`,
+              categoryNameSi: `${shuttle.origin || 'ආරම්භක නැවතුමේ'} සිට SLIIT දක්වා`,
+              fromStop: shuttle.origin || '',
+              toStop: shuttle.destination || 'SLIIT Malabe Campus',
+              fare: shuttle.fare !== undefined ? shuttle.fare : 250,
+              monthlyPassFare: shuttle.monthlyPassFare !== undefined ? shuttle.monthlyPassFare : 6500,
+              intermediateStops: shuttle.stops ? shuttle.stops.map(s => s.name) : [],
+              description: 'Standard corridor stage'
+            }
+          ],
       stops: shuttle.stops ? [...shuttle.stops] : []
     });
+    setCategoryForm({
+      id: '',
+      categoryName: '',
+      categoryNameSi: '',
+      fromStop: '',
+      toStop: 'SLIIT Malabe Campus',
+      fare: '',
+      monthlyPassFare: '',
+      intermediateStops: [],
+      description: ''
+    });
+    setIsEditingCategory(false);
+    setNewIntermediateStopInput('');
     setEditingStopIndex(null);
     setNewWaypoint({
       name: '',
@@ -216,116 +286,134 @@ export default function ManageSliitTransit() {
     setIsEditModalOpen(true);
   };
 
-  // Click on map in Admin to capture coordinates for new manual road waypoint
-  const handleMapAddWaypoint = (lat, lng) => {
-    setNewWaypoint(prev => ({
-      ...prev,
-      lat,
-      lng
-    }));
-  };
-
-  // Select verified preset Sri Lankan junction
-  const handleSelectPreset = (e) => {
-    const selectedName = e.target.value;
-    if (!selectedName) return;
-    const preset = SRI_LANKAN_WAYPOINT_PRESETS.find(p => p.name === selectedName);
-    if (preset) {
-      setNewWaypoint({
-        name: preset.name,
-        nameSi: preset.nameSi,
-        lat: preset.lat,
-        lng: preset.lng,
-        timeOffset: '+10m',
-        km: formData.stops && formData.stops.length > 0 ? (formData.stops[formData.stops.length - 1].km || 0) + 4 : 4
-      });
-    }
-  };
-
-  // Add waypoint to stops array
-  const handleAddWaypoint = () => {
-    if (!newWaypoint.name.trim()) {
-      alert('Please enter a stop / road waypoint name or pick from the presets.');
+  // Add or update a fare category in formData
+  const handleSaveCategory = (e) => {
+    if (e) e.preventDefault();
+    if (!categoryForm.categoryName.trim()) {
+      alert('Please enter a Category / Stage Name (e.g. Panadura to SLIIT).');
       return;
     }
+    const fareNum = Number(categoryForm.fare);
+    if (isNaN(fareNum) || fareNum <= 0) {
+      alert('Please enter a valid fare amount in Rs. (e.g. 180).');
+      return;
+    }
+
+    const newCat = {
+      id: categoryForm.id || ('fc-' + Date.now().toString().slice(-6)),
+      categoryName: categoryForm.categoryName.trim(),
+      categoryNameSi: categoryForm.categoryNameSi.trim() || categoryForm.categoryName.trim(),
+      fromStop: categoryForm.fromStop.trim() || formData.origin || 'Boarding Point',
+      toStop: categoryForm.toStop.trim() || 'SLIIT Malabe Campus',
+      fare: fareNum,
+      monthlyPassFare: Number(categoryForm.monthlyPassFare) || Math.round(fareNum * 25),
+      intermediateStops: categoryForm.intermediateStops || [],
+      description: categoryForm.description.trim() || ''
+    };
+
+    setFormData(prev => {
+      const existingCats = prev.fareCategories || [];
+      const idx = existingCats.findIndex(c => c.id === newCat.id);
+      let updated;
+      if (idx !== -1) {
+        updated = [...existingCats];
+        updated[idx] = newCat;
+      } else {
+        updated = [...existingCats, newCat];
+      }
+      return {
+        ...prev,
+        fareCategories: updated,
+        fare: prev.fare || newCat.fare
+      };
+    });
+
+    setCategoryForm({
+      id: '',
+      categoryName: '',
+      categoryNameSi: '',
+      fromStop: '',
+      toStop: 'SLIIT Malabe Campus',
+      fare: '',
+      monthlyPassFare: '',
+      intermediateStops: [],
+      description: ''
+    });
+    setIsEditingCategory(false);
+    setNewIntermediateStopInput('');
+  };
+
+  const handleStartEditCategory = (cat) => {
+    setCategoryForm({
+      id: cat.id,
+      categoryName: cat.categoryName,
+      categoryNameSi: cat.categoryNameSi || '',
+      fromStop: cat.fromStop || '',
+      toStop: cat.toStop || 'SLIIT Malabe Campus',
+      fare: cat.fare,
+      monthlyPassFare: cat.monthlyPassFare || '',
+      intermediateStops: cat.intermediateStops ? [...cat.intermediateStops] : [],
+      description: cat.description || ''
+    });
+    setIsEditingCategory(true);
+  };
+
+  const handleCancelEditCategory = () => {
+    setCategoryForm({
+      id: '',
+      categoryName: '',
+      categoryNameSi: '',
+      fromStop: '',
+      toStop: 'SLIIT Malabe Campus',
+      fare: '',
+      monthlyPassFare: '',
+      intermediateStops: [],
+      description: ''
+    });
+    setIsEditingCategory(false);
+    setNewIntermediateStopInput('');
+  };
+
+  const handleDeleteCategory = (catId) => {
     setFormData(prev => ({
       ...prev,
-      stops: [
-        ...prev.stops,
-        {
-          name: newWaypoint.name.trim(),
-          nameSi: newWaypoint.nameSi.trim() || newWaypoint.name.trim(),
-          timeOffset: newWaypoint.timeOffset || '+10m',
-          km: Number(newWaypoint.km) || 0,
-          lat: Number(newWaypoint.lat) || 6.9000,
-          lng: Number(newWaypoint.lng) || 79.9500
-        }
-      ]
+      fareCategories: (prev.fareCategories || []).filter(c => c.id !== catId)
     }));
-    // Reset inputs
-    setNewWaypoint({
-      name: '',
-      nameSi: '',
-      timeOffset: '+10m',
-      km: (Number(newWaypoint.km) || 0) + 4,
-      lat: 6.9100,
-      lng: 79.9600
-    });
+    if (categoryForm.id === catId) {
+      handleCancelEditCategory();
+    }
   };
 
-  // Start inline editing a halt
-  const handleStartEditStop = (index) => {
-    setEditingStopIndex(index);
-    setEditingStopData({ ...formData.stops[index] });
+  const handleAddIntermediateStop = () => {
+    const trimmed = newIntermediateStopInput.trim();
+    if (!trimmed) return;
+    if (categoryForm.intermediateStops.includes(trimmed)) {
+      setNewIntermediateStopInput('');
+      return;
+    }
+    setCategoryForm(prev => ({
+      ...prev,
+      intermediateStops: [...prev.intermediateStops, trimmed]
+    }));
+    setNewIntermediateStopInput('');
   };
 
-  // Save inline edited halt
-  const handleSaveEditedStop = () => {
-    if (editingStopIndex === null) return;
-    const stopsCopy = [...formData.stops];
-    stopsCopy[editingStopIndex] = {
-      ...stopsCopy[editingStopIndex],
-      name: editingStopData.name.trim() || stopsCopy[editingStopIndex].name,
-      nameSi: editingStopData.nameSi.trim() || stopsCopy[editingStopIndex].nameSi,
-      timeOffset: editingStopData.timeOffset || stopsCopy[editingStopIndex].timeOffset,
-      km: Number(editingStopData.km) >= 0 ? Number(editingStopData.km) : (stopsCopy[editingStopIndex].km || 0),
-      lat: Number(editingStopData.lat) || stopsCopy[editingStopIndex].lat || 6.9000,
-      lng: Number(editingStopData.lng) || stopsCopy[editingStopIndex].lng || 79.9500
-    };
-    setFormData({ ...formData, stops: stopsCopy });
-    setEditingStopIndex(null);
+  const handleRemoveIntermediateStop = (stopName) => {
+    setCategoryForm(prev => ({
+      ...prev,
+      intermediateStops: prev.intermediateStops.filter(s => s !== stopName)
+    }));
   };
 
-  // Cancel inline editing a halt
-  const handleCancelEditStop = () => {
-    setEditingStopIndex(null);
-  };
-
-  // Move waypoint up in sequence
-  const handleMoveStopUp = (index) => {
-    if (index === 0) return;
-    const stopsCopy = [...formData.stops];
-    const temp = stopsCopy[index - 1];
-    stopsCopy[index - 1] = stopsCopy[index];
-    stopsCopy[index] = temp;
-    setFormData({ ...formData, stops: stopsCopy });
-  };
-
-  // Move waypoint down in sequence
-  const handleMoveStopDown = (index) => {
-    if (index === formData.stops.length - 1) return;
-    const stopsCopy = [...formData.stops];
-    const temp = stopsCopy[index + 1];
-    stopsCopy[index + 1] = stopsCopy[index];
-    stopsCopy[index] = temp;
-    setFormData({ ...formData, stops: stopsCopy });
-  };
-
-  // Delete waypoint from sequence
-  const handleDeleteStop = (index) => {
-    const stopsCopy = [...formData.stops];
-    stopsCopy.splice(index, 1);
-    setFormData({ ...formData, stops: stopsCopy });
+  const handleToggleRouteStopInCategory = (stopName) => {
+    if (categoryForm.intermediateStops.includes(stopName)) {
+      handleRemoveIntermediateStop(stopName);
+    } else {
+      setCategoryForm(prev => ({
+        ...prev,
+        intermediateStops: [...prev.intermediateStops, stopName]
+      }));
+    }
   };
 
   const handleSaveSubmit = async (e) => {
@@ -333,12 +421,12 @@ export default function ManageSliitTransit() {
     try {
       const payload = {
         ...formData,
-        fare: Number(formData.fare) || 0,
-        monthlyPassFare: Number(formData.monthlyPassFare) || 0,
+        fare: Number(formData.fare) || (formData.fareCategories?.[0]?.fare) || 0,
+        monthlyPassFare: Number(formData.monthlyPassFare) || (formData.fareCategories?.[0]?.monthlyPassFare) || 0,
         seatCapacity: Number(formData.seatCapacity) || 45,
         availableSeats: Number(formData.availableSeats) >= 0 ? Number(formData.availableSeats) : 0,
-        // Preserve stops from selected shuttle or formData
-        stops: selectedShuttle?.stops || formData.stops || []
+        fareCategories: formData.fareCategories || [],
+        stops: formData.stops || selectedShuttle?.stops || []
       };
 
       if (selectedShuttle) {
@@ -594,7 +682,12 @@ export default function ManageSliitTransit() {
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Single Fare</span>
                     <span className="font-extrabold text-sm text-slate-900 dark:text-white">Rs. {shuttle.fare}</span>
-                    <span className="text-[9px] text-slate-400 block font-semibold">Pass: Rs. {shuttle.monthlyPassFare}</span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block font-semibold">Daily to Bus (දිනපතා)</span>
+                    {shuttle.fareCategories && shuttle.fareCategories.length > 0 && (
+                      <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-blue-100/70 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold">
+                        🏷️ {shuttle.fareCategories.length} Stages
+                      </span>
+                    )}
                   </div>
 
                   <div>
@@ -627,6 +720,56 @@ export default function ManageSliitTransit() {
                     <span className="text-[9px] text-slate-400 block font-semibold">ETA: {shuttle.arrivalTimeEvening}</span>
                   </div>
                 </div>
+
+                {/* Category Fare Stages Preview */}
+                {shuttle.fareCategories && shuttle.fareCategories.length > 0 && (
+                  <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300/60 dark:border-amber-800/60 space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                      <span className="flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Fare Categories (ගාස්තු කාණ්ඩ - {shuttle.fareCategories.length})</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-400 font-bold">Stage Pricing</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
+                      {shuttle.fareCategories.map((cat, cIdx) => (
+                        <div 
+                          key={cat.id || cIdx} 
+                          className="p-2 rounded-xl bg-white/90 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2 shadow-2xs"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-black text-xs text-slate-900 dark:text-white truncate">
+                                {cat.categoryName}
+                              </span>
+                              {cat.categoryNameSi && (
+                                <span className="text-[10px] text-slate-400 truncate hidden sm:inline">
+                                  ({cat.categoryNameSi})
+                                </span>
+                              )}
+                            </div>
+                            {cat.intermediateStops && cat.intermediateStops.length > 0 ? (
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                Stops: <strong>{cat.intermediateStops.slice(0, 3).join(', ')}{cat.intermediateStops.length > 3 ? ` +${cat.intermediateStops.length - 3} more` : ''}</strong>
+                              </p>
+                            ) : (
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                                Boarding: {cat.fromStop}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="px-2 py-0.5 rounded-lg bg-amber-500 text-slate-950 font-black text-xs shadow-xs">
+                              Rs. {cat.fare}
+                            </span>
+                            
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Waypoints list preview */}
                 <div className="space-y-1">
@@ -960,158 +1103,453 @@ export default function ManageSliitTransit() {
                 </div>
               </div>
 
-              {/* SECTION 4: Fares & Timings */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wider">
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>4. Fares & Timetable (ගාස්තු සහ ධාවන වේලාවන්)</span>
+              {/* SECTION 4: Category-Based Stage Pricing & Fares */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/60 border-2 border-amber-300/70 dark:border-amber-800/70 space-y-5">
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/60 dark:border-amber-900/40 pb-3">
+                  <div>
+                    <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wider">
+                      <Tag className="w-4 h-4" />
+                      <span>4. Category Fares & Intermediate Stops (ගමන් ගාස්තු කාණ්ඩ සහ අතරමැදි නැවතුම්)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      විවිධ නැවතුම්/ප්‍රදේශ වලට අදාළ ගාස්තු (Ex: Panadura to SLIIT - Rs.180, Moratuwa to SLIIT - Rs.150, Dehiwala to SLIIT - Rs.120) සහ ඒ අතරතුර ඇති නැවතුම් පහසුවෙන් ඇතුළත් කරන්න.
+                    </p>
+                  </div>
+
+
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {/* Single Ride Fare */}
-                  <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Single Ride Fare (ගාස්තුව - Rs.)</label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.fare === 0 ? 0 : (formData.fare || '')}
-                      onChange={(e) => setFormData({ ...formData, fare: e.target.value === '' ? '' : Number(e.target.value) })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="e.g. 250"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {[200, 250, 300, 350, 400].map(f => (
-                        <button
-                          key={f}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, fare: f })}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                {/* List of Configured Fare Categories */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <span>Configured Price Categories ({formData.fareCategories?.length || 0} Stages)</span>
+                    <span className="text-[10px] text-slate-400 font-semibold">Students see these options clearly</span>
+                  </div>
+
+                  {(!formData.fareCategories || formData.fareCategories.length === 0) ? (
+                    <div className="p-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 text-center text-xs text-slate-400">
+                      No customized category tiers yet. Base route fare (Rs. {formData.fare}) will apply. Use the form below to add stages.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {formData.fareCategories.map((cat, idx) => (
+                        <div 
+                          key={cat.id || idx}
+                          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-3 shadow-xs hover:border-amber-400 transition-colors"
                         >
-                          Rs. {f}
-                        </button>
+                          <div className="space-y-1.5">
+                            <div className="flex items-start justify-between gap-1">
+                              <div>
+                                <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+                                  Stage #{idx + 1}
+                                </span>
+                                <h4 className="font-black text-xs text-slate-900 dark:text-white leading-tight">
+                                  {cat.categoryName}
+                                </h4>
+                                {cat.categoryNameSi && (
+                                  <p className="text-[10px] text-slate-500 font-medium">
+                                    {cat.categoryNameSi}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex items-center space-x-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditCategory(cat)}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                  title="Edit category"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCategory(cat.id)}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                  title="Delete category"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Fares highlight */}
+                            <div className="flex items-baseline space-x-2 pt-1">
+                              <span className="text-base font-black text-slate-900 dark:text-white">
+                                Rs. {cat.fare}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-semibold">
+                                / ride
+                              </span>
+                              
+                            </div>
+
+                            {/* Intermediate Stops Tags */}
+                            <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                              <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                                Intermediate Halts Included:
+                              </span>
+                              {cat.intermediateStops && cat.intermediateStops.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {cat.intermediateStops.map((st, sIdx) => (
+                                    <span 
+                                      key={sIdx}
+                                      className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300"
+                                    >
+                                      <span>{st}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 italic">No sub-stops assigned (covers {cat.fromStop})</span>
+                              )}
+                            </div>
+                          </div>
+
+                        </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sub-form: Add or Edit a Category */}
+                <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-300/60 dark:border-amber-800/60 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 font-black text-xs text-amber-700 dark:text-amber-300">
+                      <ListPlus className="w-4 h-4" />
+                      <span>{isEditingCategory ? 'Edit Fare Category / Stage' : 'Add New Fare Category (අලුත් ගාස්තු කාණ්ඩයක් ඇතුළත් කරන්න)'}</span>
+                    </div>
+                    {isEditingCategory && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCategory}
+                        className="text-[11px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                      >
+                        Cancel Editing
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">
+                        Category / Stage Name (English)
+                      </label>
+                      <input
+                        type="text"
+                        value={categoryForm.categoryName}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, categoryName: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="e.g. Panadura to SLIIT"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">
+                        Category Name (සිංහල)
+                      </label>
+                      <input
+                        type="text"
+                        value={categoryForm.categoryNameSi}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, categoryNameSi: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="e.g. පානදුර සිට SLIIT දක්වා"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">
+                        Boarding From (ආරම්භක නැවතුම)
+                      </label>
+                      <input
+                        type="text"
+                        value={categoryForm.fromStop}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, fromStop: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="e.g. Panadura or Moratuwa"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">
+                        Single Ride Fare (ගාස්තුව - Rs.)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={categoryForm.fare}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, fare: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="e.g. 180"
+                      />
+                    </div>
+
+
+
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">
+                        Section Description / Note
+                      </label>
+                      <input
+                        type="text"
+                        value={categoryForm.description}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="e.g. Panadura & Moratuwa junction zone"
+                      />
                     </div>
                   </div>
 
-                  {/* Monthly Pass Fare */}
-                  <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Monthly Pass Fare (මාසික පාස් - Rs.)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.monthlyPassFare === 0 ? 0 : (formData.monthlyPassFare || '')}
-                      onChange={(e) => setFormData({ ...formData, monthlyPassFare: e.target.value === '' ? '' : Number(e.target.value) })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="e.g. 6500"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {[5500, 6000, 6500, 7000, 7500].map(p => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, monthlyPassFare: p })}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
-                        >
-                          Rs. {p}
-                        </button>
-                      ))}
+                  {/* Intermediate Stops Adder for this Category */}
+                  <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <div>
+                        <span className="font-black text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                          <span>Intermediate Stops (මෙම මිලට අදාළ අතරමැදි නැවතුම්)</span>
+                        </span>
+                        <p className="text-[10px] text-slate-500">
+                          මෙම ගාස්තුව යටතේ සිසුන්ට නැගීමට හැකි අතරමැදි නැවතුම් පහතින් එකතු කරන්න හෝ තෝරන්න.
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Quick Toggle from Existing Route Halts */}
+                    {formData.stops && formData.stops.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                          Quick-Pick From Current Route Halts (ක්ලික් කර අමුණන්න):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {formData.stops.map((st, i) => {
+                            const isIncluded = categoryForm.intermediateStops.includes(st.name);
+                            return (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => handleToggleRouteStopInCategory(st.name)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center space-x-1 cursor-pointer ${
+                                  isIncluded
+                                    ? 'bg-blue-600 text-white shadow-xs'
+                                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                                }`}
+                              >
+                                <span>{isIncluded ? '✓' : '+'}</span>
+                                <span>{st.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Manual Stop Text Adder */}
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                        Or Type Any Intermediate Stop Name (නැවතුමේ නම ලියා එකතු කරන්න):
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={newIntermediateStopInput}
+                          onChange={(e) => setNewIntermediateStopInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddIntermediateStop();
+                            }
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold text-xs"
+                          placeholder="e.g. Pinwatta, Walana, Gorakana, Katubedda Junction..."
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddIntermediateStop}
+                          className="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs transition-all cursor-pointer"
+                        >
+                          + Add Stop (එකතු කරන්න)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Tagged stops chips preview */}
+                    {categoryForm.intermediateStops.length > 0 && (
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">
+                          Selected Stops for this Category ({categoryForm.intermediateStops.length}):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {categoryForm.intermediateStops.map((st, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 text-xs font-bold"
+                            >
+                              <span>{st}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveIntermediateStop(st)}
+                                className="text-amber-600 hover:text-amber-900 dark:hover:text-white cursor-pointer ml-1"
+                              >
+                                ✕
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Morning Departure Time */}
-                  <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning Departure Time (ආරම්භක වේලාව)</label>
-                    <input
-                      type="text"
-                      value={formData.departureTimeMorning || ''}
-                      onChange={(e) => setFormData({ ...formData, departureTimeMorning: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="06:15 AM"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {['06:00 AM', '06:15 AM', '06:30 AM', '06:45 AM'].map(t => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, departureTimeMorning: t })}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="flex items-center justify-end space-x-2 pt-2">
+                    {isEditingCategory && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCategory}
+                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSaveCategory}
+                      className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs shadow-md shadow-amber-600/20 flex items-center space-x-1.5 transition-all cursor-pointer"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{isEditingCategory ? 'Update Category (යාවත්කාලීන කරන්න)' : 'Save Category (කාණ්ඩය සුරකින්න)'}</span>
+                    </button>
                   </div>
+                </div>
 
-                  {/* Morning SLIIT Arrival ETA */}
-                  <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning SLIIT Arrival ETA (ළඟාවීම)</label>
-                    <input
-                      type="text"
-                      value={formData.arrivalTimeMorning || ''}
-                      onChange={(e) => setFormData({ ...formData, arrivalTimeMorning: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="07:45 AM"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {['07:30 AM', '07:45 AM', '08:00 AM', '08:15 AM'].map(t => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, arrivalTimeMorning: t })}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
-                        >
-                          {t}
-                        </button>
-                      ))}
+                {/* Corridor Baseline Fares & Timetable Grid */}
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                  <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">
+                    Corridor Baseline Defaults & Schedule Times (මූලික ගාස්තු සහ ධාවන වේලාවන්)
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {/* Single Ride Fare */}
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">Default Base Fare (ගාස්තුව - Rs.)</label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        value={formData.fare === 0 ? 0 : (formData.fare || '')}
+                        onChange={(e) => setFormData({ ...formData, fare: e.target.value === '' ? '' : Number(e.target.value) })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="e.g. 250"
+                      />
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {[120, 150, 180, 200, 250].map(f => (
+                          <button
+                            key={f}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, fare: f })}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                          >
+                            Rs. {f}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Evening SLIIT Departure */}
-                  <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening SLIIT Departure (සවස පිටත්වීම)</label>
-                    <input
-                      type="text"
-                      value={formData.departureTimeEvening || ''}
-                      onChange={(e) => setFormData({ ...formData, departureTimeEvening: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="04:45 PM"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {['04:30 PM', '04:45 PM', '05:00 PM', '05:15 PM'].map(t => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, departureTimeEvening: t })}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
-                        >
-                          {t}
-                        </button>
-                      ))}
+
+
+                    {/* Morning Departure Time */}
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning Departure Time (ආරම්භක වේලාව)</label>
+                      <input
+                        type="text"
+                        value={formData.departureTimeMorning || ''}
+                        onChange={(e) => setFormData({ ...formData, departureTimeMorning: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="06:15 AM"
+                      />
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {['06:00 AM', '06:10 AM', '06:15 AM', '06:30 AM'].map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, departureTimeMorning: t })}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Evening Return Arrival ETA */}
-                  <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening Arrival ETA (සවස ළඟාවීම)</label>
-                    <input
-                      type="text"
-                      value={formData.arrivalTimeEvening || ''}
-                      onChange={(e) => setFormData({ ...formData, arrivalTimeEvening: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="06:15 PM"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {['06:00 PM', '06:15 PM', '06:30 PM', '06:45 PM'].map(t => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, arrivalTimeEvening: t })}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
-                        >
-                          {t}
-                        </button>
-                      ))}
+                    {/* Morning SLIIT Arrival ETA */}
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">Morning SLIIT Arrival ETA (ළඟාවීම)</label>
+                      <input
+                        type="text"
+                        value={formData.arrivalTimeMorning || ''}
+                        onChange={(e) => setFormData({ ...formData, arrivalTimeMorning: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="07:45 AM"
+                      />
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {['07:30 AM', '07:45 AM', '08:00 AM', '08:15 AM'].map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, arrivalTimeMorning: t })}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Evening SLIIT Departure */}
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening SLIIT Departure (සවස පිටත්වීම)</label>
+                      <input
+                        type="text"
+                        value={formData.departureTimeEvening || ''}
+                        onChange={(e) => setFormData({ ...formData, departureTimeEvening: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="04:45 PM"
+                      />
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {['04:30 PM', '04:45 PM', '05:00 PM', '05:40 PM'].map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, departureTimeEvening: t })}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Evening Return Arrival ETA */}
+                    <div className="space-y-1">
+                      <label className="font-extrabold text-slate-700 dark:text-slate-300">Evening Arrival ETA (සවස ළඟාවීම)</label>
+                      <input
+                        type="text"
+                        value={formData.arrivalTimeEvening || ''}
+                        onChange={(e) => setFormData({ ...formData, arrivalTimeEvening: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
+                        placeholder="06:15 PM"
+                      />
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {['06:00 PM', '06:15 PM', '06:30 PM', '08:00 PM'].map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, arrivalTimeEvening: t })}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

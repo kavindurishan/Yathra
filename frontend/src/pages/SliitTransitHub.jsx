@@ -4,7 +4,8 @@ import {
   Bus, MapPin, Compass, Navigation, Phone, MessageSquare, 
   Clock, Shield, AlertTriangle, CheckCircle2, RefreshCw, 
   Layers, ExternalLink, Sparkles, ChevronRight, Play, Eye, EyeOff,
-  CreditCard, ArrowLeft, Radio, GraduationCap, LogIn, ShieldCheck
+  CreditCard, ArrowLeft, Radio, GraduationCap, LogIn, ShieldCheck,
+  Tag, Bookmark, Check
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -14,7 +15,37 @@ import SliitCustomRouteMap from '../components/SliitCustomRouteMap';
 export default function SliitTransitHub() {
   const navigate = useNavigate();
   const [shuttles, setShuttles] = useState(DEFAULT_SLIIT_SHUTTLES);
-  const [selectedShuttleId, setSelectedShuttleId] = useState('sliit-panadura');
+  const [selectedShuttleId, setSelectedShuttleId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get('route');
+      if (r) return r;
+    }
+    return 'sliit-panadura';
+  });
+
+  // Handler to switch corridor & sync with URL
+  const handleSelectShuttle = (routeId) => {
+    setSelectedShuttleId(routeId);
+    setInspectedStop(null);
+    setSelectedBoardingStop('');
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('route', routeId);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  // Listen to popstate (back/forward in browser)
+  useEffect(() => {
+    const onPop = () => {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get('route');
+      if (r) setSelectedShuttleId(r);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -49,6 +80,77 @@ export default function SliitTransitHub() {
   // Active Shuttle (declared before useEffects and handlers)
   const activeShuttle = shuttles.find(s => (s.routeId === selectedShuttleId || s._id === selectedShuttleId)) || shuttles[0] || DEFAULT_SLIIT_SHUTTLES[0];
 
+  // Selected Boarding Stop for Stage Fare Calculator
+  const [selectedBoardingStop, setSelectedBoardingStop] = useState('');
+
+  // Helper: Find category and exact fare for any given stop or halt
+  const getStopFareInfo = (stopName, shuttle = activeShuttle) => {
+    if (!shuttle) return { fare: 180, categoryName: 'Stage Fare', categoryNameSi: '', monthlyPassFare: 4500 };
+    const cleanName = (stopName || '').toLowerCase().trim();
+
+    // 1. Direct match on stop's own fare property
+    const stopObj = shuttle.stops?.find(s => s.name?.toLowerCase().trim() === cleanName);
+    if (stopObj && typeof stopObj.fare === 'number' && stopObj.fare > 0) {
+      return {
+        fare: stopObj.fare,
+        categoryName: stopObj.fareCategory || 'Stage Fare',
+        categoryNameSi: '',
+        monthlyPassFare: Math.round(stopObj.fare * 25)
+      };
+    }
+
+    // 2. Match against category intermediateStops or fromStop
+    if (shuttle.fareCategories && shuttle.fareCategories.length > 0) {
+      const match = shuttle.fareCategories.find(c => 
+        (c.fromStop && c.fromStop.toLowerCase().trim() === cleanName) ||
+        (c.intermediateStops && c.intermediateStops.some(is => is.toLowerCase().trim() === cleanName))
+      );
+      if (match) {
+        return {
+          fare: match.fare,
+          categoryName: match.categoryName,
+          categoryNameSi: match.categoryNameSi || '',
+          monthlyPassFare: match.monthlyPassFare || Math.round(match.fare * 25),
+          category: match
+        };
+      }
+      // Fallback to first category
+      return {
+        fare: shuttle.fareCategories[0].fare,
+        categoryName: shuttle.fareCategories[0].categoryName,
+        categoryNameSi: shuttle.fareCategories[0].categoryNameSi || '',
+        monthlyPassFare: shuttle.fareCategories[0].monthlyPassFare || Math.round(shuttle.fareCategories[0].fare * 25),
+        category: shuttle.fareCategories[0]
+      };
+    }
+
+    return {
+      fare: shuttle.fare || 180,
+      categoryName: 'Standard Shuttle Fare',
+      categoryNameSi: 'සාමාන්‍ය ගමන් ගාස්තුව',
+      monthlyPassFare: shuttle.monthlyPassFare || 4500
+    };
+  };
+
+  // Compile full set of boarding stops including intermediate stops
+  const allBoardingStops = React.useMemo(() => {
+    if (!activeShuttle) return [];
+    const set = new Set();
+    (activeShuttle.stops || []).forEach(s => {
+      if (s.name && !s.name.includes('SLIIT')) set.add(s.name);
+    });
+    (activeShuttle.fareCategories || []).forEach(c => {
+      if (c.fromStop && !c.fromStop.includes('SLIIT')) set.add(c.fromStop);
+      (c.intermediateStops || []).forEach(is => {
+        if (is && !is.includes('SLIIT')) set.add(is);
+      });
+    });
+    return Array.from(set);
+  }, [activeShuttle]);
+
+  const currentBoarding = selectedBoardingStop || allBoardingStops[0] || activeShuttle.origin || 'Panadura';
+  const currentFareInfo = getStopFareInfo(currentBoarding, activeShuttle);
+
   const loadShuttles = async (showLoadingSpinner = false) => {
     if (showLoadingSpinner) setLoading(true);
     setError('');
@@ -58,15 +160,19 @@ export default function SliitTransitHub() {
         // Ensure all shuttles have valid coordinates & latest stops from defaults if missing
         const enhanced = res.shuttles.map(s => {
           const def = DEFAULT_SLIIT_SHUTTLES.find(d => d.routeId === s.routeId);
+          let item = { ...s };
           if (def && (!s.stops || s.stops.length === 0 || typeof s.stops[0]?.lat !== 'number')) {
-            return {
+            item = {
               ...def,
-              ...s,
+              ...item,
               stops: def.stops,
-              currentLocation: s.currentLocation || def.currentLocation
+              currentLocation: item.currentLocation || def.currentLocation
             };
           }
-          return s;
+          if (def && (!item.fareCategories || item.fareCategories.length === 0)) {
+            item.fareCategories = def.fareCategories;
+          }
+          return item;
         });
         setShuttles(enhanced);
         if (res.timeInfo) {
@@ -288,35 +394,93 @@ export default function SliitTransitHub() {
 
         </div>
 
-        {/* Route Selector Tabs (All 4 User Routes) */}
-        <div className="mt-6 pt-5 border-t border-blue-900/50 space-y-2">
-          <span className="text-[11px] font-black uppercase tracking-wider text-blue-300 block">
-            Select Shuttle Corridor (ධාවන මාර්ගය තෝරන්න):
-          </span>
 
-          <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
-            {shuttles.map((shuttle) => {
-              const isSelected = (shuttle.routeId === selectedShuttleId || shuttle._id === selectedShuttleId);
-              return (
-                <button
-                  key={shuttle._id || shuttle.routeId}
-                  type="button"
-                  onClick={() => {
-                    setSelectedShuttleId(shuttle.routeId || shuttle._id);
-                    setInspectedStop(null);
-                  }}
-                  className={`px-4 py-2.5 rounded-2xl text-xs font-black shrink-0 transition-all flex items-center space-x-2 border cursor-pointer ${
-                    isSelected
-                      ? 'bg-blue-500 text-white border-blue-400 shadow-lg shadow-blue-500/25 scale-[1.02]'
-                      : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <Bus className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-blue-400'}`} />
-                  <span>{shuttle.routeName}</span>
-                </button>
-              );
-            })}
+
+      </div>
+
+      {/* ============================================================== */}
+      {/* DEDICATED SHUTTLE CORRIDOR SELECTOR & MULTI-BROWSER LAUNCHER   */}
+      {/* ============================================================== */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
+              <Bus className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Select Shuttle Corridor</span>
+                <span className="text-xs font-bold text-slate-400 font-normal">| ධාවන මාර්ගය තෝරන්න</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                ශිෂ්‍ය බස් රථයේ සජීවී GPS පිහිටීම, ගාස්තු සහ නැවතුම් බලාගැනීමට පහතින් අදාළ මාර්ගය තෝරන්න.
+              </p>
+            </div>
           </div>
+
+          <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-3 py-1 rounded-xl self-start sm:self-auto">
+            {shuttles.length} Active Corridors
+          </span>
+        </div>
+
+        {/* Corridor Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {shuttles.map((shuttle) => {
+            const isSelected = (shuttle.routeId === selectedShuttleId || shuttle._id === selectedShuttleId);
+            const minFare = shuttle.fareCategories?.length > 0 ? Math.min(...shuttle.fareCategories.map(c => c.fare)) : shuttle.fare;
+            const maxFare = shuttle.fareCategories?.length > 0 ? Math.max(...shuttle.fareCategories.map(c => c.fare)) : shuttle.fare;
+
+            return (
+              <div
+                key={shuttle._id || shuttle.routeId}
+                onClick={() => handleSelectShuttle(shuttle.routeId || shuttle._id)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 relative group ${
+                  isSelected
+                    ? 'bg-blue-50/90 dark:bg-blue-950/40 border-blue-500 ring-2 ring-blue-500/30 shadow-md scale-[1.01]'
+                    : 'bg-slate-50/70 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-white dark:hover:bg-slate-900'
+                }`}
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                      isSelected
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    }`}>
+                      {shuttle.routeId?.replace('sliit-', '').toUpperCase()}
+                    </span>
+
+                    {isSelected && (
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                    )}
+                  </div>
+
+                  <h3 className="font-black text-sm text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                    {shuttle.routeName}
+                  </h3>
+
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                    <span>🚍 {shuttle.busNumber}</span>
+                    <span>• Dep: <strong className="text-emerald-600 dark:text-emerald-400">{shuttle.departureTimeMorning}</strong></span>
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
+                  <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                    {shuttle.fareCategories && shuttle.fareCategories.length > 1
+                      ? `Rs. ${minFare} - Rs. ${maxFare}`
+                      : `Rs. ${shuttle.fare}`}
+                  </span>
+                  <span className={`text-[10px] font-black flex items-center gap-1 ${
+                    isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'
+                  }`}>
+                    {isSelected ? '● Selected Active' : 'Select Corridor ➔'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
       </div>
@@ -412,6 +576,173 @@ export default function SliitTransitHub() {
       {activeShuttle && (
         <div className="space-y-6">
           
+                    {/* ============================================================== */}
+          {/* KEY DETAILS GRID: Fare, Driver Contact, Times, Occupancy       */}
+          {/* ============================================================== */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Card 1: Ticket Fare (ගමන් ගාස්තු) - All Stages Displayed Separately */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider">Ticket Fare (ගමන් ගාස්තු)</span>
+                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5 my-1">
+                {activeShuttle.fareCategories && activeShuttle.fareCategories.length > 0 ? (
+                  activeShuttle.fareCategories.map((cat, cIdx) => (
+                    <div
+                      key={cat.id || cIdx}
+                      className="flex items-center justify-between py-1 px-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/60 dark:border-slate-800 text-xs"
+                    >
+                      <div className="flex items-center space-x-1.5 truncate pr-2">
+                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/90 text-amber-800 dark:text-amber-300">
+                          Stage #{cIdx + 1}
+                        </span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                          {cat.categoryName || `${cat.fromStop} to SLIIT`}
+                        </span>
+                      </div>
+                      <span className="font-black text-slate-900 dark:text-white shrink-0 text-sm">
+                        Rs. {cat.fare}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-baseline space-x-1">
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">Rs. {activeShuttle.fare}</span>
+                    <span className="text-xs text-slate-500 font-semibold">/ single ride</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-slate-100 dark:border-slate-800/80 pt-2 flex flex-col space-y-1">
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Direct daily cash payment to bus conductor. (දිනපතා බස් රථයේදී ගෙවිය යුතුය)
+                </span>
+                <a
+                  href="#fare-stages"
+                  className="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center space-x-1"
+                >
+                  <span>View All Intermediate Stops & Calculator ➔</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Card 2: Driver Contact (රියදුරු දුරකථන අංකය) */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider">Driver Contact (රියදුරු)</span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Phone className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {activeShuttle.driverName || 'Campus Driver'}
+                </h4>
+                <p className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 mt-0.5">
+                  {activeShuttle.driverPhone || '+94 77 123 4567'}
+                </p>
+              </div>
+
+              {/* Action Buttons: Instant Call & WhatsApp */}
+              <div className="flex items-center space-x-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                <a
+                  href={`tel:${activeShuttle.driverPhone}`}
+                  className="flex-1 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer"
+                >
+                  <Phone className="w-3 h-3" />
+                  <span>Call Driver</span>
+                </a>
+                <a
+                  href={`https://wa.me/${activeShuttle.driverWhatsapp || '94771234567'}?text=Hello%20Driver,%20I%20am%20waiting%20for%20the%20SLIIT%20Shuttle`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer"
+                  title="WhatsApp Driver"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Card 3: Shuttle Timetable (ගමන් වේලාවන්) */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider">Schedule (වේලාවන්)</span>
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                  <Clock className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-500">Morning Departure:</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400">{activeShuttle.departureTimeMorning}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-500">SLIIT Arrival ETA:</span>
+                  <span className="font-black text-slate-900 dark:text-white">{activeShuttle.arrivalTimeMorning}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-500">Evening Return:</span>
+                  <span className="font-black text-indigo-600 dark:text-indigo-400">{activeShuttle.departureTimeEvening}</span>
+                </div>
+              </div>
+
+              <span className="text-[10px] text-slate-400 font-medium border-t border-slate-100 dark:border-slate-800/80 pt-2 block">
+                Monday to Friday academic weekdays.
+              </span>
+            </div>
+
+            {/* Card 4: Occupancy & Seat Availability */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider">Bus Occupancy (ආසන)</span>
+                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Bus className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div>
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-black border ${
+                  activeShuttle.occupancyStatus === 'Seats Available'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                    : activeShuttle.occupancyStatus === 'Bus Full'
+                    ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800'
+                    : 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800'
+                }`}>
+                  {activeShuttle.occupancyStatus}
+                </span>
+                <p className="text-[11px] text-slate-500 font-semibold mt-1">
+                  Capacity: {activeShuttle.seatCapacity} Luxury Reclining Seats
+                </p>
+              </div>
+
+              <span className="text-[10px] text-slate-400 font-medium border-t border-slate-100 dark:border-slate-800/80 pt-2 block">
+                AC Luxury Coach with phone charging ports.
+              </span>
+            </div>
+
+          </div>
+
+          {/* Active Traffic / Delay Announcement */}
+          {activeShuttle.delayNotice && (
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 rounded-2xl flex items-start space-x-3 text-amber-800 dark:text-amber-300">
+              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <div>
+                <h5 className="font-black text-xs uppercase tracking-wider">Live Route Announcement</h5>
+                <p className="text-xs font-semibold mt-0.5">
+                  {activeShuttle.delayNotice}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* ============================================================== */}
           {/* LIVE GPS RADAR MAP CANVAS WITH CUSTOM ROAD POLYLINE            */}
           {/* ============================================================== */}
@@ -447,7 +778,12 @@ export default function SliitTransitHub() {
                 <span className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'} shrink-0`} />
                 <span className="font-bold">
                   {inspectedStop ? (
-                    <>📍 Inspected Bus Stand: <strong className="text-cyan-300">{inspectedStop}</strong></>
+                    <>
+                      📍 Inspected: <strong className="text-cyan-300">{inspectedStop}</strong>
+                      <span className="ml-1.5 px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-[10px]">
+                        Rs. {getStopFareInfo(inspectedStop, activeShuttle).fare}
+                      </span>
+                    </>
                   ) : isLive ? (
                     <>🚍 Next Halt: <strong className="text-cyan-300">{loc.nextHalt || 'SLIIT Campus'}</strong> ({loc.nextHaltEta || '--'})</>
                   ) : (
@@ -596,145 +932,188 @@ export default function SliitTransitHub() {
           </div>
 
           {/* ============================================================== */}
-          {/* KEY DETAILS GRID: Fare, Driver Contact, Times, Occupancy       */}
+          {/* STUDENT STAGE-BASED FARE CATEGORIES & BOARDING CALCULATOR      */}
           {/* ============================================================== */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div id="fare-stages" className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm space-y-6">
             
-            {/* Card 1: Ticket Fare (ගමන් ගාස්තු) */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Ticket Fare (ගමන් ගාස්තු)</span>
-                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4" />
-                </div>
-              </div>
-
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
               <div>
-                <div className="flex items-baseline space-x-1">
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">Rs. {activeShuttle.fare}</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ single ride</span>
+                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-wider mb-1">
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Student Stage Fares • ගමන් ගාස්තු කාණ්ඩ</span>
                 </div>
-                <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 mt-0.5">
-                  Monthly Pass: Rs. {activeShuttle.monthlyPassFare}
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Shuttle Fare Categories & Boarding Halts (ගාස්තු කාණ්ඩ සහ නැවතුම්)
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  ශිෂ්‍ය බස් රථයේ ගාස්තුව ඔබ ගොඩවන නැවතුම (Stage) අනුව වෙනස් වේ. ඔබගේ නැවතුම තෝරා අදාළ ගාස්තුව සහ අතරමැදි නැවතුම් පහතින් පරීක්ෂා කරන්න.
                 </p>
               </div>
 
-              <span className="text-[10px] text-slate-400 font-medium border-t border-slate-100 dark:border-slate-800/80 pt-2 block">
-                Direct payment to conductor or monthly student season pass.
-              </span>
-            </div>
-
-            {/* Card 2: Driver Contact (රියදුරු දුරකථන අංකය) */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Driver Contact (රියදුරු)</span>
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <Phone className="w-4 h-4" />
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-base font-extrabold text-slate-900 dark:text-white truncate">
-                  {activeShuttle.driverName || 'Campus Driver'}
-                </h4>
-                <p className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 mt-0.5">
-                  {activeShuttle.driverPhone || '+94 77 123 4567'}
-                </p>
-              </div>
-
-              {/* Action Buttons: Instant Call & WhatsApp */}
-              <div className="flex items-center space-x-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                <a
-                  href={`tel:${activeShuttle.driverPhone}`}
-                  className="flex-1 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer"
-                >
-                  <Phone className="w-3 h-3" />
-                  <span>Call Driver</span>
-                </a>
-                <a
-                  href={`https://wa.me/${activeShuttle.driverWhatsapp || '94771234567'}?text=Hello%20Driver,%20I%20am%20waiting%20for%20the%20SLIIT%20Shuttle`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer"
-                  title="WhatsApp Driver"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
-
-            {/* Card 3: Shuttle Timetable (ගමන් වේලාවන්) */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Schedule (වේලාවන්)</span>
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-500">Morning Departure:</span>
-                  <span className="font-black text-emerald-600 dark:text-emerald-400">{activeShuttle.departureTimeMorning}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-500">SLIIT Arrival ETA:</span>
-                  <span className="font-black text-slate-900 dark:text-white">{activeShuttle.arrivalTimeMorning}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-500">Evening Return:</span>
-                  <span className="font-black text-indigo-600 dark:text-indigo-400">{activeShuttle.departureTimeEvening}</span>
-                </div>
-              </div>
-
-              <span className="text-[10px] text-slate-400 font-medium border-t border-slate-100 dark:border-slate-800/80 pt-2 block">
-                Monday to Friday academic weekdays.
-              </span>
-            </div>
-
-            {/* Card 4: Occupancy & Seat Availability */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Bus Occupancy (ආසන)</span>
-                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                  <Bus className="w-4 h-4" />
-                </div>
-              </div>
-
-              <div>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-black border ${
-                  activeShuttle.occupancyStatus === 'Seats Available'
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
-                    : activeShuttle.occupancyStatus === 'Bus Full'
-                    ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800'
-                    : 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800'
-                }`}>
-                  {activeShuttle.occupancyStatus}
+              {/* Quick Boarding Selector */}
+              <div className="flex items-center space-x-2 self-start md:self-auto bg-slate-50 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shrink-0">
+                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 pl-2">
+                  📍 Boarding From:
                 </span>
-                <p className="text-[11px] text-slate-500 font-semibold mt-1">
-                  Capacity: {activeShuttle.seatCapacity} Luxury Reclining Seats
-                </p>
+                <select
+                  value={currentBoarding}
+                  onChange={(e) => {
+                    setSelectedBoardingStop(e.target.value);
+                    handleStopClick(e.target.value);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-black text-slate-900 dark:text-white cursor-pointer shadow-2xs focus:ring-2 focus:ring-blue-500"
+                >
+                  {(allBoardingStops || []).map((stopName, idx) => {
+                    const stopFare = getStopFareInfo(stopName, activeShuttle);
+                    return (
+                      <option key={idx} value={stopName}>
+                        {stopName} (Rs. {stopFare.fare})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+
+            {/* Personalized Fare Banner / HUD */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-blue-500/10 border-2 border-amber-400/50 dark:border-amber-600/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-start space-x-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-md shadow-amber-500/30">
+                  <span className="text-lg">Rs</span>
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs uppercase font-black tracking-wider text-amber-700 dark:text-amber-300">
+                      Your Calculated Fare (ඔබ සඳහා ගාස්තුව)
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800 text-[10px] font-mono font-black text-slate-800 dark:text-slate-200">
+                      Boarding at: <strong>{currentBoarding}</strong>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline space-x-2 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                      Rs. {currentFareInfo.fare}
+                    </span>
+                    <span className="text-xs text-slate-500 font-bold">
+                      one-way to SLIIT Malabe Campus
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 font-medium">
+                    Category: <strong className="text-amber-600 dark:text-amber-400">{currentFareInfo.categoryName}</strong>
+                    {currentFareInfo.categoryNameSi && <span> ({currentFareInfo.categoryNameSi})</span>}
+                    {' '}• ගෙවීම: <strong className="text-amber-600 dark:text-amber-400 font-bold">දිනපතා බස් රථයේදී කොන්දොස්තරට (Daily Cash Payment)</strong>
+                  </p>
+                </div>
               </div>
 
-              <span className="text-[10px] text-slate-400 font-medium border-t border-slate-100 dark:border-slate-800/80 pt-2 block">
-                AC Luxury Coach with phone charging ports.
-              </span>
+              <div className="flex items-center space-x-2 self-start md:self-auto shrink-0">
+                <span className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>Student ID Validated</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Categories Comparison Grid */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+                <span>All Configured Fare Stages for {activeShuttle.routeName}</span>
+                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">Click any halt to select</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {(activeShuttle.fareCategories || []).map((cat, idx) => {
+                  const isCatActive = currentFareInfo.categoryName === cat.categoryName;
+                  return (
+                    <div
+                      key={cat.id || idx}
+                      onClick={() => {
+                        setSelectedBoardingStop(cat.fromStop || cat.intermediateStops?.[0] || '');
+                      }}
+                      className={`p-4 rounded-2xl transition-all border flex flex-col justify-between space-y-3 cursor-pointer group ${
+                        isCatActive
+                          ? 'bg-gradient-to-br from-amber-50/90 via-white to-amber-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-amber-950/30 border-amber-500 ring-2 ring-amber-500/30 shadow-md scale-[1.01]'
+                          : 'bg-slate-50/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-blue-400'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                            isCatActive 
+                              ? 'bg-amber-500 text-slate-950 font-black' 
+                              : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}>
+                            Stage #{idx + 1}
+                          </span>
+                          <span className="text-base font-black text-slate-900 dark:text-white">
+                            Rs. {cat.fare}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="font-black text-sm text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {cat.categoryName}
+                          </h4>
+                          {cat.categoryNameSi && (
+                            <p className="text-[11px] text-slate-500 font-medium">
+                              {cat.categoryNameSi}
+                            </p>
+                          )}
+                          <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                            Daily Fare: Rs. {cat.fare}
+                          </p>
+                        </div>
+
+                        {cat.description && (
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                            {cat.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Intermediate Halts in this Category */}
+                      <div className="pt-2 border-t border-slate-200/70 dark:border-slate-800 space-y-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Intermediate Boarding Stops (අතරමැදි නැවතුම්):
+                        </span>
+                        {cat.intermediateStops && cat.intermediateStops.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {cat.intermediateStops.map((halt, hIdx) => {
+                              const isHaltSelected = currentBoarding?.toLowerCase() === halt?.toLowerCase();
+                              return (
+                                <button
+                                  key={hIdx}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedBoardingStop(halt);
+                                    handleStopClick(halt);
+                                  }}
+                                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                    isHaltSelected
+                                      ? 'bg-blue-600 text-white shadow-xs font-black'
+                                      : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                                  }`}
+                                  title={`Click to select ${halt} and view on map`}
+                                >
+                                  {halt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic">From {cat.fromStop} directly to SLIIT</span>
+                        )}
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
           </div>
-
-          {/* Active Traffic / Delay Announcement */}
-          {activeShuttle.delayNotice && (
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 rounded-2xl flex items-start space-x-3 text-amber-800 dark:text-amber-300">
-              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-              <div>
-                <h5 className="font-black text-xs uppercase tracking-wider">Live Route Announcement</h5>
-                <p className="text-xs font-semibold mt-0.5">
-                  {activeShuttle.delayNotice}
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* ============================================================== */}
           {/* INTERACTIVE WAYPOINT HALTS STEPPER                             */}
@@ -763,12 +1142,16 @@ export default function SliitTransitHub() {
                 const isFirst = sIdx === 0;
                 const isLast = sIdx === (activeShuttle.stops.length - 1);
                 const isInspected = inspectedStop === stop.name;
+                const stopFareInfo = getStopFareInfo(stop.name, activeShuttle);
 
                 return (
                   <button
                     key={sIdx}
                     type="button"
-                    onClick={() => handleStopClick(stop.name)}
+                    onClick={() => {
+                      handleStopClick(stop.name);
+                      setSelectedBoardingStop(stop.name);
+                    }}
                     className={`p-3 rounded-2xl text-left transition-all border flex flex-col justify-between group cursor-pointer ${
                       isInspected
                         ? 'bg-blue-50 dark:bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/40 shadow-md'
@@ -788,11 +1171,15 @@ export default function SliitTransitHub() {
                         }`}>
                           #{sIdx + 1}
                         </span>
-                        {stop.timeOffset && (
+                        {!isLast && stopFareInfo?.fare ? (
+                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60">
+                            Rs. {stopFareInfo.fare}
+                          </span>
+                        ) : stop.timeOffset ? (
                           <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">
                             {stop.timeOffset}
                           </span>
-                        )}
+                        ) : null}
                       </div>
 
                       <p className="font-extrabold text-xs text-slate-900 dark:text-white leading-tight group-hover:text-blue-500">

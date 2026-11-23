@@ -11,10 +11,10 @@ import {
 export default function Sidebar({ onClose, className = '' }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { adminUser, lockAdmin } = useAuth();
 
   const handleLogout = () => {
-    logout();
+    lockAdmin();
     navigate('/admin');
   };
 
@@ -87,17 +87,17 @@ export default function Sidebar({ onClose, className = '' }) {
       <div className="shrink-0 p-4 bg-slate-950/80 border-t border-slate-850 flex items-center justify-between">
         <div className="flex items-center space-x-3 overflow-hidden">
           <div className="w-8.5 h-8.5 rounded bg-primary-700 text-white flex items-center justify-center font-bold text-sm shrink-0">
-            {user?.fullName ? user.fullName[0].toUpperCase() : 'A'}
+            {adminUser?.fullName ? adminUser.fullName[0].toUpperCase() : 'A'}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-white truncate">{user?.fullName || 'Admin User'}</p>
-            <p className="text-[10px] text-slate-500 capitalize">{user?.role || 'operator'}</p>
+            <p className="text-xs font-bold text-white truncate">{adminUser?.fullName || 'Master Administrator'}</p>
+            <p className="text-[10px] text-slate-500 capitalize">{adminUser?.role || 'Admin'}</p>
           </div>
         </div>
         <button 
           onClick={handleLogout}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-accent-rose hover:bg-slate-800"
-          title="Sign Out"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-accent-rose hover:bg-slate-800 transition-colors"
+          title="Lock Admin Terminal & Sign Out"
         >
           <LogOut className="w-4 h-4" />
         </button>

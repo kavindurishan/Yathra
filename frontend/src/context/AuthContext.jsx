@@ -3,11 +3,64 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  // 1. Public Customer Session (Passengers & Students)
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('yathra_token') || localStorage.getItem('tripzo_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // Sync token with localStorage
+  // 2. Isolated Admin Console Terminal Session (Gated by Master PIN)
+  const [adminToken, setAdminToken] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('yathra_admin_token') || null;
+    }
+    return null;
+  });
+  const [adminUser, setAdminUser] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('yathra_admin_user');
+        if (cached && cached !== 'undefined') {
+          return JSON.parse(cached);
+        }
+      } catch (e) {
+        localStorage.removeItem('yathra_admin_user');
+      }
+    }
+    return null;
+  });
+
+  const isAdminUnlocked = Boolean(adminToken && adminUser);
+
+  // Automatically separate any legacy admin sessions from customer session
+  useEffect(() => {
+    try {
+      const cachedCustomer = localStorage.getItem('yathra_user');
+      if (cachedCustomer && cachedCustomer !== 'undefined') {
+        const parsed = JSON.parse(cachedCustomer);
+        if (parsed && (parsed.role === 'Admin' || parsed.role === 'Operator')) {
+          // Migrate to isolated admin session if not already set
+          if (!localStorage.getItem('yathra_admin_token')) {
+            const legacyToken = localStorage.getItem('yathra_token') || 'admin_master_session';
+            localStorage.setItem('yathra_admin_token', legacyToken);
+            localStorage.setItem('yathra_admin_user', JSON.stringify(parsed));
+            setAdminToken(legacyToken);
+            setAdminUser(parsed);
+          }
+          // Remove from public customer session so customer side stays clean
+          localStorage.removeItem('yathra_user');
+          localStorage.removeItem('yathra_token');
+          localStorage.removeItem('tripzo_user');
+          localStorage.removeItem('tripzo_token');
+          setUser(null);
+          setToken(null);
+        }
+      }
+    } catch (e) {
+      // Ignored
+    }
+  }, []);
+
+  // Sync customer token with localStorage
   useEffect(() => {
     if (token) {
       localStorage.setItem('yathra_token', token);
@@ -112,12 +165,11 @@ export const AuthProvider = ({ children }) => {
       });
       const data = await res.json();
       if (data.success && data.token) {
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem('yathra_token', data.token);
-        localStorage.setItem('tripzo_token', data.token);
-        localStorage.setItem('yathra_user', JSON.stringify(data.user));
-        localStorage.setItem('tripzo_user', JSON.stringify(data.user));
+        // Authenticate ISOLATED Admin Console Session ONLY - Public customer session stays untouched
+        setAdminToken(data.token);
+        setAdminUser(data.user);
+        localStorage.setItem('yathra_admin_token', data.token);
+        localStorage.setItem('yathra_admin_user', JSON.stringify(data.user));
         return { success: true, message: data.message };
       } else {
         return { success: false, message: data.message || 'Invalid Security PIN.' };
@@ -130,25 +182,42 @@ export const AuthProvider = ({ children }) => {
           _id: 'admin_offline_master',
           username: 'admin',
           fullName: 'Master Administrator',
-          email: 'admin@tripzo.com',
+          email: 'admin@yathra.lk',
           role: 'Admin',
           status: 'Active'
         };
         const mockToken = 'mock_admin_token_2026';
-        setToken(mockToken);
-        setUser(mockAdmin);
-        localStorage.setItem('yathra_token', mockToken);
-        localStorage.setItem('tripzo_token', mockToken);
-        localStorage.setItem('yathra_user', JSON.stringify(mockAdmin));
-        localStorage.setItem('tripzo_user', JSON.stringify(mockAdmin));
+        setAdminToken(mockToken);
+        setAdminUser(mockAdmin);
+        localStorage.setItem('yathra_admin_token', mockToken);
+        localStorage.setItem('yathra_admin_user', JSON.stringify(mockAdmin));
         return { success: true };
       }
       return { success: false, message: 'Invalid Admin Security PIN.' };
     }
   };
 
+  const lockAdmin = () => {
+    setAdminToken(null);
+    setAdminUser(null);
+    localStorage.removeItem('yathra_admin_token');
+    localStorage.removeItem('yathra_admin_user');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, loginWithPin, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      loading, 
+      login, 
+      loginWithPin, 
+      register, 
+      logout,
+      adminUser,
+      adminToken,
+      isAdminUnlocked,
+      lockAdmin
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -47,10 +47,10 @@ function PrivateRoute({ children }) {
 }
 
 function AdminRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, isAdminUnlocked, loading } = useAuth();
   if (loading) return <RouteLoadingFallback />;
-  const isAdminOrOperator = user && (user.role === 'Admin' || user.role === 'Operator');
-  return isAdminOrOperator ? children : <AdminPinGate />;
+  const hasAdminAccess = isAdminUnlocked || (user && (user.role === 'Admin' || user.role === 'Operator'));
+  return hasAdminAccess ? children : <AdminPinGate />;
 }
 
 // Guard for Public Booking Routes: allows Admins, blocks normal users when in Maintenance/Early Access
@@ -71,10 +71,9 @@ function PublicBookingRouteGuard({ children }) {
 
 export default function App() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAdminUnlocked } = useAuth();
   const isAdminPath = location.pathname.startsWith('/admin');
-  const isAdminOrOperator = user && (user.role === 'Admin' || user.role === 'Operator');
-  const showAdminPinGate = isAdminPath && !isAdminOrOperator;
+  const hasAdminAccess = isAdminUnlocked || (user && (user.role === 'Admin' || user.role === 'Operator'));
 
   return (
     <ErrorBoundary>
@@ -82,14 +81,14 @@ export default function App() {
         {/* Auto-scroll to top on route and search query changes */}
         <ScrollToTop />
 
-        {/* Global Navigation header (Hidden during Admin PIN gate) */}
-        {!showAdminPinGate && <Navbar className="no-print" />}
+        {/* Global Navigation header (Only shown on Customer side, not on Admin console) */}
+        {!isAdminPath && <Navbar className="no-print" />}
 
         {/* Early Access Announcement Banner */}
         {!isAdminPath && <LaunchAnnouncementBanner />}
 
         {/* Main Page Content Body */}
-        <main className={`flex-grow ${isAdminPath && isAdminOrOperator ? 'h-[calc(100vh-4rem)] overflow-hidden' : ''}`}>
+        <main className={`flex-grow ${isAdminPath && hasAdminAccess ? 'h-screen overflow-hidden' : ''}`}>
           <ErrorBoundary>
             <Routes>
               {/* Public customer routes */}

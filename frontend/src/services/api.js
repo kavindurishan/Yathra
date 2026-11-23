@@ -16,7 +16,13 @@ const getBaseUrl = () => {
 const BASE_URL = getBaseUrl();
 
 const request = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('yathra_token') || localStorage.getItem('tripzo_token');
+  const adminToken = typeof window !== 'undefined' ? localStorage.getItem('yathra_admin_token') : null;
+  const userToken = typeof window !== 'undefined' ? (localStorage.getItem('yathra_token') || localStorage.getItem('tripzo_token')) : null;
+  
+  const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  const isAdminEndpoint = endpoint.startsWith('/admin') || endpoint.startsWith('/settings');
+  const token = ((isAdminPath || isAdminEndpoint) && adminToken) ? adminToken : (userToken || adminToken);
+
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useLaunchSettings } from '../context/LaunchSettingsContext';
 import { getTrilingualCity } from '../services/cityTranslations';
 import { 
   Search, Calendar, MapPin, Shield, Compass, Clock, Award, Users, Bus, 
@@ -12,6 +13,7 @@ import SriLankaRouteMapExplorer from '../components/SriLankaRouteMapExplorer';
 export default function Home() {
   const navigate = useNavigate();
   const bookingSectionRef = useRef(null);
+  const { isBookingAllowed, openNoticeModal, settings } = useLaunchSettings();
   
   const [fromList, setFromList] = useState([]);
   const [toList, setToList] = useState([]);
@@ -56,6 +58,10 @@ export default function Home() {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    if (!isBookingAllowed) {
+      openNoticeModal();
+      return;
+    }
     if (!fromInput || !toInput || !departureDate) return;
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     navigate(`/schedules?from=${encodeURIComponent(fromInput)}&to=${encodeURIComponent(toInput)}&date=${departureDate}`);
@@ -111,10 +117,16 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Direct CTA Buttons: 'Book Seats Online / මෙතනින් Bookings දාන්න' */}
+          {/* Direct CTA Buttons: 'Book Seats Online' & 'Campus Shuttle Hub' */}
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
             <button
-              onClick={scrollToBooking}
+              onClick={() => {
+                if (!isBookingAllowed) {
+                  openNoticeModal();
+                } else {
+                  scrollToBooking();
+                }
+              }}
               className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-base shadow-xl shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-[1.02] transition-all transform flex flex-col items-center justify-center leading-tight cursor-pointer"
             >
               <span className="flex items-center gap-2">
@@ -122,16 +134,33 @@ export default function Home() {
                 <span className="text-lg">→</span>
               </span>
               <span className="text-[11px] text-cyan-100 font-normal opacity-90 mt-0.5">
-                මෙතනින් Bookings දාන්න
+                {isBookingAllowed ? 'Expressway Coach Booking' : 'Early Access Notice • Staging'}
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                navigate('/sliit-transit');
+              }}
+              className="px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-500/20 hover:scale-[1.02] transition-all transform flex flex-col items-center justify-center leading-tight cursor-pointer border border-emerald-400/30"
+            >
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                <span>SLIIT Campus Transit Hub</span>
+                <span>🎓</span>
+              </span>
+              <span className="text-[11px] text-emerald-100 font-normal opacity-90 mt-0.5">
+                Live GPS Tracker & Shuttles (Active)
               </span>
             </button>
 
             <a
               href="#route-map-section"
-              className="px-6 py-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 hover:text-white font-bold text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer shadow-lg"
+              className="px-6 py-4 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 hover:text-white font-bold text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer shadow-lg"
             >
               <Navigation className="w-4 h-4 text-cyan-400" />
-              <span>Explore Live Map (සිතියම)</span>
+              <span>Explore Live Map</span>
             </a>
           </div>
 
@@ -171,6 +200,15 @@ export default function Home() {
           
           {/* Booking Section Topic Header (Centered in the middle) */}
           <div className="text-center mb-8 pb-4 border-b border-slate-800/80 max-w-xl mx-auto space-y-1.5">
+            {!isBookingAllowed && (
+              <div 
+                onClick={openNoticeModal}
+                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold cursor-pointer hover:bg-amber-500/25 transition-all mb-2"
+              >
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Expressway booking in staging • Click to view early access details</span>
+              </div>
+            )}
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center justify-center gap-2">
               <span>Select Your Journey</span>
               <span className="text-xs font-bold text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/50">
@@ -178,7 +216,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 font-medium">
-              ඔබගේ ආරම්භක ස්ථානය සහ ගමනාන්තය තෝරා පහසුවෙන්ම ආසන වෙන්කරගන්න
+              Explore expressway routes, scheduled stops, and timetable timings
             </p>
           </div>
 
@@ -269,7 +307,13 @@ export default function Home() {
             {/* Submit Action Button */}
             <div className="md:col-span-12 pt-2">
               <button
-                type="submit"
+                type={isBookingAllowed ? 'submit' : 'button'}
+                onClick={(e) => {
+                  if (!isBookingAllowed) {
+                    e.preventDefault();
+                    openNoticeModal();
+                  }
+                }}
                 className="w-full py-4 rounded-2xl font-black text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all flex flex-col items-center justify-center leading-tight cursor-pointer"
               >
                 <span className="flex items-center gap-2 text-base">

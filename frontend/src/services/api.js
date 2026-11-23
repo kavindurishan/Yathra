@@ -216,5 +216,14 @@ export const api = {
     seedDefaults: () => request('/campus/shuttles/seed', {
       method: 'POST'
     }),
+  },
+
+  // System Launch Settings
+  settings: {
+    get: () => request('/settings'),
+    update: (data) => request('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }),
   }
 };

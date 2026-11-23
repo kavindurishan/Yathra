@@ -46,6 +46,68 @@ const populateBookingObj = async (booking) => {
 };
 
 // ----------------------------------------------------
+// SYSTEM SETTINGS & LAUNCH MODE MANAGEMENT
+// ----------------------------------------------------
+const SETTINGS_FILE = path.join(__dirname, '..', '..', 'data', 'settings.json');
+
+const DEFAULT_SETTINGS = {
+  publicBookingActive: false,
+  launchBannerEnabled: true,
+  bannerMessage: 'SLIIT Campus Transit Hub is now LIVE! Public expressway booking will open soon.',
+  modalTitle: 'Public Booking Launching Soon',
+  modalSubtitle: 'Expressway Intercity Coach Service',
+  modalMessage: 'Online seat reservations for Expressway Intercity routes are undergoing final system readiness checks and will be accessible to the general public soon. SLIIT University Shuttle service is 100% active with live tracking, stop schedules, and student passes.',
+  campusButtonText: 'Switch to Campus Shuttle Hub 🎓',
+  allowAdminBypass: true
+};
+
+const getSystemSettings = () => {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+      return { ...DEFAULT_SETTINGS, ...data };
+    }
+  } catch (err) {
+    console.error('Error reading settings file:', err);
+  }
+  return DEFAULT_SETTINGS;
+};
+
+const saveSystemSettings = (newSettings) => {
+  try {
+    const dir = path.dirname(SETTINGS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const current = getSystemSettings();
+    const merged = { ...current, ...newSettings };
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(merged, null, 2), 'utf8');
+    return merged;
+  } catch (err) {
+    console.error('Error saving settings file:', err);
+    throw err;
+  }
+};
+
+// GET /api/settings - Read system launch configuration
+router.get('/settings', (req, res) => {
+  try {
+    const settings = getSystemSettings();
+    res.json({ success: true, settings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// PUT /api/settings - Update system launch configuration (Admin / Operator only)
+router.put('/settings', authenticate, authorize(['Admin', 'Operator']), (req, res) => {
+  try {
+    const updated = saveSystemSettings(req.body);
+    res.json({ success: true, settings: updated, message: 'System launch settings updated successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ----------------------------------------------------
 // 1. AUTHENTICATION MODULE
 // ----------------------------------------------------
 
@@ -583,6 +645,16 @@ router.delete('/schedules/:id', authenticate, authorize(['Admin']), async (req, 
 // Create Booking with 10-Minute Seat Locking & Boarding/Dropping Stop Data
 router.post('/bookings', authenticate, async (req, res) => {
   try {
+    const settings = getSystemSettings();
+    const isAdminOrOperator = req.user && (req.user.role === 'Admin' || req.user.role === 'Operator');
+    if (!settings.publicBookingActive && !isAdminOrOperator) {
+      return res.status(403).json({
+        success: false,
+        code: 'PUBLIC_BOOKING_PAUSED',
+        message: 'Public bus seat reservations are currently paused during the university early access phase. Please use the Campus Shuttle Hub.'
+      });
+    }
+
     const { 
       scheduleId, passengers, seatsBooked, promoCode, includeConvenienceFee,
       boardingPoint, droppingPoint, boardingTime, droppingTime 

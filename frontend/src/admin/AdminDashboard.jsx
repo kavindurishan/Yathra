@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { useLaunchSettings } from '../context/LaunchSettingsContext';
 import { 
   Users, Bus, Calendar, Landmark, BookOpen, AlertOctagon, 
-  TrendingUp, CircleDollarSign, Clock, ShieldAlert, ArrowRight
+  TrendingUp, CircleDollarSign, Clock, ShieldAlert, ArrowRight,
+  Sparkles, CheckCircle2, Eye, ShieldCheck, GraduationCap
 } from 'lucide-react';
 // Recharts charts
 import { 
@@ -11,11 +14,30 @@ import {
 } from 'recharts';
 
 export default function AdminDashboard() {
+  const { settings, updateSettings, openNoticeModal } = useLaunchSettings();
+  const [toggleLoading, setToggleLoading] = useState(false);
+  const [toggleSuccessMsg, setToggleSuccessMsg] = useState('');
+
   const [kpis, setKpis] = useState(null);
   const [recentPayments, setRecentPayments] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const handleTogglePublicBooking = async () => {
+    setToggleLoading(true);
+    setToggleSuccessMsg('');
+    try {
+      const nextState = !settings.publicBookingActive;
+      await updateSettings({ publicBookingActive: nextState });
+      setToggleSuccessMsg(nextState ? 'Public Booking is now LIVE for all users!' : 'Public Booking switched to Maintenance / Staging mode.');
+      setTimeout(() => setToggleSuccessMsg(''), 4000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setToggleLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadDashboardStats();
@@ -79,6 +101,127 @@ export default function AdminDashboard() {
       <div>
         <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Dashboard Overview</h2>
         <p className="text-xs text-slate-400 font-semibold mt-0.5">Real-time fleet operation cockpit metrics</p>
+      </div>
+
+      {/* Platform Rollout & Launch Mode Control */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm overflow-hidden relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <Sparkles className="w-4 h-4" />
+              </span>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                Platform Rollout & Launch Control
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Control public access. When paused, normal customers will see the professional Launch Notice modal directing them to Campus Shuttle Mode. Admins retain full unrestricted access.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              type="button"
+              onClick={openNoticeModal}
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
+              <span>Preview Customer Modal</span>
+            </button>
+
+            <Link
+              to="/admin/sliit-transit"
+              className="px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center space-x-1.5 hover:bg-blue-100 transition-colors"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Manage Campus Shuttles</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Feature Switches Matrix */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-5">
+          {/* Switch 1: Public Bus Booking */}
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <Bus className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  Public Intercity Bus Booking
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {settings.publicBookingActive 
+                  ? 'All customers can select seats and book expressway buses.'
+                  : 'Booking locked for normal customers (Admins retain full access).'
+                }
+              </p>
+              <div className="pt-1">
+                {settings.publicBookingActive ? (
+                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    <span>Live to Public</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                    <Clock className="w-3 h-3 text-amber-500" />
+                    <span>Maintenance Mode (Staging)</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleTogglePublicBooking}
+              disabled={toggleLoading}
+              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                settings.publicBookingActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              title={settings.publicBookingActive ? 'Click to pause public bookings' : 'Click to activate public bookings'}
+            >
+              <span
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  settings.publicBookingActive ? 'translate-x-7' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Switch 2: Campus Shuttle Early Access */}
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  University Shuttle Mode (SLIIT Transit)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Primary active service for campus students with live GPS tracking and stops.
+              </p>
+              <div className="pt-1">
+                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  <span>100% Operational</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
+              Active Now
+            </div>
+          </div>
+        </div>
+
+        {/* Feedback message */}
+        {toggleSuccessMsg && (
+          <div className="mt-4 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/70 dark:border-emerald-800/40 flex items-center space-x-1.5 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>{toggleSuccessMsg}</span>
+          </div>
+        )}
       </div>
 
       {/* KPI Cards Grid */}

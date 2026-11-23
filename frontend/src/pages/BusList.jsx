@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useLaunchSettings } from '../context/LaunchSettingsContext';
 import { getTrilingualCity } from '../services/cityTranslations';
 import RouteGoogleMapPanel from '../components/RouteGoogleMapPanel';
 import { 
@@ -12,6 +13,7 @@ import {
 export default function BusList() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isBookingAllowed, openNoticeModal } = useLaunchSettings();
 
   const from = searchParams.get('from') || '';
   const to = searchParams.get('to') || '';
@@ -338,6 +340,10 @@ export default function BusList() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (!isBookingAllowed) {
+                            openNoticeModal();
+                            return;
+                          }
                           window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                           navigate(`/schedules/${item._id}`);
                         }}

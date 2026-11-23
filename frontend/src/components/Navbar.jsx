@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLaunchSettings } from '../context/LaunchSettingsContext';
 import { api } from '../services/api';
 import YathraBrandLogo from './YathraBrandLogo';
 import { 
@@ -12,6 +13,7 @@ import {
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
+  const { settings } = useLaunchSettings();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -135,6 +137,11 @@ export default function Navbar() {
               >
                 <span>🚌</span>
                 <span>Public Travel</span>
+                {!settings.publicBookingActive && (
+                  <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded-md border border-amber-500/20">
+                    Staging
+                  </span>
+                )}
               </button>
 
               <button
@@ -154,6 +161,9 @@ export default function Navbar() {
                 <span>🎓</span>
                 <span>Campus Mode</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-black px-1.5 py-0.5 rounded-md">
+                  LIVE
+                </span>
               </button>
             </div>
 
@@ -392,6 +402,11 @@ export default function Navbar() {
             >
               <span>🚌</span>
               <span>Public Travel</span>
+              {!settings.publicBookingActive && (
+                <span className="text-[9px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold px-1 rounded">
+                  Staging
+                </span>
+              )}
             </button>
             <button
               type="button"
@@ -411,6 +426,9 @@ export default function Navbar() {
               <span>🎓</span>
               <span>Campus Mode</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-1 rounded">
+                LIVE
+              </span>
             </button>
           </div>
 

@@ -6,5 +6,6 @@
   "modalSubtitle": "Expressway Intercity Coach Service",
   "modalMessage": "Online seat reservations for Expressway Intercity routes are undergoing final system readiness checks and will be accessible to the general public soon. SLIIT University Shuttle service is 100% active with live tracking, stop schedules, and student passes.",
   "campusButtonText": "Switch to Campus Shuttle Hub 🎓",
-  "allowAdminBypass": true
+  "allowAdminBypass": true,
+  "adminSecurityPin": "2026"
 }

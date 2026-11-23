@@ -557,17 +557,6 @@ export default function SliitTransitHub() {
                 >
                   <span>📝 Student Register</span>
                 </Link>
-
-                <button
-                  type="button"
-                  onClick={handleQuickStudentLogin}
-                  disabled={fastLoginLoading}
-                  className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all shadow-sm flex items-center space-x-1.5 cursor-pointer"
-                  title="Test immediately with it21004567@my.sliit.lk"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{fastLoginLoading ? 'Verifying...' : '⚡ 1-Click Student Test'}</span>
-                </button>
               </>
             )}
           </div>

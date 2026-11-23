@@ -107,6 +107,54 @@ router.put('/settings', authenticate, authorize(['Admin', 'Operator']), (req, re
   }
 });
 
+// POST /api/admin/verify-pin - Dedicated Quick PIN Authentication for Admin Console
+router.post('/admin/verify-pin', async (req, res) => {
+  try {
+    const { pin } = req.body;
+    const settings = getSystemSettings();
+    const correctPin = String(settings.adminSecurityPin || '2026').trim();
+
+    if (!pin || String(pin).trim() !== correctPin) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Admin Security PIN code. Access denied.'
+      });
+    }
+
+    // Retrieve Admin Account
+    let adminUser = await db.findOne('User', { role: 'Admin' });
+    if (!adminUser) {
+      const allUsers = await db.find('User', {});
+      adminUser = allUsers.find(u => u.role === 'Admin');
+    }
+
+    if (!adminUser) {
+      // Create fallback admin if none exists
+      adminUser = {
+        _id: 'admin_master_pin_user',
+        username: 'admin',
+        fullName: 'Master Administrator',
+        email: 'admin@tripzo.com',
+        role: 'Admin',
+        status: 'Active'
+      };
+    }
+
+    const token = generateToken(adminUser);
+    const safeUser = { ...adminUser };
+    delete safeUser.password;
+
+    res.json({
+      success: true,
+      message: 'Admin terminal access granted.',
+      token,
+      user: safeUser
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ----------------------------------------------------
 // 1. AUTHENTICATION MODULE
 // ----------------------------------------------------

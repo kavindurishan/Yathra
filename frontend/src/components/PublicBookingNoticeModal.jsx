@@ -37,10 +37,13 @@ export default function PublicBookingNoticeModal({ onBypassAdmin }) {
       <div 
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 transition-all transform scale-100 p-6 sm:p-8"
+        className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 transition-all transform scale-100 p-6 sm:p-8 pt-7 sm:pt-9"
       >
+        {/* Animated Top Red & White Glowing Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-white to-rose-600 shadow-[0_0_15px_rgba(244,63,94,0.7)] animate-pulse" />
+
         {/* Subtle Ambient Glow Effect */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/15 dark:bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-rose-500/10 dark:bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-600/15 dark:bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
 
         {/* Close Button */}
@@ -61,13 +64,41 @@ export default function PublicBookingNoticeModal({ onBypassAdmin }) {
         </div>
 
         {/* Title and Subtitle */}
-        <div className="space-y-2 mb-6">
+        <div className="space-y-2 mb-5">
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
             {settings.modalTitle || 'Public Booking Launching Soon'}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
             {settings.modalMessage || 'Online seat reservations for Expressway Intercity routes are undergoing final system readiness checks and will be accessible to the general public soon.'}
           </p>
+        </div>
+
+        {/* Red & White Alert Notification Banner with Ping Animation */}
+        <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-white/80 to-rose-500/10 dark:from-red-950/60 dark:via-slate-900 dark:to-rose-950/60 border-l-4 border-l-red-500 border border-red-300/80 dark:border-red-800/50 shadow-md relative overflow-hidden animate-fade-in">
+          {/* Shimmer light bar */}
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-400 to-transparent animate-pulse" />
+
+          <div className="flex items-start space-x-3 relative z-10">
+            {/* Animated Red Beacon Ping */}
+            <div className="relative flex h-3.5 w-3.5 mt-0.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-80" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-600 shadow-xs shadow-red-500" />
+            </div>
+
+            <div className="space-y-0.5 flex-1 min-w-0">
+              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                <span className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400">
+                  Temporary Restriction
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-red-600 text-white font-extrabold text-[9px] uppercase tracking-wider shadow-xs">
+                  Public Booking Closed
+                </span>
+              </div>
+              <p className="text-xs sm:text-[13px] text-slate-800 dark:text-slate-200 font-semibold leading-relaxed">
+                Intercity bus reservations are currently paused for public customers. Please switch to <strong className="text-emerald-600 dark:text-emerald-400 font-extrabold">Campus Shuttle Mode</strong> to view routes and reserve your shuttle seat.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Operational Status Breakdown Cards */}
@@ -98,25 +129,25 @@ export default function PublicBookingNoticeModal({ onBypassAdmin }) {
             </button>
           </div>
 
-          {/* Card 2: Public Expressway Network (COMING SOON) */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 relative overflow-hidden flex flex-col justify-between space-y-3">
+          {/* Card 2: Public Expressway Network (TEMPORARILY CLOSED) */}
+          <div className="p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-300/80 dark:border-rose-900/60 relative overflow-hidden flex flex-col justify-between space-y-3">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-lg">🚌</span>
-                <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider border border-amber-200/60 dark:border-amber-800/50">
-                  <Clock className="w-3 h-3 text-amber-500" />
-                  <span>In Development</span>
+                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 text-[10px] font-black uppercase tracking-wider border border-red-300 dark:border-red-800/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                  <span>Closed for Staging</span>
                 </span>
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-sm">
                 Public Intercity Coaches
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
-                Direct highway booking across Galle, Matara, Kandy, and Colombo Fort.
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-snug">
+                Expressway routes across Galle, Matara, Kandy & Fort will open to regular passengers soon.
               </p>
             </div>
-            <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 py-1.5 px-2 bg-slate-100 dark:bg-slate-900/60 rounded-xl text-center">
-              Opening to the public soon
+            <div className="text-[11px] font-bold text-red-600 dark:text-red-400 py-1.5 px-2 bg-red-100/80 dark:bg-red-950/60 rounded-xl text-center border border-red-200 dark:border-red-900/40">
+              Online Booking Paused
             </div>
           </div>
         </div>

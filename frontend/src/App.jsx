@@ -24,6 +24,7 @@ import SliitTransitHub from './pages/SliitTransitHub';
 // Admin Pages
 import AdminDashboard from './admin/AdminDashboard';
 import ManageSliitTransit from './admin/ManageSliitTransit';
+import AdminPinGate from './admin/AdminPinGate';
 import { 
   ManageUsers, ManageBuses, ManageRoutes, ManageSchedules, 
   ManageBookings, ManagePayments, ManageOffers, ManageReviews 
@@ -40,7 +41,7 @@ function AdminRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   const isAdminOrOperator = user && (user.role === 'Admin' || user.role === 'Operator');
-  return isAdminOrOperator ? children : <Navigate to="/" />;
+  return isAdminOrOperator ? children : <AdminPinGate />;
 }
 
 // Guard for Public Booking Routes: allows Admins, blocks normal users when in Maintenance/Early Access
@@ -61,21 +62,24 @@ function PublicBookingRouteGuard({ children }) {
 
 export default function App() {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
+  const { user } = useAuth();
+  const isAdminPath = location.pathname.startsWith('/admin');
+  const isAdminOrOperator = user && (user.role === 'Admin' || user.role === 'Operator');
+  const showAdminPinGate = isAdminPath && !isAdminOrOperator;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors flex flex-col font-sans">
       {/* Auto-scroll to top on route and search query changes */}
       <ScrollToTop />
 
-      {/* Global Navigation header */}
-      <Navbar className="no-print" />
+      {/* Global Navigation header (Hidden during Admin PIN gate) */}
+      {!showAdminPinGate && <Navbar className="no-print" />}
 
       {/* Early Access Announcement Banner */}
-      {!isAdmin && <LaunchAnnouncementBanner />}
+      {!isAdminPath && <LaunchAnnouncementBanner />}
 
       {/* Main Page Content Body */}
-      <main className={`flex-grow ${isAdmin ? 'h-[calc(100vh-4rem)] overflow-hidden' : ''}`}>
+      <main className={`flex-grow ${isAdminPath && isAdminOrOperator ? 'h-[calc(100vh-4rem)] overflow-hidden' : ''}`}>
         <ErrorBoundary>
           <Routes>
             {/* Public customer routes */}

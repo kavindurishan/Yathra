@@ -15,7 +15,7 @@ export default function Sidebar({ onClose, className = '' }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/admin');
   };
 
   const menuItems = [

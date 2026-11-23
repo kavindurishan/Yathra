@@ -5,7 +5,7 @@ import { useLaunchSettings } from '../context/LaunchSettingsContext';
 import { 
   Users, Bus, Calendar, Landmark, BookOpen, AlertOctagon, 
   TrendingUp, CircleDollarSign, Clock, ShieldAlert, ArrowRight,
-  Sparkles, CheckCircle2, Eye, ShieldCheck, GraduationCap
+  Sparkles, CheckCircle2, Eye, ShieldCheck, GraduationCap, KeyRound
 } from 'lucide-react';
 // Recharts charts
 import { 
@@ -17,6 +17,8 @@ export default function AdminDashboard() {
   const { settings, updateSettings, openNoticeModal } = useLaunchSettings();
   const [toggleLoading, setToggleLoading] = useState(false);
   const [toggleSuccessMsg, setToggleSuccessMsg] = useState('');
+  const [isEditingPin, setIsEditingPin] = useState(false);
+  const [newPinInput, setNewPinInput] = useState('');
 
   const [kpis, setKpis] = useState(null);
   const [recentPayments, setRecentPayments] = useState([]);
@@ -36,6 +38,22 @@ export default function AdminDashboard() {
       console.error(err);
     } finally {
       setToggleLoading(false);
+    }
+  };
+
+  const handleSaveNewPin = async () => {
+    if (!newPinInput || newPinInput.trim().length < 4) {
+      alert('PIN must be at least 4 digits.');
+      return;
+    }
+    try {
+      await updateSettings({ adminSecurityPin: newPinInput.trim() });
+      localStorage.setItem('yathra_admin_pin', newPinInput.trim());
+      setIsEditingPin(false);
+      setToggleSuccessMsg(`Admin Terminal PIN updated to: ${newPinInput.trim()}`);
+      setTimeout(() => setToggleSuccessMsg(''), 4000);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -212,6 +230,62 @@ export default function AdminDashboard() {
             <div className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
               Active Now
             </div>
+          </div>
+        </div>
+
+        {/* Master Admin Security PIN Quick Management */}
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+            <span className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <KeyRound className="w-3.5 h-3.5" />
+            </span>
+            <span className="font-extrabold text-slate-800 dark:text-slate-200">
+              Master Terminal Access PIN:
+            </span>
+            <span className="font-mono font-black text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-200 dark:border-cyan-800/40 tracking-wider">
+              {settings.adminSecurityPin || '2026'}
+            </span>
+            <span className="text-slate-400 text-[11px] font-medium">(Quick console access without email/password)</span>
+          </div>
+
+          <div className="flex items-center space-x-2 shrink-0">
+            {isEditingPin ? (
+              <div className="flex items-center space-x-1.5">
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={newPinInput}
+                  onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="New PIN (4-6 digits)"
+                  className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-28 focus:outline-none focus:border-cyan-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveNewPin}
+                  className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-lg text-xs transition-colors cursor-pointer"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingPin(false)}
+                  className="px-2 py-1 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs hover:bg-slate-300 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewPinInput(settings.adminSecurityPin || '2026');
+                  setIsEditingPin(true);
+                }}
+                className="text-cyan-600 dark:text-cyan-400 hover:underline font-bold text-xs cursor-pointer flex items-center space-x-1"
+              >
+                <span>Change Master PIN</span>
+              </button>
+            )}
           </div>
         </div>
 

@@ -102,19 +102,6 @@ export default function Navbar() {
         <div className="flex justify-between h-18 sm:h-20 items-center">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            {/* Universal Back Navigation Button (available on all non-root pages) */}
-            {location.pathname !== '/' && (
-              <button
-                type="button"
-                onClick={handleGoBack}
-                title="Go Back (ආපසු යන්න)"
-                className="mr-2 sm:mr-3.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center space-x-1.5 shadow-xs cursor-pointer group border border-slate-200/80 dark:border-slate-700/80"
-              >
-                <ArrowLeft className="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:-translate-x-0.5 transition-transform" />
-                <span className="text-xs font-black tracking-tight">Back</span>
-              </button>
-            )}
-
             <Link to="/" className="flex items-center group py-1 overflow-visible">
               <YathraBrandLogo className="h-12 sm:h-14 md:h-16 w-auto filter drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-200" />
             </Link>

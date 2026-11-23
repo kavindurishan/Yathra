@@ -5,7 +5,8 @@ import { useLaunchSettings } from '../context/LaunchSettingsContext';
 import { 
   Users, Bus, Calendar, Landmark, BookOpen, AlertOctagon, 
   TrendingUp, CircleDollarSign, Clock, ShieldAlert, ArrowRight,
-  Sparkles, CheckCircle2, Eye, ShieldCheck, GraduationCap, KeyRound
+  Sparkles, CheckCircle2, Eye, ShieldCheck, GraduationCap, KeyRound,
+  Radio, Send, RotateCcw
 } from 'lucide-react';
 // Recharts charts
 import { 
@@ -19,6 +20,63 @@ export default function AdminDashboard() {
   const [toggleSuccessMsg, setToggleSuccessMsg] = useState('');
   const [isEditingPin, setIsEditingPin] = useState(false);
   const [newPinInput, setNewPinInput] = useState('');
+
+  // Live Announcement Marquee Ticker State
+  const [tickerInput, setTickerInput] = useState('');
+  const [tickerSaving, setTickerSaving] = useState(false);
+  const [tickerMsgSuccess, setTickerMsgSuccess] = useState('');
+
+  useEffect(() => {
+    if (settings?.bannerMessage) {
+      setTickerInput(settings.bannerMessage);
+    } else {
+      setTickerInput('SLIIT Campus Transit Hub is now LIVE! Public booking will launching soon...');
+    }
+  }, [settings?.bannerMessage]);
+
+  const handleToggleTicker = async () => {
+    try {
+      const nextState = settings?.launchBannerEnabled === false ? true : false;
+      await updateSettings({ launchBannerEnabled: nextState });
+      setToggleSuccessMsg(nextState ? 'Top announcement ticker is now visible across the site!' : 'Top announcement ticker hidden.');
+      setTimeout(() => setToggleSuccessMsg(''), 4000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveTickerMessage = async () => {
+    if (!tickerInput || !tickerInput.trim()) {
+      alert('Please enter an announcement message.');
+      return;
+    }
+    setTickerSaving(true);
+    setTickerMsgSuccess('');
+    try {
+      await updateSettings({ bannerMessage: tickerInput.trim() });
+      setTickerMsgSuccess('Announcement message updated and broadcasted live across the site! 🚀');
+      setTimeout(() => setTickerMsgSuccess(''), 4000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTickerSaving(false);
+    }
+  };
+
+  const handleResetDefaultTicker = async () => {
+    const defaultMsg = 'SLIIT Campus Transit Hub is now LIVE! Public booking will launching soon...';
+    setTickerInput(defaultMsg);
+    setTickerSaving(true);
+    try {
+      await updateSettings({ bannerMessage: defaultMsg });
+      setTickerMsgSuccess('Ticker message reset to default! 🚀');
+      setTimeout(() => setTickerMsgSuccess(''), 4000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTickerSaving(false);
+    }
+  };
 
   const [kpis, setKpis] = useState(null);
   const [recentPayments, setRecentPayments] = useState([]);
@@ -296,6 +354,114 @@ export default function AdminDashboard() {
             <span>{toggleSuccessMsg}</span>
           </div>
         )}
+      </div>
+
+      {/* Live Announcement Marquee Ticker Controller */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm overflow-hidden relative animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400">
+                <Radio className="w-4 h-4 animate-pulse" />
+              </span>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                Live Announcement Marquee Ticker (සජීවී නිවේදන තීරුව)
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Broadcast custom news, route updates, or launch alerts across the top of the entire website in real-time.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-3 shrink-0">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              Ticker Display:
+            </span>
+            <button
+              type="button"
+              onClick={handleToggleTicker}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                settings?.launchBannerEnabled !== false ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              title={settings?.launchBannerEnabled !== false ? 'Click to hide announcement ticker' : 'Click to show announcement ticker'}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  settings?.launchBannerEnabled !== false ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+              settings?.launchBannerEnabled !== false 
+                ? 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800' 
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700'
+            }`}>
+              {settings?.launchBannerEnabled !== false ? 'Broadcasting LIVE' : 'Hidden'}
+            </span>
+          </div>
+        </div>
+
+        {/* Input & Action Area */}
+        <div className="pt-4 space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              Announcement Message Content (ප්‍රදර්ශනය වන පණිවිඩය)
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={tickerInput}
+                onChange={(e) => setTickerInput(e.target.value)}
+                placeholder="Enter live announcement text to broadcast..."
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-cyan-500 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={handleSaveTickerMessage}
+                disabled={tickerSaving}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-xs shadow-md shadow-cyan-500/25 transition-all flex items-center justify-center space-x-1.5 cursor-pointer shrink-0 disabled:opacity-50"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{tickerSaving ? 'Saving...' : 'Broadcast to Site 🚀'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetDefaultTicker}
+                title="Reset to default SLIIT announcement"
+                className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs transition-colors flex items-center justify-center space-x-1 cursor-pointer shrink-0"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Real-time Ticker Preview inside Admin Panel */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Live Preview on Website (සජීවී පෙරදසුන):
+            </span>
+            <div className="relative w-full overflow-hidden bg-slate-950 border border-cyan-500/30 rounded-xl py-2 px-3 shadow-inner">
+              <div className="flex items-center space-x-3 text-xs text-white truncate">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+                <span className="text-cyan-400 font-black uppercase text-[10px] tracking-wider bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/80 shrink-0">
+                  ANNOUNCEMENT
+                </span>
+                <span className="font-bold text-white truncate">
+                  {tickerInput || 'SLIIT Campus Transit Hub is now LIVE! Public booking will launching soon...'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Feedback message */}
+          {tickerMsgSuccess && (
+            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/70 dark:border-emerald-800/40 flex items-center space-x-1.5 animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>{tickerMsgSuccess}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards Grid */}

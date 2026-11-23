@@ -265,20 +265,20 @@
       }
     ],
     "currentLocation": {
-      "lat": 6.89106,
-      "lng": 79.96435,
-      "speed": 41,
-      "currentHalt": "Arangala Junction",
-      "nextHalt": "Malabe Junction",
-      "nextHaltEta": "10 mins",
+      "lat": 6.90396,
+      "lng": 79.95627,
+      "speed": 40,
+      "currentHalt": "Malabe Junction",
+      "nextHalt": "SLIIT Malabe ",
+      "nextHaltEta": "5 mins",
       "isLive": true,
       "simulationActive": true,
-      "simulationIndex": 26,
-      "lastUpdated": "2026-11-23T06:12:39.116Z"
+      "simulationIndex": 27,
+      "lastUpdated": "2026-11-23T09:47:33.044Z"
     },
     "delayNotice": "අයහපත් කාලගුණය සහ අධික මාර්ග තදබදය හේතුවෙන් විනාඩි 15-20 ක ප්‍රමාදයක් සිදුවිය හැක.",
     "status": "Active",
-    "updatedAt": "2026-11-23T06:12:39.117Z",
+    "updatedAt": "2026-11-23T09:47:33.049Z",
     "fareCategories": [
       {
         "id": "fc-pana-1",

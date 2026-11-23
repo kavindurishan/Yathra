@@ -13,7 +13,7 @@ import {
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
-  const { settings } = useLaunchSettings();
+  const { settings, isBookingAllowed, openNoticeModal } = useLaunchSettings();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -343,13 +343,25 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center space-x-1.5">
                 <Link 
                   to="/login"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
+                  onClick={(e) => {
+                    if (!isBookingAllowed) {
+                      e.preventDefault();
+                      openNoticeModal();
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors cursor-pointer"
                 >
                   Log In
                 </Link>
                 <Link 
                   to="/register"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 shadow-md shadow-primary-500/10 hover:shadow-primary-500/20 transition-all"
+                  onClick={(e) => {
+                    if (!isBookingAllowed) {
+                      e.preventDefault();
+                      openNoticeModal();
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 shadow-md shadow-primary-500/10 hover:shadow-primary-500/20 transition-all cursor-pointer"
                 >
                   Register
                 </Link>
@@ -466,15 +478,27 @@ export default function Navbar() {
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col space-y-2">
               <Link 
                 to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center px-4 py-2 rounded-lg text-base font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  if (!isBookingAllowed) {
+                    e.preventDefault();
+                    openNoticeModal();
+                  }
+                }}
+                className="w-full text-center px-4 py-2 rounded-lg text-base font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
               >
                 Log In
               </Link>
               <Link 
                 to="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center px-4 py-2 rounded-lg text-base font-semibold text-white bg-primary-600 hover:bg-primary-700"
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  if (!isBookingAllowed) {
+                    e.preventDefault();
+                    openNoticeModal();
+                  }
+                }}
+                className="w-full text-center px-4 py-2 rounded-lg text-base font-semibold text-white bg-primary-600 hover:bg-primary-700 cursor-pointer"
               >
                 Register
               </Link>

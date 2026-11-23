@@ -7,7 +7,7 @@ const LaunchSettingsContext = createContext();
 const DEFAULT_SETTINGS = {
   publicBookingActive: false,
   launchBannerEnabled: true,
-  bannerMessage: 'SLIIT Campus Transit Hub is now LIVE! Public expressway booking will open soon.',
+  bannerMessage: 'SLIIT Campus Transit Hub is now LIVE! Public booking will launching soon...',
   modalTitle: 'Public Booking Launching Soon...',
   modalSubtitle: 'Expressway Intercity Coach Service',
   modalMessage: 'Intercity highway seat reservations are currently undergoing final fleet readiness checks. SLIIT University Shuttle routes are 100% active and booking right now.',

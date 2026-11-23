@@ -1,49 +1,74 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, X, GraduationCap } from 'lucide-react';
+import React from 'react';
 import { useLaunchSettings } from '../context/LaunchSettingsContext';
 
 export default function LaunchAnnouncementBanner() {
   const { settings } = useLaunchSettings();
-  const [dismissed, setDismissed] = useState(false);
 
-  // If public booking is already fully enabled, or user dismissed, don't show the early access banner
-  if (settings?.publicBookingActive || !settings?.launchBannerEnabled || dismissed) {
+  // If public booking is already fully enabled, or launch banner disabled, do not show
+  if (settings?.publicBookingActive || !settings?.launchBannerEnabled) {
     return null;
   }
 
+  const messageText = settings?.bannerMessage || 'SLIIT Campus Transit Hub is now LIVE! Public booking will launching soon...';
+
   return (
-    <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white text-xs sm:text-sm py-2.5 px-4 sm:px-6 relative z-30 border-b border-indigo-500/20 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-        <div className="flex items-center space-x-2.5 flex-1 min-w-0">
-          <span className="shrink-0 inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] sm:text-xs font-black uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span>Early Access</span>
+    <div className="relative z-30 w-full overflow-hidden bg-slate-950 border-b border-cyan-500/30 py-2.5 shadow-lg shadow-cyan-500/5 select-none">
+      
+      {/* Left & Right Gradient Fade Masks for smooth seamless edge entry & exit */}
+      <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-slate-950 to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-slate-950 to-transparent z-10 pointer-events-none" />
+
+      {/* Continuous Infinite Marquee Track (Non-Stop Motion - Does NOT pause on cursor hover) */}
+      <div className="animate-continuous-marquee whitespace-nowrap">
+        
+        {/* Stream Segment 1 */}
+        <div className="flex items-center space-x-8 px-4">
+          <span className="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-white tracking-wide">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+            </span>
+            <span className="text-cyan-400 font-black uppercase text-[10px] tracking-wider bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/80">
+              ANNOUNCEMENT
+            </span>
+            <span className="text-white font-bold">{messageText}</span>
           </span>
-          <p className="font-semibold truncate text-slate-200">
-            {settings?.bannerMessage || 'SLIIT Campus Transit Hub is now LIVE! Public expressway booking will open soon.'}
-          </p>
+
+          <span className="text-slate-700 text-sm font-black">• • •</span>
+
+          <span className="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-white tracking-wide">
+            <span className="text-cyan-400 text-xs">🎓</span>
+            <span className="text-white font-bold">{messageText}</span>
+          </span>
+
+          <span className="text-slate-700 text-sm font-black">• • •</span>
         </div>
 
-        <div className="flex items-center space-x-3 shrink-0">
-          <Link
-            to="/sliit-transit"
-            className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-sm shadow-cyan-500/20 hover:scale-[1.02] cursor-pointer"
-          >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Open Campus Hub</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
+        {/* Stream Segment 2 (Duplicate for smooth 100% gapless continuous marquee loop) */}
+        <div className="flex items-center space-x-8 px-4">
+          <span className="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-white tracking-wide">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+            </span>
+            <span className="text-cyan-400 font-black uppercase text-[10px] tracking-wider bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/80">
+              ANNOUNCEMENT
+            </span>
+            <span className="text-white font-bold">{messageText}</span>
+          </span>
 
-          <button
-            onClick={() => setDismissed(true)}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-            title="Dismiss Announcement"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <span className="text-slate-700 text-sm font-black">• • •</span>
+
+          <span className="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-white tracking-wide">
+            <span className="text-cyan-400 text-xs">🎓</span>
+            <span className="text-white font-bold">{messageText}</span>
+          </span>
+
+          <span className="text-slate-700 text-sm font-black">• • •</span>
         </div>
+
       </div>
+
     </div>
   );
 }

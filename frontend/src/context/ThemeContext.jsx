@@ -4,8 +4,16 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('yathra_dark_mode') || localStorage.getItem('tripzo_dark_mode');
-    return saved ? JSON.parse(saved) : false;
+    try {
+      const saved = localStorage.getItem('yathra_dark_mode') || localStorage.getItem('tripzo_dark_mode');
+      if (saved && saved !== 'undefined') {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      localStorage.removeItem('yathra_dark_mode');
+      localStorage.removeItem('tripzo_dark_mode');
+    }
+    return false;
   });
 
   useEffect(() => {

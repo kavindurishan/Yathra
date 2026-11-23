@@ -24,13 +24,17 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (authToken) => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
       const res = await fetch('http://127.0.0.1:5000/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${authToken}`
-        }
+        },
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      if (data.success) {
+      if (data && data.success && data.user) {
         setUser(data.user);
         localStorage.setItem('yathra_user', JSON.stringify(data.user));
       } else {
@@ -39,9 +43,14 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       // Offline fallback: Use cached details if server is down
-      const cachedUser = localStorage.getItem('yathra_user') || localStorage.getItem('tripzo_user');
-      if (cachedUser) {
-        setUser(JSON.parse(cachedUser));
+      try {
+        const cachedUser = localStorage.getItem('yathra_user') || localStorage.getItem('tripzo_user');
+        if (cachedUser && cachedUser !== 'undefined') {
+          setUser(JSON.parse(cachedUser));
+        }
+      } catch (parseErr) {
+        localStorage.removeItem('yathra_user');
+        localStorage.removeItem('tripzo_user');
       }
       console.warn('Network issue fetching user profile, using cached if available.');
     } finally {

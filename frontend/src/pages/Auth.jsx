@@ -46,7 +46,15 @@ export function Login() {
     try {
       const res = await login(trimmedEmail, password);
       if (res.success) {
-        const cachedUser = JSON.parse(localStorage.getItem('yathra_user') || localStorage.getItem('tripzo_user') || '{}');
+        let cachedUser = {};
+        try {
+          const userStr = localStorage.getItem('yathra_user') || localStorage.getItem('tripzo_user');
+          if (userStr && userStr !== 'undefined') {
+            cachedUser = JSON.parse(userStr);
+          }
+        } catch (e) {
+          cachedUser = {};
+        }
         if (cachedUser && (cachedUser.role === 'Admin' || cachedUser.role === 'Operator')) {
           navigate('/admin');
         } else if (authMode === 'sliit' || cachedUser?.isSliitStudent || trimmedEmail.toLowerCase().endsWith('@my.sliit.lk') || trimmedEmail.toLowerCase().endsWith('@sliit.lk')) {

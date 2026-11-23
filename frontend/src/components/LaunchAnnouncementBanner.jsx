@@ -8,7 +8,7 @@ export default function LaunchAnnouncementBanner() {
   const [dismissed, setDismissed] = useState(false);
 
   // If public booking is already fully enabled, or user dismissed, don't show the early access banner
-  if (settings.publicBookingActive || !settings.launchBannerEnabled || dismissed) {
+  if (settings?.publicBookingActive || !settings?.launchBannerEnabled || dismissed) {
     return null;
   }
 
@@ -21,7 +21,7 @@ export default function LaunchAnnouncementBanner() {
             <span>Early Access</span>
           </span>
           <p className="font-semibold truncate text-slate-200">
-            {settings.bannerMessage || 'SLIIT Campus Transit Hub is now LIVE! Public expressway booking will open soon.'}
+            {settings?.bannerMessage || 'SLIIT Campus Transit Hub is now LIVE! Public expressway booking will open soon.'}
           </p>
         </div>
 

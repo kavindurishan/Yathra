@@ -137,7 +137,7 @@ export default function Navbar() {
               >
                 <span>🚌</span>
                 <span>Public Travel</span>
-                {!settings.publicBookingActive && (
+                {!settings?.publicBookingActive && (
                   <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded-md border border-amber-500/20">
                     Staging
                   </span>
@@ -402,7 +402,7 @@ export default function Navbar() {
             >
               <span>🚌</span>
               <span>Public Travel</span>
-              {!settings.publicBookingActive && (
+              {!settings?.publicBookingActive && (
                 <span className="text-[9px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold px-1 rounded">
                   Staging
                 </span>

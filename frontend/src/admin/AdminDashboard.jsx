@@ -30,7 +30,7 @@ export default function AdminDashboard() {
     setToggleLoading(true);
     setToggleSuccessMsg('');
     try {
-      const nextState = !settings.publicBookingActive;
+      const nextState = !settings?.publicBookingActive;
       await updateSettings({ publicBookingActive: nextState });
       setToggleSuccessMsg(nextState ? 'Public Booking is now LIVE for all users!' : 'Public Booking switched to Maintenance / Staging mode.');
       setTimeout(() => setToggleSuccessMsg(''), 4000);
@@ -170,13 +170,13 @@ export default function AdminDashboard() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {settings.publicBookingActive 
+                {settings?.publicBookingActive 
                   ? 'All customers can select seats and book expressway buses.'
                   : 'Booking locked for normal customers (Admins retain full access).'
                 }
               </p>
               <div className="pt-1">
-                {settings.publicBookingActive ? (
+                {settings?.publicBookingActive ? (
                   <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     <span>Live to Public</span>
@@ -195,13 +195,13 @@ export default function AdminDashboard() {
               onClick={handleTogglePublicBooking}
               disabled={toggleLoading}
               className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                settings.publicBookingActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+                settings?.publicBookingActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
               }`}
-              title={settings.publicBookingActive ? 'Click to pause public bookings' : 'Click to activate public bookings'}
+              title={settings?.publicBookingActive ? 'Click to pause public bookings' : 'Click to activate public bookings'}
             >
               <span
                 className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                  settings.publicBookingActive ? 'translate-x-7' : 'translate-x-0'
+                  settings?.publicBookingActive ? 'translate-x-7' : 'translate-x-0'
                 }`}
               />
             </button>
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
               Master Terminal Access PIN:
             </span>
             <span className="font-mono font-black text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-200 dark:border-cyan-800/40 tracking-wider">
-              {settings.adminSecurityPin || '2026'}
+              {settings?.adminSecurityPin || '2026'}
             </span>
             <span className="text-slate-400 text-[11px] font-medium">(Quick console access without email/password)</span>
           </div>
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => {
-                  setNewPinInput(settings.adminSecurityPin || '2026');
+                  setNewPinInput(settings?.adminSecurityPin || '2026');
                   setIsEditingPin(true);
                 }}
                 className="text-cyan-600 dark:text-cyan-400 hover:underline font-bold text-xs cursor-pointer flex items-center space-x-1"

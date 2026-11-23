@@ -8,10 +8,10 @@ const DEFAULT_SETTINGS = {
   publicBookingActive: false,
   launchBannerEnabled: true,
   bannerMessage: 'SLIIT Campus Transit Hub is now LIVE! Public expressway booking will open soon.',
-  modalTitle: 'Public Booking Launching Soon',
+  modalTitle: 'Public Booking Launching Soon...',
   modalSubtitle: 'Expressway Intercity Coach Service',
-  modalMessage: 'Online seat reservations for Expressway Intercity routes will be accessible to the general public soon. SLIIT University Shuttle service is 100% active with live tracking.',
-  campusButtonText: 'Switch to Campus Shuttle Hub 🎓',
+  modalMessage: 'Intercity highway seat reservations are currently undergoing final fleet readiness checks. SLIIT University Shuttle routes are 100% active and booking right now.',
+  campusButtonText: 'Board Shuttle Now 🎓',
   allowAdminBypass: true,
   adminSecurityPin: '2026'
 };

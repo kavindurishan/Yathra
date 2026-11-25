@@ -48,6 +48,20 @@ export default function SliitTransitHub() {
   };
 
   const [forceWindowActive, setForceWindowActive] = useState(true);
+  // Helper to determine if map should be displayed (6am-8am Sri Lanka time)
+  const isMapEnabled = () => {
+    const now = new Date();
+    // Convert to Sri Lanka local time (already local on client)
+    const hour = now.getHours();
+    return hour >= 6 && hour < 8;
+  };
+  const [mapEnabled, setMapEnabled] = useState(isMapEnabled());
+  // Update mapEnabled every minute
+  useEffect(() => {
+    const timer = setInterval(() => setMapEnabled(isMapEnabled()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Map Engine & Layer: 'custom' (Leaflet manual road polyline) | 'google' (Google Directions) | 'satellite' (Esri World Imagery)
   const [mapEngine, setMapEngine] = useState('custom'); 
   const [inspectedStop, setInspectedStop] = useState(null);

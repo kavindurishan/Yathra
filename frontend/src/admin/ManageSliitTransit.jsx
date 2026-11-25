@@ -558,6 +558,22 @@ export default function ManageSliitTransit() {
 
   // Open Map Preview Modal
   const handleOpenMapPreview = (shuttle) => {
+  // Show map only between 6:00 and 8:00 AM Sri Lankan Time for students
+  const now = new Date();
+  // Sri Lanka is UTC+5:30; adjust if needed based on server timezone
+  const localHour = now.getHours();
+  const localMinute = now.getMinutes();
+  const totalMinutes = localHour * 60 + localMinute;
+  const start = 6 * 60; // 6:00 AM
+  const end = 8 * 60;   // 8:00 AM
+  if (totalMinutes < start || totalMinutes > end) {
+    // Outside allowed window: show a notification instead of map
+    setSuccessMsg('Map preview is only available between 6:00 AM and 8:00 AM for students.');
+    return;
+  }
+  setPreviewShuttle(shuttle);
+  setIsMapPreviewOpen(true);
+}; {
     setPreviewShuttle(shuttle);
     setIsMapPreviewOpen(true);
   };

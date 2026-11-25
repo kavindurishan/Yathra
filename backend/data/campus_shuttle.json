@@ -5,8 +5,8 @@
     "routeNumber": "SLIIT-SH-01",
     "routeName": "Panadura ⇄ SLIIT Malabe Shuttle",
     "routeNameSi": "",
-    "origin": "Panadura Bus Stand",
-    "destination": "SLIIT Malabe ",
+    "origin": "Panadura Rankoth Viharaya Temple",
+    "destination": "SLIIT Malabe Campus",
     "busNumber": "WP NB-5208",
     "busName": "Lanka Ashok Leyland",
     "busType": "AC Luxury Coach",
@@ -37,7 +37,8 @@
         "timeOffset": "00m",
         "km": 0,
         "lat": 6.71177,
-        "lng": 79.90675
+        "lng": 79.90675,
+        "_id": "6b066c67424741fade6c80ff"
       },
       {
         "name": "Panadura Bus Stand",
@@ -45,7 +46,8 @@
         "timeOffset": "00m",
         "km": 3.5,
         "lat": 6.72677,
-        "lng": 79.90487
+        "lng": 79.90487,
+        "_id": "6b066c67424741fade6c8100"
       },
       {
         "name": "Egodauyana",
@@ -53,7 +55,8 @@
         "timeOffset": "00m",
         "km": 7,
         "lat": 6.74224,
-        "lng": 79.89237
+        "lng": 79.89237,
+        "_id": "6b066c67424741fade6c8101"
       },
       {
         "name": "Koralawella",
@@ -61,7 +64,8 @@
         "timeOffset": "00m",
         "km": 10.5,
         "lat": 6.75848,
-        "lng": 79.88624
+        "lng": 79.88624,
+        "_id": "6b066c67424741fade6c8102"
       },
       {
         "name": "Moratuwa ",
@@ -69,7 +73,8 @@
         "timeOffset": "00m",
         "km": 14,
         "lat": 6.77486,
-        "lng": 79.88245
+        "lng": 79.88245,
+        "_id": "6b066c67424741fade6c8103"
       },
       {
         "name": "Moratuwa Mendis Lane ",
@@ -77,7 +82,8 @@
         "timeOffset": "00m",
         "km": 17.5,
         "lat": 6.78351,
-        "lng": 79.88424
+        "lng": 79.88424,
+        "_id": "6b066c67424741fade6c8104"
       },
       {
         "name": "Katubedda Junction",
@@ -85,7 +91,8 @@
         "timeOffset": "00m",
         "km": 21,
         "lat": 6.787,
-        "lng": 79.88466
+        "lng": 79.88466,
+        "_id": "6b066c67424741fade6c8105"
       },
       {
         "name": "Katubedda K Zone",
@@ -93,7 +100,8 @@
         "timeOffset": "00m",
         "km": 24.5,
         "lat": 6.79573,
-        "lng": 79.888
+        "lng": 79.888,
+        "_id": "6b066c67424741fade6c8106"
       },
       {
         "name": "Soysa Flat",
@@ -101,7 +109,8 @@
         "timeOffset": "00m",
         "km": 28,
         "lat": 6.8053,
-        "lng": 79.88588
+        "lng": 79.88588,
+        "_id": "6b066c67424741fade6c8107"
       },
       {
         "name": "Golumadama",
@@ -109,7 +118,8 @@
         "timeOffset": "00m",
         "km": 31.5,
         "lat": 6.80968,
-        "lng": 79.883
+        "lng": 79.883,
+        "_id": "6b066c67424741fade6c8108"
       },
       {
         "name": "Belekka Junction",
@@ -117,7 +127,8 @@
         "timeOffset": "00m",
         "km": 35,
         "lat": 6.81494,
-        "lng": 79.87834
+        "lng": 79.87834,
+        "_id": "6b066c67424741fade6c8109"
       },
       {
         "name": "Ratmalana Maliban Junction",
@@ -125,7 +136,8 @@
         "timeOffset": "00m",
         "km": 38.5,
         "lat": 6.81945,
-        "lng": 79.87361
+        "lng": 79.87361,
+        "_id": "6b066c67424741fade6c810a"
       },
       {
         "name": "Mount Lavinia",
@@ -133,7 +145,8 @@
         "timeOffset": "00m",
         "km": 42,
         "lat": 6.83299,
-        "lng": 79.86729
+        "lng": 79.86729,
+        "_id": "6b066c67424741fade6c810b"
       },
       {
         "name": "Dehiwala Junction",
@@ -141,7 +154,8 @@
         "timeOffset": "00m",
         "km": 45.5,
         "lat": 6.85183,
-        "lng": 79.86587
+        "lng": 79.86587,
+        "_id": "6b066c67424741fade6c810c"
       },
       {
         "name": "Dehiwala (William Junction)",
@@ -149,7 +163,8 @@
         "timeOffset": "00m",
         "km": 49,
         "lat": 6.86269,
-        "lng": 79.86458
+        "lng": 79.86458,
+        "_id": "6b066c67424741fade6c810d"
       },
       {
         "name": "Kalubowila Hospital",
@@ -157,7 +172,8 @@
         "timeOffset": "00m",
         "km": 52.5,
         "lat": 6.86659,
-        "lng": 79.87613
+        "lng": 79.87613,
+        "_id": "6b066c67424741fade6c810e"
       },
       {
         "name": "Kohuwala Junction",
@@ -165,7 +181,8 @@
         "timeOffset": "00m",
         "km": 56,
         "lat": 6.86738,
-        "lng": 79.88488
+        "lng": 79.88488,
+        "_id": "6b066c67424741fade6c810f"
       },
       {
         "name": "Nugegoda Flyover",
@@ -173,7 +190,8 @@
         "timeOffset": "00m",
         "km": 59.5,
         "lat": 6.8703,
-        "lng": 79.8885
+        "lng": 79.8885,
+        "_id": "6b066c67424741fade6c8110"
       },
       {
         "name": "Nugegoda Junction",
@@ -181,7 +199,8 @@
         "timeOffset": "00m",
         "km": 63,
         "lat": 6.8743,
-        "lng": 79.89159
+        "lng": 79.89159,
+        "_id": "6b066c67424741fade6c8111"
       },
       {
         "name": "Jubilee Post",
@@ -189,7 +208,8 @@
         "timeOffset": "00m",
         "km": 66.5,
         "lat": 6.87652,
-        "lng": 79.90052
+        "lng": 79.90052,
+        "_id": "6b066c67424741fade6c8112"
       },
       {
         "name": "Pitakotte Junction",
@@ -197,7 +217,8 @@
         "timeOffset": "00m",
         "km": 70,
         "lat": 6.88422,
-        "lng": 79.90292
+        "lng": 79.90292,
+        "_id": "6b066c67424741fade6c8113"
       },
       {
         "name": "Beddagana ",
@@ -205,7 +226,8 @@
         "timeOffset": "00m",
         "km": 73.5,
         "lat": 6.88467,
-        "lng": 79.90779
+        "lng": 79.90779,
+        "_id": "6b066c67424741fade6c8114"
       },
       {
         "name": "Madiwela",
@@ -213,7 +235,8 @@
         "timeOffset": "00m",
         "km": 77,
         "lat": 6.87904,
-        "lng": 79.92171
+        "lng": 79.92171,
+        "_id": "6b066c67424741fade6c8115"
       },
       {
         "name": "Kibulawala",
@@ -221,7 +244,8 @@
         "timeOffset": "00m",
         "km": 80.5,
         "lat": 6.87693,
-        "lng": 79.9277
+        "lng": 79.9277,
+        "_id": "6b066c67424741fade6c8116"
       },
       {
         "name": "Thalawathugoda Junction",
@@ -229,7 +253,8 @@
         "timeOffset": "00m",
         "km": 84,
         "lat": 6.87597,
-        "lng": 79.93479
+        "lng": 79.93479,
+        "_id": "6b066c67424741fade6c8117"
       },
       {
         "name": "Hokandara Junction",
@@ -237,7 +262,8 @@
         "timeOffset": "00m",
         "km": 87.5,
         "lat": 6.88049,
-        "lng": 79.95948
+        "lng": 79.95948,
+        "_id": "6b066c67424741fade6c8118"
       },
       {
         "name": "Arangala Junction",
@@ -245,7 +271,8 @@
         "timeOffset": "00m",
         "km": 91,
         "lat": 6.89106,
-        "lng": 79.96435
+        "lng": 79.96435,
+        "_id": "6b066c67424741fade6c8119"
       },
       {
         "name": "Malabe Junction",
@@ -253,7 +280,8 @@
         "timeOffset": "00m",
         "km": 94.5,
         "lat": 6.90396,
-        "lng": 79.95627
+        "lng": 79.95627,
+        "_id": "6b066c67424741fade6c811a"
       },
       {
         "name": "SLIIT Malabe ",
@@ -261,7 +289,8 @@
         "timeOffset": "00m",
         "km": 98,
         "lat": 6.91407,
-        "lng": 79.97207
+        "lng": 79.97207,
+        "_id": "6b066c67424741fade6c811b"
       }
     ],
     "currentLocation": {
@@ -276,9 +305,9 @@
       "simulationIndex": 19,
       "lastUpdated": "2026-11-24T14:46:44.961Z"
     },
-    "delayNotice": "Adverse weather and heavy traffic congestion may cause a 15-20 min delay.",
+    "delayNotice": "",
     "status": "Active",
-    "updatedAt": "2026-11-24T14:46:44.962Z",
+    "updatedAt": "2026-11-25T05:55:38.047Z",
     "fareCategories": [
       {
         "id": "fc-pana-1",
@@ -294,7 +323,8 @@
           "Egodauyana",
           "Koralawella"
         ],
-        "description": "Panadura, Moratuwa junction & Katubedda boarding section"
+        "description": "Panadura, Moratuwa junction & Katubedda boarding section",
+        "_id": "6b066c67424741fade6c80fc"
       },
       {
         "id": "fc-pana-2",
@@ -317,7 +347,8 @@
           "Ratmalana Maliban Junction",
           "Mount Lavinia"
         ],
-        "description": "Moratuwa, Katubedda University junction & Ratmalana corridor"
+        "description": "Moratuwa, Katubedda University junction & Ratmalana corridor",
+        "_id": "6b066c67424741fade6c80fd"
       },
       {
         "id": "fc-pana-3",
@@ -345,7 +376,8 @@
           "Malabe Junction",
           "SLIIT Malabe "
         ],
-        "description": "Dehiwala William junction, Kohuwala, Nugegoda & Kotte zone"
+        "description": "Dehiwala William junction, Kohuwala, Nugegoda & Kotte zone",
+        "_id": "6b066c67424741fade6c80fe"
       }
     ],
     "isWithinOperatingWindow": true,
@@ -487,7 +519,7 @@
       "simulationIndex": 3,
       "lastUpdated": "2026-11-21T08:38:22.176Z"
     },
-    "delayNotice": "Minor traffic delay near Kelaniya Bridge (~5 mins).",
+    "delayNotice": "",
     "status": "Active",
     "fareCategories": [
       {
@@ -536,7 +568,7 @@
         "description": "Kelaniya, Bandarawatta & Kaduwela expressway link"
       }
     ],
-    "updatedAt": "2026-11-21T08:38:22.184Z"
+    "updatedAt": "2026-11-25T06:40:39.398Z"
   },
   {
     "_id": "sliit-minuwangoda",

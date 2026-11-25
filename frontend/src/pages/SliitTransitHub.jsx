@@ -47,7 +47,7 @@ export default function SliitTransitHub() {
     }
   };
 
-  const [forceWindowActive, setForceWindowActive] = useState(true);
+  const [forceWindowActive, setForceWindowActive] = useState(false);
   // Helper to determine if map should be displayed (6am-8am Sri Lanka time)
   const isMapEnabled = () => {
     const now = new Date();
@@ -817,7 +817,94 @@ export default function SliitTransitHub() {
           {/* ============================================================== */}
           {/* LIVE GPS RADAR MAP CANVAS OR MAINTENANCE LOCKOUT DISPLAY       */}
           {/* ============================================================== */}
-          {isMaintenanceOrInactive ? (
+          {!mapEnabled && !isMaintenanceOrInactive ? (
+            /* Outside operating window: Pattern 4 – Blue Neon Scan Lines */
+            <div className="relative rounded-3xl overflow-hidden border-2 shadow-2xl h-[440px] sm:h-[500px] w-full flex flex-col items-center justify-center p-6 text-center"
+              style={{ background: '#020814', borderColor: 'rgba(59,130,246,0.4)', boxShadow: '0 0 40px rgba(59,130,246,0.1)' }}>
+
+              {/* Radial glow */}
+              <div className="absolute inset-0 pointer-events-none rounded-3xl"
+                style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.09) 0%, transparent 65%)' }} />
+
+              {/* Animated horizontal scan lines */}
+              <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none" style={{ opacity: 0.25 }}>
+                <div style={{
+                  position:'absolute', height:'1px', width:'100%', top:'20%',
+                  background:'linear-gradient(90deg,transparent 0%,#3b82f6 40%,#60a5fa 50%,#3b82f6 60%,transparent 100%)',
+                  animation:'scanline-move 3s linear infinite'
+                }}/>
+                <div style={{
+                  position:'absolute', height:'1px', width:'100%', top:'50%',
+                  background:'linear-gradient(90deg,transparent 0%,#2563eb 40%,#3b82f6 50%,#2563eb 60%,transparent 100%)',
+                  animation:'scanline-move 4s linear infinite', animationDelay:'1s'
+                }}/>
+                <div style={{
+                  position:'absolute', height:'1px', width:'100%', top:'78%',
+                  background:'linear-gradient(90deg,transparent 0%,#3b82f6 40%,#93c5fd 50%,#3b82f6 60%,transparent 100%)',
+                  animation:'scanline-move 3.5s linear infinite', animationDelay:'0.5s'
+                }}/>
+                {/* Vertical lines */}
+                <div style={{
+                  position:'absolute', width:'1px', height:'100%', left:'25%',
+                  background:'linear-gradient(180deg,transparent,rgba(59,130,246,0.4),transparent)'
+                }}/>
+                <div style={{
+                  position:'absolute', width:'1px', height:'100%', left:'50%',
+                  background:'linear-gradient(180deg,transparent,rgba(59,130,246,0.4),transparent)'
+                }}/>
+                <div style={{
+                  position:'absolute', width:'1px', height:'100%', left:'75%',
+                  background:'linear-gradient(180deg,transparent,rgba(59,130,246,0.4),transparent)'
+                }}/>
+              </div>
+
+              {/* Keyframes injected via style tag */}
+              <style>{`
+                @keyframes scanline-move {
+                  from { transform: translateX(-100%); }
+                  to   { transform: translateX(100%); }
+                }
+                @keyframes icon-float {
+                  0%,100% { transform: translateY(0); }
+                  50%     { transform: translateY(-8px); }
+                }
+              `}</style>
+
+              {/* Content */}
+              <div className="relative z-10 max-w-lg space-y-5">
+
+                {/* Floating icon */}
+                <div style={{ animation: 'icon-float 3s ease-in-out infinite' }} className="mx-auto">
+                  <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center"
+                    style={{
+                      background: 'rgba(59,130,246,0.12)',
+                      border: '1.5px solid rgba(59,130,246,0.45)',
+                      boxShadow: '0 0 28px rgba(59,130,246,0.3)'
+                    }}>
+                    <span className="text-4xl">🗺️</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider"
+                    style={{ background:'rgba(59,130,246,0.12)', border:'1px solid rgba(59,130,246,0.35)', color:'#93c5fd' }}>
+                    <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                    <span>Live Map Unavailable</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    Map Access Window Closed
+                  </h3>
+                  <p className="text-xs sm:text-sm font-semibold leading-relaxed max-w-sm mx-auto" style={{ color:'rgba(148,163,184,0.8)' }}>
+                    Live GPS map is only available during morning shuttle operating hours.
+                    <br />
+                    <span className="text-blue-300 font-bold">Live location will be available again tomorrow morning.</span>
+                  </p>
+                </div>
+
+
+              </div>
+            </div>
+          ) : isMaintenanceOrInactive ? (
             /* Maintenance Lockout Notice replacing the interactive map */
             <div className="relative rounded-3xl overflow-hidden border-2 border-rose-500/80 dark:border-rose-600 shadow-2xl h-[440px] sm:h-[500px] w-full bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
               

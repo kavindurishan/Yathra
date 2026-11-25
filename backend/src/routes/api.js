@@ -1119,7 +1119,7 @@ router.get('/bookings/:id/track', authenticate, async (req, res) => {
       currentStop: stops[currentStopIndex]?.name || route.startingLocation,
       nextStop: stops[Math.min(currentStopIndex + 1, stops.length - 1)]?.name,
       stops: stopsWithStatus,
-      trafficNotice: '⚠️ මාර්ගයේ රථවාහන තදබදය (Traffic) හෝ අනපේක්ෂිත කාලගුණ තත්ත්වයන් මත මෙම වේලාවන් සුළු වශයෙන් වෙනස් විය හැක. / Times may vary depending on road traffic conditions.',
+      trafficNotice: '⚠️ Times may vary slightly depending on road traffic conditions or unexpected weather.',
       lastUpdated: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     });
   } catch (error) {

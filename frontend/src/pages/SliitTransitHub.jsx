@@ -131,7 +131,7 @@ export default function SliitTransitHub() {
     return {
       fare: shuttle.fare || 180,
       categoryName: 'Standard Shuttle Fare',
-      categoryNameSi: 'සාමාන්‍ය ගමන් ගාස්තුව',
+      categoryNameSi: '',
       monthlyPassFare: shuttle.monthlyPassFare || 4500
     };
   };
@@ -309,9 +309,9 @@ export default function SliitTransitHub() {
     !noticeLower.includes('normal traffic') &&
     !noticeLower.includes('operating smoothly')
   );
-  const isEveningNotice = noticeLower.includes('හවස') || noticeLower.includes('evening') || noticeLower.includes('සවස');
-  const isTomorrowNotice = noticeLower.includes('හෙට') || noticeLower.includes('tomorrow');
-  const isCancellation = noticeLower.includes('නැත') || noticeLower.includes('නොවේ') || noticeLower.includes('cancel') || noticeLower.includes('නවතා');
+  const isEveningNotice = noticeLower.includes('evening') || noticeLower.includes('pm') || noticeLower.includes('05:30');
+  const isTomorrowNotice = noticeLower.includes('tomorrow');
+  const isCancellation = noticeLower.includes('cancel') || noticeLower.includes('not operate') || noticeLower.includes('no service') || noticeLower.includes('suspended');
 
   const showAlertBanner = Boolean(isMaintenanceOrInactive || hasUrgentNotice);
 
@@ -332,7 +332,7 @@ export default function SliitTransitHub() {
           className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:text-blue-600 transition-all shadow-xs cursor-pointer group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          <span>Go Back (ආපසු යන්න)</span>
+          <span>Go Back</span>
         </button>
 
         <div className="flex items-center space-x-2 text-xs">
@@ -379,7 +379,7 @@ export default function SliitTransitHub() {
 
           {/* Description */}
           <p className="text-xs sm:text-sm text-blue-200/90 font-medium leading-relaxed max-w-2xl mx-auto">
-            SLIIT මාලඹේ වෙත ධාවනය වන නිල බස් සේවාවේ සැබෑ මාර්ගය (Custom Road Path), සජීවී GPS පිහිටීම, ගමන් ගාස්තු, රියදුරු දුරකථන අංක සහ සියලු නැවතුම් තොරතුරු.
+            Official SLIIT Malabe university bus route paths, real-time live GPS telemetry, stage fares, driver contact details, and complete halt guides.
           </p>
 
         </div>
@@ -399,10 +399,9 @@ export default function SliitTransitHub() {
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <span>Select Shuttle Corridor</span>
-                <span className="text-xs font-bold text-slate-400 font-normal">| ධාවන මාර්ගය තෝරන්න</span>
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                ශිෂ්‍ය බස් රථයේ සජීවී GPS පිහිටීම, ගාස්තු සහ නැවතුම් බලාගැනීමට පහතින් අදාළ මාර්ගය තෝරන්න.
+                Select a shuttle route below to track real-time live GPS location, fares, and scheduled stops.
               </p>
             </div>
           </div>
@@ -487,7 +486,7 @@ export default function SliitTransitHub() {
       </div>
 
       {/* ============================================================== */}
-      {/* SLIIT STUDENT AUTHENTICATION BANNER (ක්‍රමය 01)                   */}
+      {/* SLIIT STUDENT AUTHENTICATION BANNER                             */}
       {/* ============================================================== */}
       <div className={`rounded-3xl p-5 border transition-all ${
         isSliitStudent 
@@ -521,11 +520,11 @@ export default function SliitTransitHub() {
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 {isSliitStudent ? (
                   <span>
-                    සාදරයෙන් පිළිගනිමු, <strong>{user?.fullName || 'SLIIT Student'}</strong> ({user?.email || 'Student'}). ඔබගේ SLIIT Student ID: <strong className="font-mono text-blue-600 dark:text-blue-400">{user?.studentId || 'IT21004567'}</strong>. ඔබ සඳහා සජීවී GPS සහ Shuttle සේවාවන් විවෘතව ඇත.
+                    Welcome, <strong>{user?.fullName || 'SLIIT Student'}</strong> ({user?.email || 'Student'}). Your verified Student ID: <strong className="font-mono text-blue-600 dark:text-blue-400">{user?.studentId || 'IT21004567'}</strong>. Full real-time GPS telemetry and campus transit services are unlocked.
                   </span>
                 ) : (
                   <span>
-                    SLIIT Shuttle බස් සේවාව සිසුන්ට පමණක් සීමා කිරීමට <strong>@my.sliit.lk</strong> හෝ <strong>@sliit.lk</strong> විද්‍යුත් තැපෑලෙන් ලොග් වන්න.
+                    To access real-time shuttle tracking and student amenities, sign in with your official <strong>@my.sliit.lk</strong> or <strong>@sliit.lk</strong> email.
                   </span>
                 )}
               </p>
@@ -601,31 +600,31 @@ export default function SliitTransitHub() {
 
                         {isEveningNotice && (
                           <span className="px-2.5 py-0.5 rounded-full bg-black/40 text-amber-200 text-[10px] font-extrabold border border-amber-300/40">
-                            🌙 අද සවස සේවාව (Evening Shuttle)
+                            🌙 Evening Shuttle Service
                           </span>
                         )}
 
                         {isTomorrowNotice && (
                           <span className="px-2.5 py-0.5 rounded-full bg-black/40 text-sky-200 text-[10px] font-extrabold border border-sky-300/40">
-                            📅 හෙට දිනට අදාළයි (Tomorrow Notice)
+                            📅 Effective for Tomorrow
                           </span>
                         )}
 
                         {isCancellation && (
                           <span className="px-2.5 py-0.5 rounded-full bg-black/40 text-white text-[10px] font-extrabold border border-white/30">
-                            🚫 ධාවනය නොවේ (No Service)
+                            🚫 No Service / Cancelled
                           </span>
                         )}
                       </div>
 
                       <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
-                        {activeShuttle.delayNotice || (isMaintenance ? 'බස් රථය නඩත්තු කටයුතු (Maintenance) සඳහා නවතා ඇත.' : 'බස් සේවාවේ විශේෂ දැනුම්දීමක් පවතී.')}
+                        {activeShuttle.delayNotice || (isMaintenance ? 'Bus is temporarily placed under scheduled maintenance.' : 'Special service notice active for this corridor.')}
                       </h3>
 
                       <p className="text-xs text-white/90 font-medium">
                         {isMaintenanceOrInactive
-                          ? 'මෙම බස් රථය නඩත්තු කටයුතු සඳහා යොමු කර ඇති බැවින් සජීවී සිතියම තාවකාලිකව අක්‍රිය කර ඇත. වැඩිදුර තොරතුරු සඳහා රියදුරු අමතන්න.'
-                          : 'සිසුන්ගේ අවධානය පිණිසයි: ඉහත දැක්වෙන විශේෂ නිවේදනය අනුව ඔබගේ ගමන් සැලසුම් සකස් කරගන්න.'}
+                          ? 'This shuttle has been placed under technical maintenance. Live map telemetry is temporarily offline. Please contact the driver for urgent inquiries.'
+                          : 'Student Notice: Please adjust your travel plans according to the special service advisory above.'}
                       </p>
                     </div>
                   </div>
@@ -650,10 +649,10 @@ export default function SliitTransitHub() {
           {/* ============================================================== */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
-            {/* Card 1: Ticket Fare (ගමන් ගාස්තු) - All Stages Displayed Separately */}
+            {/* Card 1: Ticket Fare - All Stages Displayed Separately */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Ticket Fare (ගමන් ගාස්තු)</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Ticket Fare</span>
                 <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                   <CreditCard className="w-4 h-4" />
                 </div>
@@ -689,7 +688,7 @@ export default function SliitTransitHub() {
 
               <div className="border-t border-slate-100 dark:border-slate-800/80 pt-2 flex flex-col space-y-1">
                 <span className="text-[10px] text-slate-400 font-medium">
-                  Direct daily cash payment to bus conductor. (දිනපතා බස් රථයේදී ගෙවිය යුතුය)
+                  Direct daily cash payment to bus conductor.
                 </span>
                 <a
                   href="#fare-stages"
@@ -700,10 +699,10 @@ export default function SliitTransitHub() {
               </div>
             </div>
 
-            {/* Card 2: Driver Contact (රියදුරු දුරකථන අංකය) */}
+            {/* Card 2: Driver Contact */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Driver Contact (රියදුරු)</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Driver Contact</span>
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <Phone className="w-4 h-4" />
                 </div>
@@ -739,10 +738,10 @@ export default function SliitTransitHub() {
               </div>
             </div>
 
-            {/* Card 3: Shuttle Timetable (ගමන් වේලාවන්) */}
+            {/* Card 3: Shuttle Timetable */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Schedule (වේලාවන්)</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Schedule</span>
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                   <Clock className="w-4 h-4" />
                 </div>
@@ -771,7 +770,7 @@ export default function SliitTransitHub() {
             {/* Card 4: Occupancy & Seat Availability */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Bus Occupancy (ආසන)</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Bus Occupancy</span>
                 <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                   <Bus className="w-4 h-4" />
                 </div>
@@ -827,11 +826,11 @@ export default function SliitTransitHub() {
                   </div>
 
                   <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    සජීවී සිතියම තාවකාලිකව අක්‍රියයි (Live GPS Radar Offline)
+                    Live GPS Radar Offline
                   </h3>
 
                   <p className="text-xs sm:text-sm text-rose-200 font-semibold leading-relaxed">
-                    {activeShuttle.delayNotice || 'මෙම බස් රථය නඩත්තු කටයුතු සඳහා යොමු කර ඇති බැවින් සිතියම සහ සජීවී GPS පිහිටීම නොපෙන්වයි.'}
+                    {activeShuttle.delayNotice || 'This shuttle bus is currently placed under maintenance. Live GPS tracking is temporarily unavailable.'}
                   </p>
                 </div>
 
@@ -842,7 +841,7 @@ export default function SliitTransitHub() {
                     <span className="font-mono text-rose-400 font-bold">{activeShuttle.busNumber}</span>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    නැවත ධාවනය ආරම්භ කරන වේලාව හෝ විකල්ප ප්‍රවාහන පහසුකම් පිළිබඳ තොරතුරු සඳහා රියදුරු අමතන්න.
+                    Please contact the driver directly for service resumption times or alternate transit options.
                   </p>
                   <div className="flex items-center justify-center space-x-2 pt-1">
                     <a
@@ -930,7 +929,7 @@ export default function SliitTransitHub() {
                     title="Authentic Google Maps Road View with Real Road-Snapped Bus Route"
                   >
                     <span>🛣️</span>
-                    <span className="text-[11px]">Google Roads (නියම පාර)</span>
+                    <span className="text-[11px]">Google Roads</span>
                   </button>
 
                   <button
@@ -941,7 +940,7 @@ export default function SliitTransitHub() {
                         ? 'bg-blue-600 text-white font-black shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     }`}
-                    title="Real Google Satellite Aerial View (චන්ද්‍රිකා සිතියම)"
+                    title="Real Google Satellite Aerial View"
                   >
                     <span>🛰️</span>
                     <span className="text-[11px]">Google Satellite</span>
@@ -1000,7 +999,7 @@ export default function SliitTransitHub() {
                   title="Focus map directly on the live bus position"
                 >
                   <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
-                  <span>🎯 Bus එක කොහෙද</span>
+                  <span>🎯 Locate Bus</span>
                 </button>
 
                 {/* Manual Step Button */}
@@ -1064,13 +1063,13 @@ export default function SliitTransitHub() {
               <div>
                 <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-wider mb-1">
                   <Tag className="w-3.5 h-3.5" />
-                  <span>Student Stage Fares • ගමන් ගාස්තු කාණ්ඩ</span>
+                  <span>Student Stage Fares</span>
                 </div>
                 <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Shuttle Fare Categories & Boarding Halts (ගාස්තු කාණ්ඩ සහ නැවතුම්)
+                  Shuttle Fare Categories & Boarding Halts
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  ශිෂ්‍ය බස් රථයේ ගාස්තුව ඔබ ගොඩවන නැවතුම (Stage) අනුව වෙනස් වේ. ඔබගේ නැවතුම තෝරා අදාළ ගාස්තුව සහ අතරමැදි නැවතුම් පහතින් පරීක්ෂා කරන්න.
+                  Shuttle fares are calculated based on your designated boarding stage. Select your boarding stop below to verify applicable fares and intermediate halts.
                 </p>
               </div>
 
@@ -1108,7 +1107,7 @@ export default function SliitTransitHub() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs uppercase font-black tracking-wider text-amber-700 dark:text-amber-300">
-                      Your Calculated Fare (ඔබ සඳහා ගාස්තුව)
+                      Your Calculated Fare
                     </span>
                     <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800 text-[10px] font-mono font-black text-slate-800 dark:text-slate-200">
                       Boarding at: <strong>{currentBoarding}</strong>
@@ -1124,8 +1123,7 @@ export default function SliitTransitHub() {
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 font-medium">
                     Category: <strong className="text-amber-600 dark:text-amber-400">{currentFareInfo.categoryName}</strong>
-                    {currentFareInfo.categoryNameSi && <span> ({currentFareInfo.categoryNameSi})</span>}
-                    {' '}• ගෙවීම: <strong className="text-amber-600 dark:text-amber-400 font-bold">දිනපතා බස් රථයේදී කොන්දොස්තරට (Daily Cash Payment)</strong>
+                    {' '}• Payment: <strong className="text-amber-600 dark:text-amber-400 font-bold">Daily cash payment directly to bus conductor</strong>
                   </p>
                 </div>
               </div>
@@ -1198,7 +1196,7 @@ export default function SliitTransitHub() {
                       {/* Intermediate Halts in this Category */}
                       <div className="pt-2 border-t border-slate-200/70 dark:border-slate-800 space-y-1.5">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                          Intermediate Boarding Stops (අතරමැදි නැවතුම්):
+                          Intermediate Boarding Stops:
                         </span>
                         {cat.intermediateStops && cat.intermediateStops.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
@@ -1250,7 +1248,7 @@ export default function SliitTransitHub() {
                   <span>Route Halts & Stopping Waypoints ({activeShuttle.stops?.length || 0} Towns)</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  නැවතුමක් මත ක්ලික් කර එම ස්ථානය Map එකේ සමීපව (Zoom In) පරීක්ෂා කරන්න.
+                  Click on any halt to zoom in and inspect its location on the map.
                 </p>
               </div>
 

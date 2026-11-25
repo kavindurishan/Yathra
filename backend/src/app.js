@@ -408,11 +408,12 @@ const seedCampusShuttles = async () => {
       }
       console.log(`✅ Seeded ${defaultShuttles.length} SLIIT Campus Shuttles into database.`);
     } else {
-      // Synchronize driver, stops, and fare categories with latest defaults
+      // Synchronize driver, stops, fare categories and English notices with latest defaults
       for (const shuttle of defaultShuttles) {
         const existing = await db.findOne('CampusShuttle', { routeId: shuttle.routeId });
         if (existing) {
-          const needsSync = !existing.fareCategories || existing.fareCategories.length === 0 || existing.busNumber === 'WP ND-5842' || !existing.stops || !existing.stops[0]?.lat;
+          const hasSinhalaNotice = existing.delayNotice && /[\u0D80-\u0DFF]/.test(existing.delayNotice);
+          const needsSync = hasSinhalaNotice || !existing.fareCategories || existing.fareCategories.length === 0 || existing.busNumber === 'WP ND-5842' || !existing.stops || !existing.stops[0]?.lat;
           if (needsSync) {
             await db.findByIdAndUpdate('CampusShuttle', existing._id, {
               busNumber: shuttle.busNumber,
@@ -423,7 +424,9 @@ const seedCampusShuttles = async () => {
               driverPhone: shuttle.driverPhone,
               driverWhatsapp: shuttle.driverWhatsapp,
               stops: shuttle.stops,
-              currentLocation: shuttle.currentLocation
+              currentLocation: shuttle.currentLocation,
+              delayNotice: hasSinhalaNotice ? shuttle.delayNotice : existing.delayNotice,
+              routeNameSi: ''
             });
           }
         }

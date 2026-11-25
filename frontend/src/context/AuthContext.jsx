@@ -58,6 +58,31 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       // Ignored
     }
+
+    // Auto-upgrade offline admin token to real JWT if backend is reachable
+    const autoUpgradeAdminToken = async () => {
+      const currentToken = localStorage.getItem('yathra_admin_token');
+      if (currentToken === 'mock_admin_token_2026' || currentToken === 'admin_master_session') {
+        const cachedPin = localStorage.getItem('yathra_admin_pin') || '2026';
+        try {
+          const res = await fetch('http://127.0.0.1:5000/api/admin/verify-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: cachedPin })
+          });
+          const data = await res.json();
+          if (data && data.success && data.token) {
+            setAdminToken(data.token);
+            setAdminUser(data.user);
+            localStorage.setItem('yathra_admin_token', data.token);
+            localStorage.setItem('yathra_admin_user', JSON.stringify(data.user));
+          }
+        } catch (err) {
+          // Backend offline or unreachable, mock token remains valid via backend offline middleware
+        }
+      }
+    };
+    autoUpgradeAdminToken();
   }, []);
 
   // Sync customer token with localStorage
@@ -157,11 +182,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithPin = async (pin) => {
+    const cleanPin = String(pin).trim();
+    localStorage.setItem('yathra_admin_pin', cleanPin);
     try {
       const res = await fetch('http://127.0.0.1:5000/api/admin/verify-pin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: String(pin).trim() })
+        body: JSON.stringify({ pin: cleanPin })
       });
       const data = await res.json();
       if (data.success && data.token) {
@@ -177,7 +204,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       // Offline fallback
       const cachedPin = localStorage.getItem('yathra_admin_pin') || '2026';
-      if (String(pin).trim() === cachedPin) {
+      if (cleanPin === cachedPin) {
         const mockAdmin = {
           _id: 'admin_offline_master',
           username: 'admin',

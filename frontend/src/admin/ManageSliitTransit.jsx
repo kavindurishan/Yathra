@@ -93,7 +93,7 @@ export default function ManageSliitTransit() {
       const targetId = quickNoticeTarget._id || quickNoticeTarget.routeId;
       const updatedData = {
         status: quickStatus,
-        delayNotice: quickStatus === 'Active' ? quickNotice.trim() : (quickNotice.trim() || 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.')
+        delayNotice: quickStatus === 'Active' ? quickNotice.trim() : (quickNotice.trim() || 'Shuttle bus is placed under scheduled maintenance and will not operate.')
       };
 
       // Optimistic update
@@ -219,7 +219,7 @@ export default function ManageSliitTransit() {
         {
           id: 'fc-' + Date.now().toString().slice(-4) + '-1',
           categoryName: 'Start Town to SLIIT',
-          categoryNameSi: 'ආරම්භක නැවතුමේ සිට SLIIT දක්වා',
+          categoryNameSi: '',
           fromStop: 'Start Town',
           toStop: 'SLIIT Malabe Campus',
           fare: 250,
@@ -229,8 +229,8 @@ export default function ManageSliitTransit() {
         }
       ],
       stops: [
-        { name: 'Start Town', nameSi: 'ආරම්භක නැවතුම', timeOffset: '00m', km: 0, lat: 6.9000, lng: 79.9000 },
-        { name: 'SLIIT Malabe Campus', nameSi: 'SLIIT මාලඹේ ප්‍රධාන පිවිසුම', timeOffset: '1h 15m', km: 35, lat: 6.9147, lng: 79.9729 }
+        { name: 'Start Town', nameSi: '', timeOffset: '00m', km: 0, lat: 6.9000, lng: 79.9000 },
+        { name: 'SLIIT Malabe Campus', nameSi: '', timeOffset: '1h 15m', km: 35, lat: 6.9147, lng: 79.9729 }
       ]
     });
     setCategoryForm({
@@ -292,7 +292,7 @@ export default function ManageSliitTransit() {
             {
               id: 'fc-' + Date.now().toString().slice(-4) + '-1',
               categoryName: `${shuttle.origin || 'Main Town'} to SLIIT`,
-              categoryNameSi: `${shuttle.origin || 'ආරම්භක නැවතුමේ'} සිට SLIIT දක්වා`,
+              categoryNameSi: '',
               fromStop: shuttle.origin || '',
               toStop: shuttle.destination || 'SLIIT Malabe Campus',
               fare: shuttle.fare !== undefined ? shuttle.fare : 250,
@@ -576,7 +576,7 @@ export default function ManageSliitTransit() {
             Manage SLIIT Campus Shuttles
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            ශිෂ්‍ය බස් මාර්ග (Manual Road Waypoints), ගමන් ගාස්තු, රියදුරු සම්බන්ධතා සහ සජීවී GPS Simulator කළමනාකරණය.
+            Manage student bus routes, road waypoints, stage fares, driver contacts, and live GPS simulator.
           </p>
         </div>
 
@@ -606,7 +606,7 @@ export default function ManageSliitTransit() {
             className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-lg shadow-blue-500/25 flex items-center space-x-1.5 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add New Corridor (නව මාර්ගයක්)</span>
+            <span>Add New Corridor</span>
           </button>
         </div>
       </div>
@@ -731,7 +731,7 @@ export default function ManageSliitTransit() {
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Single Fare</span>
                     <span className="font-extrabold text-sm text-slate-900 dark:text-white">Rs. {shuttle.fare}</span>
-                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block font-semibold">Daily to Bus (දිනපතා)</span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block font-semibold">Daily to Bus</span>
                     {shuttle.fareCategories && shuttle.fareCategories.length > 0 && (
                       <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-blue-100/70 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold">
                         🏷️ {shuttle.fareCategories.length} Stages
@@ -776,7 +776,7 @@ export default function ManageSliitTransit() {
                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
                       <span className="flex items-center gap-1.5">
                         <Tag className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                        <span>Fare Categories (ගාස්තු කාණ්ඩ - {shuttle.fareCategories.length})</span>
+                        <span>Fare Categories ({shuttle.fareCategories.length})</span>
                       </span>
                       <span className="text-[9px] font-mono text-slate-400 font-bold">Stage Pricing</span>
                     </div>
@@ -961,13 +961,13 @@ export default function ManageSliitTransit() {
             {/* Service Status Radio Buttons */}
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-                1. Service Operational Status (ක්‍රියාකාරී තත්ත්වය):
+                1. Service Operational Status:
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: 'Active', label: '🟢 Active', desc: 'සාමාන්‍ය ධාවනය (Live Map ON)' },
-                  { value: 'Maintenance', label: '🔧 Maintenance', desc: 'නඩත්තු (Map Hidden & Alert)' },
-                  { value: 'Inactive', label: '🔴 Suspended', desc: 'සේවය අත්හිටුවා ඇත' }
+                  { value: 'Active', label: '🟢 Active', desc: 'Normal Operation (Live Map ON)' },
+                  { value: 'Maintenance', label: '🔧 Maintenance', desc: 'Maintenance (Map Hidden & Alert)' },
+                  { value: 'Inactive', label: '🔴 Suspended', desc: 'Service Suspended' }
                 ].map(opt => (
                   <button
                     key={opt.value}
@@ -975,11 +975,11 @@ export default function ManageSliitTransit() {
                     onClick={() => {
                       setQuickStatus(opt.value);
                       if (opt.value === 'Maintenance') {
-                        setQuickNotice('ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.');
+                        setQuickNotice('Shuttle bus is placed under scheduled maintenance and will not operate.');
                       } else if (opt.value === 'Active') {
                         setQuickNotice('');
                       } else if (opt.value === 'Inactive') {
-                        setQuickNotice('මෙම මාර්ගයේ බස් සේවාව තාවකාලිකව අත්හිටුවා ඇත (Service Temporarily Suspended).');
+                        setQuickNotice('Shuttle service on this corridor is temporarily suspended.');
                       }
                     }}
                     className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
@@ -998,24 +998,24 @@ export default function ManageSliitTransit() {
             {/* Quick Preset Buttons for Real-world Student Notifications */}
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-                2. Quick Notice Presets (ක්ලික් කර ක්ෂණිකව තෝරන්න):
+                2. Quick Notice Presets (Click to choose instantly):
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {[
-                  { label: '🚫 අද සවස බස් රථය ධාවනය නොවේ', text: 'අද සවස SLIIT මාලඹේ සිට ආපසු ගමන් ගන්නා බස් රථය ධාවනය නොවේ.' },
-                  { label: '⚠️ හෙට දින බස් රථය ධාවනය නොවේ', text: 'හෙට දින මෙම මාර්ගයේ SLIIT බස් රථය ධාවනය නොවේ. විකල්ප ප්‍රවාහන සලසා ගන්න.' },
-                  { label: '🔧 නඩත්තු කටයුතු සඳහා රථය නවතා ඇත', text: 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇත.' },
-                  { label: '🚨 අද දින සම්පූර්ණ සේවාව අවලංගුයි', text: 'අද දින උදෑසන සහ සවස දෙකෙහිම බස් සේවාව ක්‍රියාත්මක නොවේ.' },
-                  { label: '⏰ අද සවස 05:30 ට මාලඹෙන් පිටත් වේ', text: 'අද සවස බස් රථය නියමිත වේලාවට වඩා විනාඩි 30ක් ප්‍රමාදව සවස 05:30 ට පිටත් වේ.' },
-                  { label: '🌧️ අයහපත් කාලගුණය / මාර්ග තදබදය', text: 'අයහපත් කාලගුණය සහ අධික මාර්ග තදබදය හේතුවෙන් විනාඩි 15-20 ක ප්‍රමාදයක් සිදුවිය හැක.' },
-                  { label: '✅ සාමාන්‍ය පරිදි ධාවනය වේ (Clear)', text: 'Normal Traffic. Operating smoothly on schedule.' }
+                  { label: '🚫 Evening shuttle will not operate today', text: 'Evening return shuttle from SLIIT Malabe will not operate today.' },
+                  { label: '⚠️ Tomorrow shuttle service suspended', text: 'Tomorrow SLIIT shuttle service on this corridor will not operate. Please arrange alternate transport.' },
+                  { label: '🔧 Shuttle placed under maintenance', text: 'Shuttle bus is placed under scheduled maintenance and will not operate.' },
+                  { label: '🚨 Full service cancelled for today', text: 'Both morning and evening shuttle services are cancelled for today.' },
+                  { label: '⏰ Evening bus departs Malabe at 05:30 PM', text: 'Evening return shuttle will depart SLIIT Malabe 30 minutes late at 05:30 PM.' },
+                  { label: '🌧️ Adverse weather / traffic delay', text: 'Adverse weather and heavy traffic congestion may cause a 15-20 min delay.' },
+                  { label: '✅ Normal operation on schedule (Clear)', text: 'Normal Traffic. Operating smoothly on schedule.' }
                 ].map((p, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => {
                       setQuickNotice(p.text);
-                      if (p.label.includes('නඩත්තු')) {
+                      if (p.label.toLowerCase().includes('maintenance')) {
                         setQuickStatus('Maintenance');
                       }
                     }}
@@ -1030,14 +1030,14 @@ export default function ManageSliitTransit() {
             {/* Custom Notice Input */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Notice Message Text (සිසුන්ට පෙන්වන පණිවිඩය):
+                Notice Message Text (Broadcast to Students):
               </label>
               <textarea
                 rows={2}
                 value={quickNotice}
                 onChange={(e) => setQuickNotice(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-xs"
-                placeholder="e.g. අද සවස බස් රථය ධාවනය නොවේ."
+                placeholder="e.g. Evening return shuttle from SLIIT Malabe will not operate today."
               />
             </div>
 
@@ -1057,7 +1057,7 @@ export default function ManageSliitTransit() {
                 className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-black text-xs shadow-md shadow-rose-600/20 flex items-center space-x-1.5 cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>{quickSaving ? 'Broadcasting...' : 'Save & Broadcast to Students (වහාම ප්‍රචාරය කරන්න)'}</span>
+                <span>{quickSaving ? 'Broadcasting...' : 'Save & Broadcast to Students'}</span>
               </button>
             </div>
 
@@ -1079,7 +1079,7 @@ export default function ManageSliitTransit() {
                   {selectedShuttle ? `Edit Corridor: ${formData.routeName}` : 'Create New SLIIT Campus Route'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  බස් රථය ගමන් කරන නියම පාර (Custom Road Stops), ගාස්තු සහ රියදුරු තොරතුරු manually ඇතුළත් කරන්න.
+                  Configure road waypoints, stage fares, schedules, and driver contacts.
                 </p>
               </div>
               <button
@@ -1098,12 +1098,12 @@ export default function ManageSliitTransit() {
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
                 <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-black text-xs uppercase tracking-wider">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>1. Route & Service Identity (මාර්ග තොරතුරු)</span>
+                  <span>1. Route & Service Identity</span>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name (English)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name</label>
                     <input
                       type="text"
                       required
@@ -1115,13 +1115,13 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Name (සිංහල)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Route Tagline / Subtitle</label>
                     <input
                       type="text"
                       value={formData.routeNameSi}
                       onChange={(e) => setFormData({ ...formData, routeNameSi: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold"
-                      placeholder="පානදුර ⇄ SLIIT මාලඹේ සේවාව"
+                      placeholder="e.g. Express Student Coach"
                     />
                   </div>
 
@@ -1137,7 +1137,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Origin Town (ආරම්භය)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Origin Town</label>
                     <input
                       type="text"
                       required
@@ -1149,7 +1149,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Destination (ගමනාන්තය)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Destination</label>
                     <input
                       type="text"
                       required
@@ -1161,16 +1161,16 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Service Status (ක්‍රියාකාරීත්වය)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Service Status</label>
                     <select
                       value={formData.status}
                       onChange={(e) => {
                         const newStatus = e.target.value;
                         let newDelayNotice = formData.delayNotice || '';
                         if (newStatus === 'Maintenance') {
-                          newDelayNotice = 'ශිෂ්‍ය බස් රථය නඩත්තු කටයුතු (Scheduled Maintenance) සඳහා යොමු කර ඇති බැවින් ධාවනය නොවේ.';
+                          newDelayNotice = 'Shuttle bus is placed under scheduled maintenance and will not operate.';
                         } else if (newStatus === 'Inactive') {
-                          newDelayNotice = 'මෙම මාර්ගයේ බස් සේවාව තාවකාලිකව අත්හිටුවා ඇත (Service Temporarily Suspended).';
+                          newDelayNotice = 'Shuttle service on this corridor is temporarily suspended.';
                         } else if (newStatus === 'Active') {
                           newDelayNotice = '';
                         }
@@ -1182,9 +1182,9 @@ export default function ManageSliitTransit() {
                       }}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold cursor-pointer"
                     >
-                      <option value="Active">🟢 Active (ධාවනයේ පවතී)</option>
-                      <option value="Maintenance">🟡 Maintenance (නඩත්තු කටයුතු)</option>
-                      <option value="Inactive">🔴 Inactive (තාවකාලිකව අත්හිටුවා ඇත)</option>
+                      <option value="Active">🟢 Active (Live Telemetry ON)</option>
+                      <option value="Maintenance">🟡 Maintenance (Schedules active, Map alerts)</option>
+                      <option value="Inactive">🔴 Inactive (Service Suspended)</option>
                     </select>
                   </div>
                 </div>
@@ -1194,12 +1194,12 @@ export default function ManageSliitTransit() {
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
                 <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-black text-xs uppercase tracking-wider">
                   <Bus className="w-3.5 h-3.5" />
-                  <span>2. Vehicle & Capacity (බස් රථය සහ ආසන)</span>
+                  <span>2. Vehicle & Capacity</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Bus Registration No. (ලියාපදිංචි අංකය)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Bus Registration No.</label>
                     <input
                       type="text"
                       required
@@ -1235,7 +1235,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Total Seat Capacity (මුළු ආසන)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Total Seat Capacity</label>
                     <input
                       type="number"
                       min="1"
@@ -1246,7 +1246,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Available Seats (ඉතිරි ආසන)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Available Seats</label>
                     <input
                       type="number"
                       min="0"
@@ -1263,9 +1263,9 @@ export default function ManageSliitTransit() {
                       onChange={(e) => setFormData({ ...formData, occupancyStatus: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold cursor-pointer"
                     >
-                      <option value="Seats Available">Seats Available (ආසන ඇත)</option>
-                      <option value="Standing Only">Standing Only (හිටගෙන යා හැක)</option>
-                      <option value="Bus Full">Bus Full (රථය පිරී ඇත)</option>
+                      <option value="Seats Available">Seats Available</option>
+                      <option value="Standing Only">Standing Only</option>
+                      <option value="Bus Full">Bus Full</option>
                     </select>
                   </div>
                 </div>
@@ -1275,12 +1275,12 @@ export default function ManageSliitTransit() {
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
                 <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-black text-xs uppercase tracking-wider">
                   <Phone className="w-3.5 h-3.5" />
-                  <span>3. Driver & Crew Contacts (රියදුරු සහ කාර්ය මණ්ඩලය)</span>
+                  <span>3. Driver & Crew Contacts</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Name (රියදුරු නම)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Name</label>
                     <input
                       type="text"
                       value={formData.driverName}
@@ -1291,7 +1291,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Phone (දුරකථන අංකය)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Driver Phone</label>
                     <input
                       type="text"
                       value={formData.driverPhone}
@@ -1313,7 +1313,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Conductor Name (කොන්දොස්තර නම)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Conductor Name</label>
                     <input
                       type="text"
                       value={formData.conductorName}
@@ -1324,7 +1324,7 @@ export default function ManageSliitTransit() {
                   </div>
 
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Conductor Phone (කොන්දොස්තර දුරකථනය)</label>
+                    <label className="font-extrabold text-slate-700 dark:text-slate-300">Conductor Phone</label>
                     <input
                       type="text"
                       value={formData.conductorPhone}
@@ -1343,10 +1343,10 @@ export default function ManageSliitTransit() {
                   <div>
                     <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wider">
                       <Tag className="w-4 h-4" />
-                      <span>4. Category Fares & Intermediate Stops (ගමන් ගාස්තු කාණ්ඩ සහ අතරමැදි නැවතුම්)</span>
+                      <span>4. Category Fares & Intermediate Stops</span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      විවිධ නැවතුම්/ප්‍රදේශ වලට අදාළ ගාස්තු (Ex: Panadura to SLIIT - Rs.180, Moratuwa to SLIIT - Rs.150, Dehiwala to SLIIT - Rs.120) සහ ඒ අතරතුර ඇති නැවතුම් පහසුවෙන් ඇතුළත් කරන්න.
+                      Configure fares for different boarding stages (e.g. Panadura to SLIIT - Rs.180, Moratuwa to SLIIT - Rs.150, Dehiwala to SLIIT - Rs.120) and assign intermediate stops.
                     </p>
                   </div>
 

@@ -127,22 +127,47 @@ export default function AdminDashboard() {
       const data = await api.reports.getDashboard();
       if (data.success) {
         setKpis(data.kpis);
-        setRecentPayments(data.recentPayments);
-        setChartData(data.charts.revenueChart);
+        setRecentPayments(data.recentPayments || []);
+        setChartData(data.charts?.revenueChart || []);
         setLoading(false);
       } else {
         throw new Error(data.message || 'Failed to fetch dashboard data');
       }
     } catch (err) {
-      if (retryCount < 3) {
+      if (retryCount < 2) {
         console.warn(`Dashboard fetch failed (attempt ${retryCount + 1}), retrying...`, err);
-        setTimeout(() => loadDashboardStats(retryCount + 1), 800);
+        setTimeout(() => loadDashboardStats(retryCount + 1), 600);
       } else {
         console.error('Dashboard fetch error:', err);
-        setError('Could not connect to the reporting service. Please ensure the backend server is running.');
+        setError(err.message || 'Could not connect to the reporting service. Please ensure the backend server is running on port 5000.');
         setLoading(false);
       }
     }
+  };
+
+  const loadOfflineSnapshot = () => {
+    setKpis({
+      totalRevenue: 245000,
+      totalUsers: 28,
+      totalBookings: 142,
+      todayBookings: 18,
+      availableBuses: 10,
+      totalBuses: 12,
+      cancelledBookings: 3,
+      totalSchedules: 14
+    });
+    setRecentPayments([
+      { _id: 'pay_1', amount: 1200, paymentMethod: 'Card', status: 'Paid', date: new Date().toISOString(), customerName: 'Kavindu Rishan' },
+      { _id: 'pay_2', amount: 950, paymentMethod: 'Card', status: 'Paid', date: new Date().toISOString(), customerName: 'Sunil Perera' }
+    ]);
+    setChartData([
+      { month: 'Jan', revenue: 24000, bookings: 12 },
+      { month: 'Feb', revenue: 38000, bookings: 19 },
+      { month: 'Mar', revenue: 52000, bookings: 26 },
+      { month: 'Apr', revenue: 65000, bookings: 33 },
+      { month: 'May', revenue: 78000, bookings: 42 }
+    ]);
+    setError('');
   };
 
   if (loading) {
@@ -156,8 +181,42 @@ export default function AdminDashboard() {
 
   if (error || !kpis) {
     return (
-      <div className="p-8 text-center bg-rose-50 dark:bg-rose-950/20 text-accent-rose text-sm font-semibold rounded-2xl border border-rose-200/50">
-        {error}
+      <div className="p-8 text-center bg-rose-50 dark:bg-rose-950/20 rounded-2xl border border-rose-200/60 dark:border-rose-900/40 max-w-2xl mx-auto my-8 space-y-4 shadow-sm">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400">
+          <AlertOctagon className="w-6 h-6" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-base font-extrabold text-rose-700 dark:text-rose-300">
+            Reporting Service Notice
+          </h3>
+          <p className="text-xs text-rose-600/90 dark:text-rose-400 font-medium">
+            {error || 'Unable to connect to reporting backend.'}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+          <button
+            onClick={() => loadDashboardStats(0)}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer"
+          >
+            Retry Connection
+          </button>
+          <button
+            onClick={loadOfflineSnapshot}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+          >
+            View Demo Snapshot
+          </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem('yathra_admin_token');
+              localStorage.removeItem('yathra_admin_user');
+              window.location.reload();
+            }}
+            className="px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+          >
+            Re-enter Security PIN
+          </button>
+        </div>
       </div>
     );
   }

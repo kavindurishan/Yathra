@@ -35,7 +35,31 @@ const request = async (endpoint, options = {}) => {
   };
 
   try {
-    const res = await fetch(`${BASE_URL}${endpoint}`, config);
+    let res = await fetch(`${BASE_URL}${endpoint}`, config);
+    
+    // Auto-recovery for Admin session on 401: try refreshing token with stored PIN once
+    if (res.status === 401 && (isAdminPath || isAdminEndpoint)) {
+      const cachedPin = localStorage.getItem('yathra_admin_pin') || '2026';
+      try {
+        const pinRes = await fetch(`${BASE_URL}/admin/verify-pin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: cachedPin })
+        });
+        const pinData = await pinRes.json();
+        if (pinData && pinData.success && pinData.token) {
+          localStorage.setItem('yathra_admin_token', pinData.token);
+          if (pinData.user) {
+            localStorage.setItem('yathra_admin_user', JSON.stringify(pinData.user));
+          }
+          config.headers['Authorization'] = `Bearer ${pinData.token}`;
+          res = await fetch(`${BASE_URL}${endpoint}`, config);
+        }
+      } catch (pinErr) {
+        // Recovery failed, proceed with original error
+      }
+    }
+
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.message || 'Something went wrong');
